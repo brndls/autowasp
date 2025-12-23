@@ -20,3 +20,4 @@ src/main/java/burp/
 build/
 
 src/main/java/META-INF/
+.gradle/.legacy-backup/
