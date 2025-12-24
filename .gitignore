@@ -1,23 +1,25 @@
-
-out/
-
-.idea/
-
+# Build outputs
+build/
 target/
+out/
+bin/
 
-src/main/.DS_Store
+# Gradle
+.gradle/
 
-src/main/java/.DS_Store
-
+# IDE
+.idea/
 *.iml
 
+# macOS
 .DS_Store
+src/main/.DS_Store
+src/main/java/.DS_Store
 
+# Generated Burp API files (keep only BurpExtender.java)
 src/main/java/burp/
 !src/main/java/burp/BurpExtender.java
 !src/main/java/burp/.gitignore
 
-build/
-
+# IDE metadata
 src/main/java/META-INF/
-.gradle/.legacy-backup/

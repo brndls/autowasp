@@ -1,24 +1,20 @@
 /**
- * build.gradle.kts - Konfigurasi Build Gradle untuk Autowasp
- * 
- * 📚 PEMBELAJARAN:
- * File ini adalah "resep" untuk membangun extension Autowasp.
- * Gradle akan membaca file ini untuk tahu:
- * - Plugin apa yang dipakai
- * - Versi Java berapa
- * - Dependencies (library) apa saja yang dibutuhkan
- * - Bagaimana cara membuat JAR file
+ * build.gradle.kts - Gradle Build Configuration for Autowasp
+ *
+ * This file defines:
+ * - Plugins to use
+ * - Java version
+ * - Dependencies (external libraries)
+ * - How to build the JAR file
  */
 
 // ════════════════════════════════════════════════════════════════════════════
 // PLUGINS
 // ════════════════════════════════════════════════════════════════════════════
 /**
- * 📚 PEMBELAJARAN: Plugins
- * Plugin menambahkan kemampuan ke Gradle. Seperti "extensions" di browser.
- * 
- * - `java`: Memberikan kemampuan compile Java
- * - `shadow`: Membuat "fat JAR" (JAR yang berisi semua dependencies)
+ * Plugins add capabilities to Gradle:
+ * - `java`: Provides Java compilation
+ * - `shadow`: Creates "fat JAR" (JAR containing all dependencies)
  */
 plugins {
     java
@@ -29,9 +25,8 @@ plugins {
 // PROJECT IDENTITY
 // ════════════════════════════════════════════════════════════════════════════
 /**
- * 📚 PEMBELAJARAN: Group & Version
- * - group: Namespace unik (seperti domain terbalik di Java: com.example.myapp)
- * - version: Versi software (SNAPSHOT = masih dalam development)
+ * - group: Unique namespace (like reverse domain in Java)
+ * - version: Software version (SNAPSHOT = still in development)
  */
 group = "autowasp"
 version = "1.0-SNAPSHOT"
@@ -40,27 +35,25 @@ version = "1.0-SNAPSHOT"
 // JAVA CONFIGURATION
 // ════════════════════════════════════════════════════════════════════════════
 /**
- * 📚 PEMBELAJARAN: Source & Target Compatibility
- * - sourceCompatibility: Versi Java yang dipakai untuk MENULIS kode
- * - targetCompatibility: Versi Java yang dipakai untuk MENJALANKAN kode
- * 
- * Di Fase 1 ini kita tetap pakai Java 8 dulu.
- * Di Fase 2 nanti kita upgrade ke Java 21.
+ * Java 21 is the latest LTS (Long Term Support) with modern features:
+ * - Virtual Threads (Project Loom)
+ * - Pattern Matching for switch
+ * - Record Patterns
+ * - Sequenced Collections
+ *
+ * Burp Suite 2024+ supports Java 21.
  */
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 // REPOSITORIES
 // ════════════════════════════════════════════════════════════════════════════
 /**
- * 📚 PEMBELAJARAN: Repositories
- * Repository adalah "toko" tempat Gradle mengunduh dependencies.
- * 
- * Maven Central = Repository publik terbesar untuk library Java
- * Seperti npm registry untuk JavaScript atau PyPI untuk Python
+ * Repositories are where Gradle downloads dependencies from.
+ * Maven Central is the largest public repository for Java libraries.
  */
 repositories {
     mavenCentral()
@@ -70,76 +63,65 @@ repositories {
 // DEPENDENCIES
 // ════════════════════════════════════════════════════════════════════════════
 /**
- * 📚 PEMBELAJARAN: Dependencies
- * Dependencies adalah library eksternal yang dibutuhkan project.
- * 
- * Tipe dependency:
- * - implementation: Dibutuhkan saat compile DAN runtime, masuk ke JAR
- * - compileOnly: Hanya dibutuhkan saat compile, TIDAK masuk ke JAR
- *                (Burp API sudah ada di Burp Suite, jadi tidak perlu di-bundle)
- * 
+ * Dependencies are external libraries required by the project.
+ *
+ * Dependency types:
+ * - implementation: Required at compile AND runtime, included in JAR
+ * - compileOnly: Required only at compile time, NOT included in JAR
+ *                (Burp API is already provided by Burp Suite at runtime)
+ *
  * Format: "groupId:artifactId:version"
- * Contoh: "com.google.code.gson:gson:2.8.5"
- *         └─ groupId ─────────┘ └─┘ └──┘
- *                          artifactId  version
  */
 dependencies {
-    // Burp Suite API - hanya dibutuhkan saat compile
-    // Saat runtime, Burp Suite sudah menyediakan API ini
+    // Burp Suite API - compile-only since Burp Suite provides it at runtime
+    // Note: This is still Legacy Extender API, will be migrated to Montoya API in Phase 3
     compileOnly("net.portswigger.burp.extender:burp-extender-api:1.7.13")
-    
-    // Apache Commons Collections - utility untuk Collection (List, Map, Set)
-    implementation("org.apache.commons:commons-collections4:4.4")
-    
-    // Apache Commons Compress - untuk membaca/membuat file archive (ZIP, TAR)
-    implementation("org.apache.commons:commons-compress:1.19")
-    
-    // Gson - library dari Google untuk parsing JSON
-    implementation("com.google.code.gson:gson:2.8.5")
-    
-    // Jsoup - library untuk parsing dan manipulasi HTML
-    implementation("org.jsoup:jsoup:1.12.1")
-    
-    // Apache POI - library untuk membuat file Excel (.xlsx)
-    // Digunakan untuk export report ke Excel
-    implementation("org.apache.poi:poi:4.1.0")
-    implementation("org.apache.poi:poi-ooxml:4.1.0") {
-        // exclude = mengecualikan dependency tertentu
-        // BouncyCastle adalah crypto library yang tidak kita butuhkan
+
+    // Apache Commons Collections - utilities for Collection types
+    implementation("org.apache.commons:commons-collections4:4.5.0-M3")
+
+    // Apache Commons Compress - for reading/writing archive files (ZIP, TAR)
+    implementation("org.apache.commons:commons-compress:1.28.0")
+
+    // Gson - Google's library for JSON parsing
+    implementation("com.google.code.gson:gson:2.13.2")
+
+    // Jsoup - library for parsing and manipulating HTML
+    implementation("org.jsoup:jsoup:1.21.2")
+
+    // Apache POI - library for creating Excel files (.xlsx)
+    // Used for exporting reports to Excel
+    // Version 5.x includes XMLBeans internally
+    implementation("org.apache.poi:poi:5.5.1")
+    implementation("org.apache.poi:poi-ooxml:5.5.1") {
+        // Exclude BouncyCastle crypto library (not needed)
         exclude(group = "org.bouncycastle")
     }
-    implementation("org.apache.poi:poi-ooxml-schemas:4.1.0") {
-        exclude(group = "org.bouncycastle")
-    }
-    
-    // XMLBeans - dibutuhkan oleh Apache POI untuk membaca XML
-    implementation("org.apache.xmlbeans:xmlbeans:3.1.0")
 }
 
 // ════════════════════════════════════════════════════════════════════════════
 // TASKS
 // ════════════════════════════════════════════════════════════════════════════
 /**
- * 📚 PEMBELAJARAN: Tasks
- * Task adalah "perintah" yang bisa dijalankan Gradle.
- * Contoh: ./gradlew build, ./gradlew shadowJar
- * 
- * shadowJar = Task dari Shadow plugin untuk membuat FAT JAR
- * Fat JAR = JAR yang berisi semua dependencies (bisa langsung dijalankan)
+ * Tasks are commands that Gradle can execute.
+ * Example: ./gradlew build, ./gradlew shadowJar
+ *
+ * shadowJar = Task from Shadow plugin to create FAT JAR
+ * Fat JAR = JAR containing all dependencies (can run standalone)
  */
 tasks.shadowJar {
-    // Nama file output: autowasp-jar-with-dependencies.jar
+    // Output filename: autowasp-jar-with-dependencies.jar
     archiveBaseName.set("autowasp")
     archiveClassifier.set("jar-with-dependencies")
-    
-    // Manifest = metadata di dalam JAR
-    // Main-Class = class yang dijalankan pertama kali
+
+    // Manifest = metadata inside JAR
+    // Main-Class = entry point class
     manifest {
         attributes["Main-Class"] = "burp.BurpExtender"
     }
 }
 
-// Ketika menjalankan `./gradlew build`, otomatis jalankan shadowJar juga
+// When running `./gradlew build`, also run shadowJar
 tasks.build {
     dependsOn(tasks.shadowJar)
 }

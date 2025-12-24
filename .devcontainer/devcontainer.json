@@ -1,0 +1,26 @@
+{
+    "name": "Autowasp Development",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "vscjava.vscode-java-pack",
+                "redhat.java",
+                "vscjava.vscode-java-debug",
+                "vscjava.vscode-java-test",
+                "vscjava.vscode-gradle",
+                "vscjava.vscode-java-dependency"
+            ],
+            "settings": {
+                "java.jdt.ls.java.home": "/opt/java/openjdk",
+                "java.configuration.updateBuildConfiguration": "automatic",
+                "java.compile.nullAnalysis.mode": "automatic"
+            }
+        }
+    },
+    "postCreateCommand": "./gradlew --version",
+    "remoteUser": "root"
+}
