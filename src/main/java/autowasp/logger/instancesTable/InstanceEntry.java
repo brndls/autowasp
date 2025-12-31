@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2021 Government Technology Agency
+ * Copyright (c) 2024 Autowasp Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +18,26 @@
 package autowasp.logger.instancesTable;
 
 import autowasp.http.HTTPRequestResponse;
-import burp.IHttpRequestResponse;
+
+// Montoya API imports
+import burp.api.montoya.http.message.HttpRequestResponse;
 
 import java.io.Serializable;
 import java.net.URL;
 
+/**
+ * Instance Entry - Montoya API
+ * 
+ * Catatan Pembelajaran - Migrasi dari Legacy API:
+ * 
+ * Legacy API:
+ * - IHttpRequestResponse untuk menyimpan request/response
+ * 
+ * Montoya API:
+ * - HttpRequestResponse untuk request/response
+ * - Class ini menyimpan data dalam HTTPRequestResponse wrapper
+ * yang lebih portable untuk serialisasi
+ */
 public class InstanceEntry implements Serializable {
 	public int id = 0;
 	public final URL url;
@@ -29,8 +45,11 @@ public class InstanceEntry implements Serializable {
 	public String severity;
 	public final HTTPRequestResponse requestResponse;
 	final boolean falsePositive;
-	
-	public InstanceEntry(URL url, String confidence, String severity, HTTPRequestResponse requestResponse){
+
+	/**
+	 * Constructor dari HTTPRequestResponse wrapper (untuk backward compatibility)
+	 */
+	public InstanceEntry(URL url, String confidence, String severity, HTTPRequestResponse requestResponse) {
 		this.id = this.id + 1;
 		this.url = url;
 		this.confidence = confidence;
@@ -39,11 +58,23 @@ public class InstanceEntry implements Serializable {
 		this.falsePositive = false;
 	}
 
-	
+	/**
+	 * Constructor dari Montoya HttpRequestResponse
+	 */
+	public InstanceEntry(URL url, String confidence, String severity, HttpRequestResponse montoyaRequestResponse) {
+		this.id = this.id + 1;
+		this.url = url;
+		this.confidence = confidence;
+		this.severity = severity;
+		// Konversi ke HTTPRequestResponse wrapper
+		this.requestResponse = montoyaRequestResponse != null ? new HTTPRequestResponse(montoyaRequestResponse) : null;
+		this.falsePositive = false;
+	}
+
 	public void setConfidence(String confidence) {
 		this.confidence = confidence;
 	}
-	
+
 	public String getConfidence() {
 		return this.confidence;
 	}
@@ -56,16 +87,29 @@ public class InstanceEntry implements Serializable {
 		return severity;
 	}
 
-
-	public IHttpRequestResponse getResReq() {
+	/**
+	 * Mendapatkan request/response wrapper
+	 * Menggantikan getResReq() yang mengembalikan IHttpRequestResponse
+	 */
+	public HTTPRequestResponse getRequestResponse() {
 		return this.requestResponse;
 	}
-	
-	public boolean isIHttpRequestResponseNull() {
+
+	/**
+	 * Getter lama untuk backward compatibility
+	 * 
+	 * @deprecated Gunakan getRequestResponse() untuk Montoya API
+	 */
+	@Deprecated
+	public HTTPRequestResponse getResReq() {
+		return this.requestResponse;
+	}
+
+	public boolean isRequestResponseNull() {
 		return this.requestResponse == null;
 	}
 
 	public String getUrl() {
-		return url.toString();
+		return url != null ? url.toString() : "";
 	}
 }

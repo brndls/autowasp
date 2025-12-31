@@ -124,7 +124,7 @@ public class LoggerTable extends JTable {
 		// update UI
 		// Inform user about entry deletion
 		extender.extenderPanelUI.scanStatusLabel.setText("Entry deleted");
-		extender.callbacks.issueAlert("Entry deleted");
+		extender.issueAlert("Entry deleted");
 		// Repaint logger entries table
 		extender.loggerTableModel.updateLoggerEntryTable();
 	}

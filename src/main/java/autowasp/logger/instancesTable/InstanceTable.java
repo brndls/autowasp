@@ -28,8 +28,8 @@ public class InstanceTable extends JTable {
 	private final Autowasp extender;
 	private int currentRow;
 
-	public InstanceTable(TableModel tableModel, Autowasp extender){
-        super(tableModel);
+	public InstanceTable(TableModel tableModel, Autowasp extender) {
+		super(tableModel);
 		this.extender = extender;
 		setColumnWidths(50, 80, 2500, 350, 150, 300, 150, Integer.MAX_VALUE);
 	}
@@ -39,28 +39,40 @@ public class InstanceTable extends JTable {
 			if ((i / 2) < columnModel.getColumnCount()) {
 				columnModel.getColumn(i / 2).setPreferredWidth(widths[i]);
 				columnModel.getColumn(i / 2).setMaxWidth(widths[i + 1]);
-			}
-			else continue;
+			} else
+				continue;
 		}
 	}
 
 	// Method for table view change selection
+	// Migrasi Montoya API: Menggunakan HttpRequestEditor.setRequest() dan
+	// HttpResponseEditor.setResponse()
 	@Override
-	public void changeSelection(int row, int col, boolean toggle, boolean extend){
-	    // show the log entry for the selected row
+	public void changeSelection(int row, int col, boolean toggle, boolean extend) {
+		// show the log entry for the selected row
 		currentRow = row;
 		InstanceEntry instanceEntry = extender.instanceLog.get(row);
-		if (instanceEntry.isIHttpRequestResponseNull()) {
-			String toPrint = "";
-			byte[] toByte = toPrint.getBytes();
-	    	extender.extenderPanelUI.requestViewer.setMessage(toByte, false);
-	    	extender.extenderPanelUI.responseViewer.setMessage(toByte, false);
+		if (instanceEntry.isRequestResponseNull()) {
+			// Kosongkan editor jika tidak ada request/response
+			extender.extenderPanelUI.requestEditor.setRequest(
+					burp.api.montoya.http.message.requests.HttpRequest.httpRequest(""));
+			extender.extenderPanelUI.responseEditor.setResponse(
+					burp.api.montoya.http.message.responses.HttpResponse.httpResponse(""));
+		} else {
+			// Set request dan response ke editor
+			// Montoya API: HttpRequest.httpRequest(ByteArray) dan
+			// HttpResponse.httpResponse(ByteArray)
+			byte[] reqBytes = instanceEntry.requestResponse.getRequest();
+			byte[] resBytes = instanceEntry.requestResponse.getResponse();
+
+			extender.extenderPanelUI.requestEditor.setRequest(
+					burp.api.montoya.http.message.requests.HttpRequest.httpRequest(
+							burp.api.montoya.core.ByteArray.byteArray(reqBytes)));
+			extender.extenderPanelUI.responseEditor.setResponse(
+					burp.api.montoya.http.message.responses.HttpResponse.httpResponse(
+							burp.api.montoya.core.ByteArray.byteArray(resBytes)));
 		}
-		else {
-	    	extender.extenderPanelUI.requestViewer.setMessage(instanceEntry.requestResponse.getRequest(), true);
-	    	extender.extenderPanelUI.responseViewer.setMessage(instanceEntry.requestResponse.getResponse(), true);
-		}
-	    super.changeSelection(row, col, toggle, extend);
+		super.changeSelection(row, col, toggle, extend);
 		extender.extenderPanelUI.deleteInstanceButtonEnabled();
 	}
 
@@ -78,7 +90,7 @@ public class InstanceTable extends JTable {
 
 	// Method to prepare confidence dropdown combo
 	public void generateConfidenceList() {
-    	JComboBox<String> comboBox = extender.comboBox2;
+		JComboBox<String> comboBox = extender.comboBox2;
 		comboBox.addItem("False Positive");
 		comboBox.addItem("Certain");
 		comboBox.addItem("Firm");
@@ -95,22 +107,23 @@ public class InstanceTable extends JTable {
 	}
 
 	// Method to delete instance
-	public void deleteInstance(){
+	public void deleteInstance() {
 		// delete instance
 		extender.extenderPanelUI.deleteInstanceButton.setEnabled(false);
 		extender.loggerList.get(extender.currentEntryRow).getInstanceList().remove(currentRow);
 		// update UI
 		// If there are remaining instances
-		if (extender.loggerList.get(extender.currentEntryRow).getInstanceList().size() != 0){
+		if (extender.loggerList.get(extender.currentEntryRow).getInstanceList().size() != 0) {
 			// Inform user about instance deletion
 			extender.extenderPanelUI.scanStatusLabel.setText("Instance deleted");
-			extender.callbacks.issueAlert("Instance deleted");
+			extender.issueAlert("Instance deleted");
 			// Repaint instances table
 			extender.instancesTableModel.clearInstanceEntryList();
-			extender.instancesTableModel.addAllInstanceEntry(extender.loggerList.get(extender.currentEntryRow).instancesList);
+			extender.instancesTableModel
+					.addAllInstanceEntry(extender.loggerList.get(extender.currentEntryRow).instancesList);
 		}
 		// Else, no more instances left in entry
-		else{
+		else {
 			// delete entries instead
 			extender.loggerTable.deleteEntry();
 		}

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2021 Government Technology Agency
+ * Copyright (c) 2024 Autowasp Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +17,12 @@
 
 package autowasp;
 
+// Montoya API imports
+import burp.api.montoya.BurpExtension;
+import burp.api.montoya.MontoyaApi;
+import burp.api.montoya.logging.Logging;
+
+// Project imports  
 import autowasp.checklist.*;
 import autowasp.http.*;
 import autowasp.logger.ScannerLogic;
@@ -27,32 +34,63 @@ import autowasp.logger.entryTable.LoggerTableModel;
 import autowasp.logger.instancesTable.InstanceEntry;
 import autowasp.logger.instancesTable.InstanceTable;
 import autowasp.logger.instancesTable.InstancesTableModel;
-import burp.*;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class Autowasp implements IBurpExtender, ITab, IMessageEditorController, IScannerListener, IProxyListener {
-    public IBurpExtenderCallbacks callbacks;
-    public IExtensionHelpers helpers;
-    public IBurpCollaboratorClientContext iBurpCollaboratorClientContext;
-    public PrintWriter stdout;
-    public PrintWriter stderr;
-    public TrafficLogic trafficLogic;
+/**
+ * Autowasp - Burp Suite Extension untuk integrasi OWASP WSTG
+ * 
+ * Migrasi dari Legacy Extender API ke Montoya API:
+ * - IBurpExtender → BurpExtension
+ * - registerExtenderCallbacks() → initialize(MontoyaApi)
+ * - IBurpExtenderCallbacks → MontoyaApi
+ * 
+ * Catatan Pembelajaran:
+ * Montoya API menggunakan interface BurpExtension dengan satu method:
+ * - initialize(MontoyaApi api): Dipanggil saat extension di-load
+ * MontoyaApi menyediakan akses ke semua fitur Burp Suite
+ */
+public class Autowasp implements BurpExtension {
+
+    // ════════════════════════════════════════════════════════════════════════
+    // MONTOYA API REFERENCE
+    // ════════════════════════════════════════════════════════════════════════
+    /**
+     * MontoyaApi adalah pengganti IBurpExtenderCallbacks
+     * Menyediakan akses ke:
+     * - api.http() → HTTP request/response handling
+     * - api.proxy() → Proxy listener
+     * - api.scanner() → Scanner/Audit issues
+     * - api.userInterface() → UI components (tabs, editors)
+     * - api.logging() → Logging (stdout, stderr)
+     * - api.scope() → Scope checking
+     * - api.collaborator() → Burp Collaborator
+     */
+    private MontoyaApi api;
+    private Logging logging;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // UI COMPONENTS
+    // ════════════════════════════════════════════════════════════════════════
     public ExtenderPanelUI extenderPanelUI;
     public JSplitPane gtScannerSplitPane;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // CHECKLIST COMPONENTS
+    // ════════════════════════════════════════════════════════════════════════
     public ChecklistLogic checklistLogic;
     public ChecklistTableModel checklistTableModel;
     public ChecklistTable checklistTable;
     public final List<ChecklistEntry> checklistLog = new ArrayList<>();
     public final HashMap<String, ChecklistEntry> checkListHashMap = new HashMap<>();
+
+    // ════════════════════════════════════════════════════════════════════════
+    // LOGGER COMPONENTS
+    // ════════════════════════════════════════════════════════════════════════
+    public TrafficLogic trafficLogic;
     public final List<TrafficEntry> trafficLog = new ArrayList<>();
     public LoggerTableModel loggerTableModel;
     public InstancesTableModel instancesTableModel;
@@ -61,33 +99,45 @@ public class Autowasp implements IBurpExtender, ITab, IMessageEditorController, 
     public final List<LoggerEntry> loggerList = new ArrayList<>();
     public final List<InstanceEntry> instanceLog = new ArrayList<>();
     public ScannerLogic scannerLogic;
-    public  ProjectWorkspaceFactory projectWorkspace;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // PROJECT WORKSPACE
+    // ════════════════════════════════════════════════════════════════════════
+    public ProjectWorkspaceFactory projectWorkspace;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // UI HELPER COMPONENTS
+    // ════════════════════════════════════════════════════════════════════════
     public JComboBox<String> comboBox;
     public JComboBox<String> comboBox2;
     public JComboBox<String> comboBox3;
     public int currentEntryRow;
 
-    // Implementing IBurpExtender
+    // ════════════════════════════════════════════════════════════════════════
+    // MONTOYA API ENTRY POINT
+    // ════════════════════════════════════════════════════════════════════════
+    /**
+     * Method ini dipanggil saat extension di-load ke Burp Suite
+     * Menggantikan registerExtenderCallbacks() dari Legacy API
+     * 
+     * @param api MontoyaApi instance untuk mengakses fitur Burp Suite
+     */
     @Override
-    public void registerExtenderCallbacks(final IBurpExtenderCallbacks callbacks)
-    {
-        // keep a reference to our callback object
-        this.callbacks = callbacks;
+    public void initialize(MontoyaApi api) {
+        // Simpan referensi ke API
+        this.api = api;
+        this.logging = api.logging();
 
-        // obtain iBurpCollaborator object
-        this.iBurpCollaboratorClientContext = callbacks.createBurpCollaboratorClientContext();
+        // Set nama extension (mengganti callbacks.setExtensionName())
+        api.extension().setName("Autowasp");
 
-        // obtain an extension helpers object
-        helpers = callbacks.getHelpers();
+        // Log ke Output tab (mengganti stdout/stderr PrintWriter)
+        logging.logToOutput("Autowasp extension loading...");
 
-        // set our extension name
-        callbacks.setExtensionName("Autowasp");
-
-        stdout = new PrintWriter(callbacks.getStdout(), true);
-        stderr = new PrintWriter(callbacks.getStderr(), true);
+        // Initialize UI components
         this.extenderPanelUI = new ExtenderPanelUI(this);
 
-        // Initialize variables for logger features
+        // Initialize logger features
         this.instancesTableModel = new InstancesTableModel(instanceLog);
         this.instanceTable = new InstanceTable(instancesTableModel, this);
 
@@ -97,103 +147,112 @@ public class Autowasp implements IBurpExtender, ITab, IMessageEditorController, 
         this.scannerLogic = new ScannerLogic(this);
         this.trafficLogic = new TrafficLogic(this);
 
-        // Initialize variables for OWASP checklist feature
+        // Initialize OWASP checklist feature
         this.checklistLogic = new ChecklistLogic(this);
         this.checklistTableModel = new ChecklistTableModel(this);
         this.checklistTable = new ChecklistTable(checklistTableModel, this);
 
-        // Saving project state feature
+        // Initialize project workspace
         this.projectWorkspace = new ProjectWorkspaceFactory(this);
 
-        // Create our IContextMenu
-        // IContextMenu
+        // Register context menu (mengganti callbacks.registerContextMenuFactory())
         ContextMenuFactory contextMenu = new ContextMenuFactory(this);
-        this.callbacks.registerContextMenuFactory(contextMenu);
+        api.userInterface().registerContextMenuItemsProvider(contextMenu);
 
-        // Bind Issue ComboBox to loggerTable column number 5
+        // Setup ComboBox untuk tabel
         this.comboBox = new JComboBox<>();
         this.loggerTable.setUpIssueColumn(loggerTable.getColumnModel().getColumn(4));
 
-        // Bind Confidence ComboBox to instanceTable column number 2
         this.comboBox2 = new JComboBox<>();
         this.instanceTable.generateConfidenceList();
         instanceTable.setUpConfidenceColumn(instanceTable.getColumnModel().getColumn(2));
 
-        // Bind Severity ComboBox in instanceTable column number 3
         this.comboBox3 = new JComboBox<>();
         this.instanceTable.generateSeverityList();
         instanceTable.setupSeverityColumn(instanceTable.getColumnModel().getColumn(3));
 
-        // create our UI
+        // Create UI dan register tab (dijalankan di EDT)
         SwingUtilities.invokeLater(() -> {
             extenderPanelUI.run();
-            callbacks.registerProxyListener(Autowasp.this);
 
-            // customize our UI components
-            callbacks.customizeUiComponent(gtScannerSplitPane);
+            // Register proxy handler (mengganti callbacks.registerProxyListener())
+            api.proxy().registerResponseHandler(new AutowaspProxyResponseHandler(this));
 
-            // add the custom tab to Burp's UI
-            callbacks.addSuiteTab(Autowasp.this);
+            // Register scanner/audit issue handler (mengganti
+            // callbacks.registerScannerListener())
+            api.scanner().registerAuditIssueHandler(new AutowaspAuditIssueHandler(this));
+
+            // Register tab ke Burp Suite UI (mengganti callbacks.addSuiteTab())
+            api.userInterface().registerSuiteTab("Autowasp", gtScannerSplitPane);
+
+            logging.logToOutput("Autowasp extension loaded successfully!");
+        });
+
+        // Register unload handler for clean unload (GUIDELINES.md §6)
+        api.extension().registerUnloadingHandler(() -> {
+            logging.logToOutput("Autowasp extension unloading...");
+            // Terminate any background threads if needed
+            // Release resources
         });
     }
 
-    // implement ITab
-    @Override
-    public String getTabCaption(){
-        return "Autowasp";
+    // ════════════════════════════════════════════════════════════════════════
+    // PUBLIC API ACCESSORS
+    // ════════════════════════════════════════════════════════════════════════
+    /**
+     * Mendapatkan MontoyaApi instance
+     * Digunakan oleh komponen lain untuk mengakses fitur Burp Suite
+     */
+    public MontoyaApi getApi() {
+        return api;
     }
 
-    @Override
-    public Component getUiComponent() {
-        return gtScannerSplitPane;
+    /**
+     * Mendapatkan Logging instance untuk output ke console
+     */
+    public Logging getLogging() {
+        return logging;
     }
 
-    @Override
-    public void newScanIssue(IScanIssue Iissue) {
-        ScanIssue issue = new ScanIssue(Iissue);
-        if (this.callbacks.isInScope(issue.getUrl()) && !this.scannerLogic.getRepeatedIssue().contains(issue.getIssueName())){
-            this.scannerLogic.getRepeatedIssue().add(issue.getIssueName());
-            callbacks.issueAlert("New Scan found " + issue.getIssueName());
-            // 1. Create a new finding record
-            scannerLogic.logNewScan(issue);
-            // 2. Log this instance
-            scannerLogic.logNewInstance(issue);
-        }
-        else if (this.callbacks.isInScope(issue.getUrl()) && this.scannerLogic.getRepeatedIssue().contains(issue.getIssueName())) {
-            // Identify the finding record is created and log the instance
-            scannerLogic.logNewInstance(issue);
-        }
+    /**
+     * Log pesan ke Output tab
+     * Menggantikan stdout.println()
+     */
+    public void logOutput(String message) {
+        logging.logToOutput(message);
     }
 
-    @Override
-    public void processProxyMessage(boolean messageIsRequest, IInterceptedProxyMessage message) {
-        try {
-            InterceptProxyMessage interceptProxyMessage = new InterceptProxyMessage(message);
-            URL url = new URL(message.getMessageInfo().getHttpService().toString());
-            if (callbacks.isInScope(url)){
-                if (!messageIsRequest) {
-                    synchronized (trafficLog) {
-                        trafficLogic.classifyTraffic(interceptProxyMessage);
-                    }
-                }
-            }
-        } catch (MalformedURLException e) {
-            stdout.println("MalformedURLException at processProxyMessage()");
-        }
+    /**
+     * Log error ke Error tab
+     * Menggantikan stderr.println()
+     */
+    public void logError(String message) {
+        logging.logToError(message);
     }
 
-    @Override
-    public IHttpService getHttpService() {
-        return null;
+    /**
+     * Log exception dengan stack trace ke Error tab (GUIDELINES.md §5)
+     * Preferred method untuk exception handling di background threads
+     */
+    public void logError(Exception e) {
+        logging.logToError(e);
     }
 
-    @Override
-    public byte[] getRequest() {
-        return new byte[0];
+    /**
+     * Cek apakah URL dalam scope
+     * Menggantikan callbacks.isInScope()
+     */
+    public boolean isInScope(String url) {
+        return api.scope().isInScope(url);
     }
 
-    @Override
-    public byte[] getResponse() {
-        return new byte[0];
+    /**
+     * Tampilkan alert ke user
+     * Menggantikan callbacks.issueAlert()
+     */
+    public void issueAlert(String message) {
+        // Montoya API tidak memiliki issueAlert langsung
+        // Menggunakan logging sebagai alternatif
+        logging.logToOutput("[ALERT] " + message);
     }
 }

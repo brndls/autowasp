@@ -73,9 +73,10 @@ repositories {
  * Format: "groupId:artifactId:version"
  */
 dependencies {
-    // Burp Suite API - compile-only since Burp Suite provides it at runtime
-    // Note: This is still Legacy Extender API, will be migrated to Montoya API in Phase 3
-    compileOnly("net.portswigger.burp.extender:burp-extender-api:1.7.13")
+    // Burp Suite Montoya API - compile-only since Burp Suite provides it at runtime
+    // Montoya API adalah pengganti modern untuk Legacy Extender API
+    // Dokumentasi: https://portswigger.github.io/burp-extensions-montoya-api/javadoc/
+    compileOnly("net.portswigger.burp.extensions:montoya-api:2025.12")
 
     // Apache Commons Collections - utilities for Collection types
     implementation("org.apache.commons:commons-collections4:4.5.0-M3")
@@ -115,9 +116,9 @@ tasks.shadowJar {
     archiveClassifier.set("jar-with-dependencies")
 
     // Manifest = metadata inside JAR
-    // Main-Class = entry point class
+    // Main-Class = entry point class (implements BurpExtension)
     manifest {
-        attributes["Main-Class"] = "burp.BurpExtender"
+        attributes["Main-Class"] = "autowasp.Autowasp"
     }
 }
 

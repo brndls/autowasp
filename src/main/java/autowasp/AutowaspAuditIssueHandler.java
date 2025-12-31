@@ -1,0 +1,83 @@
+/*
+ * Copyright (c) 2024 Autowasp Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package autowasp;
+
+// Montoya API - package yang benar: scanner.audit bukan scanner.audit.issues
+import burp.api.montoya.scanner.audit.AuditIssueHandler;
+import burp.api.montoya.scanner.audit.issues.AuditIssue;
+
+/**
+ * Handler untuk Audit Issues - Montoya API
+ * 
+ * Catatan Pembelajaran - Migrasi dari Legacy API:
+ * 
+ * Legacy API menggunakan IScannerListener dengan method:
+ * - newScanIssue(IScanIssue issue)
+ * 
+ * Montoya API menggunakan AuditIssueHandler dengan method:
+ * - handleNewAuditIssue(AuditIssue issue) - void return
+ * 
+ * Perbedaan terminologi:
+ * - Legacy: "Scanner" / "ScanIssue"
+ * - Montoya: "Audit" / "AuditIssue"
+ */
+public class AutowaspAuditIssueHandler implements AuditIssueHandler {
+
+    private final Autowasp extender;
+
+    public AutowaspAuditIssueHandler(Autowasp extender) {
+        this.extender = extender;
+    }
+
+    /**
+     * Dipanggil saat ada audit/scan issue baru ditemukan
+     * Menggantikan newScanIssue() dari Legacy API
+     * 
+     * Note: Method ini void, tidak mengembalikan nilai
+     */
+    @Override
+    public void handleNewAuditIssue(AuditIssue auditIssue) {
+        try {
+            // Cek apakah URL dalam scope
+            String baseUrl = auditIssue.baseUrl();
+
+            if (extender.isInScope(baseUrl)) {
+                String issueName = auditIssue.name();
+
+                // Cek apakah issue sudah pernah di-log (avoid duplicate)
+                if (!extender.scannerLogic.getRepeatedIssue().contains(issueName)) {
+                    // Tambah ke daftar issue yang sudah di-log
+                    extender.scannerLogic.getRepeatedIssue().add(issueName);
+
+                    // Alert user
+                    extender.issueAlert("New Scan found: " + issueName);
+
+                    // Log scan issue baru
+                    extender.scannerLogic.logNewScan(auditIssue);
+
+                    // Log instance
+                    extender.scannerLogic.logNewInstance(auditIssue);
+                } else {
+                    // Issue sudah ada, hanya log instance baru
+                    extender.scannerLogic.logNewInstance(auditIssue);
+                }
+            }
+        } catch (Exception e) {
+            extender.logError(e);
+        }
+    }
+}

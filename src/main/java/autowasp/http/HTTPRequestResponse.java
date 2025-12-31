@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2021 Government Technology Agency
+ * Copyright (c) 2024 Autowasp Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,86 +17,91 @@
 
 package autowasp.http;
 
-import burp.IHttpRequestResponse;
-import burp.IHttpRequestResponsePersisted;
-import burp.IHttpService;
+import burp.api.montoya.http.message.HttpRequestResponse;
+import burp.api.montoya.http.message.requests.HttpRequest;
+import burp.api.montoya.http.message.responses.HttpResponse;
 
 import java.io.Serializable;
 
-public class HTTPRequestResponse implements IHttpRequestResponse, IHttpRequestResponsePersisted, Serializable {
+/**
+ * HTTP Request/Response Wrapper - Montoya API
+ * 
+ * Purpose: Serializable wrapper for HttpRequestResponse data.
+ * Needed because Montoya's HttpRequestResponse is not serializable,
+ * and we need to persist request/response data for project save/load.
+ */
+public class HTTPRequestResponse implements Serializable {
 
-    private byte[] request;
-    private byte[] response;
-    private String comment;
-    private String highlight;
-    private HTTPService httpService;
+    private static final long serialVersionUID = 1L;
 
-    public HTTPRequestResponse(IHttpRequestResponse copy) {
-        this.request = copy.getRequest();
-        this.response = copy.getResponse();
-        this.comment = copy.getComment();
-        this.highlight = copy.getHighlight();
-        this.httpService = new HTTPService(copy.getHttpService());
+    private final byte[] requestBytes;
+    private final byte[] responseBytes;
+    private final String comment;
+    private final String highlight;
+    private final HTTPService httpService;
+
+    /**
+     * Constructor from Montoya HttpRequestResponse
+     */
+    public HTTPRequestResponse(HttpRequestResponse requestResponse) {
+        // Extract request bytes
+        HttpRequest request = requestResponse.request();
+        if (request != null) {
+            this.requestBytes = request.toByteArray().getBytes();
+            this.httpService = new HTTPService(request.httpService());
+        } else {
+            this.requestBytes = new byte[] {};
+            this.httpService = null;
+        }
+
+        // Extract response bytes
+        HttpResponse response = requestResponse.response();
+        if (response != null) {
+            this.responseBytes = response.toByteArray().getBytes();
+        } else {
+            this.responseBytes = new byte[] {};
+        }
+
+        // Extract annotations
+        if (requestResponse.annotations() != null) {
+            this.comment = requestResponse.annotations().notes();
+            this.highlight = requestResponse.annotations().highlightColor() != null
+                    ? requestResponse.annotations().highlightColor().toString()
+                    : "";
+        } else {
+            this.comment = "";
+            this.highlight = "";
+        }
     }
 
-    @Override
+    /**
+     * Constructor from raw bytes (for backward compatibility)
+     */
+    public HTTPRequestResponse(byte[] request, byte[] response, HTTPService httpService) {
+        this.requestBytes = request != null ? request : new byte[] {};
+        this.responseBytes = response != null ? response : new byte[] {};
+        this.httpService = httpService;
+        this.comment = "";
+        this.highlight = "";
+    }
+
     public byte[] getRequest() {
-        if(request == null) {
-            return new byte[]{};
-        }
-        return request;
+        return requestBytes != null ? requestBytes : new byte[] {};
     }
 
-    @Override
-    public void setRequest(byte[] message) {
-        request = message;
-    }
-
-    @Override
     public byte[] getResponse() {
-        if(response == null) {
-            return new byte[]{};
-        }
-        return response;
+        return responseBytes != null ? responseBytes : new byte[] {};
     }
 
-    @Override
-    public void setResponse(byte[] message) {
-        response = message;
-    }
-
-    @Override
     public String getComment() {
-        return comment;
+        return comment != null ? comment : "";
     }
 
-    @Override
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    @Override
     public String getHighlight() {
-        return highlight;
+        return highlight != null ? highlight : "";
     }
 
-    @Override
-    public void setHighlight(String color) {
-        this.highlight = color;
-    }
-
-    @Override
     public HTTPService getHttpService() {
         return httpService;
-    }
-
-    @Override
-    public void setHttpService(IHttpService httpService) {
-        this.httpService = new HTTPService(httpService);
-    }
-
-    @Override
-    public void deleteTempFiles() {
-
     }
 }

@@ -42,7 +42,7 @@ public class ProjectWorkspaceFactory implements Serializable {
 			}
 			outputStream.close();
 			extender.extenderPanelUI.scanStatusLabel.setText("File saved to " + absoluteFilePath + File.separator + "autowasp_project.ser");
-			extender.callbacks.issueAlert("File saved to " + absoluteFilePath + File.separator + "autowasp_project.ser");
+			extender.issueAlert("File saved to " + absoluteFilePath + File.separator + "autowasp_project.ser");
 		}
 		finally {
 			if (fileOutputStream !=null){
@@ -189,12 +189,12 @@ public class ProjectWorkspaceFactory implements Serializable {
 			}
 			objectInputStream.close();
 		} catch (FileNotFoundException e){
-			extender.stdout.println("File not found");
+			extender.logOutput("File not found");
 		} catch (IOException e){
-			extender.stdout.println("Cannot read file");
+			extender.logOutput("Cannot read file");
 		} catch (ClassNotFoundException e)
 		{
-			extender.stdout.println("LoggerEntry class not found");
+			extender.logOutput("LoggerEntry class not found");
 		}
 		finally {
 			if (fileInputStream != null){
@@ -209,7 +209,7 @@ public class ProjectWorkspaceFactory implements Serializable {
 			try {
 				fos.close();
 			} catch (IOException e) {
-				extender.stdout.println("FileOutputStream cannot safe close");
+				extender.logOutput("FileOutputStream cannot safe close");
 			}
 		}
 	}
@@ -220,7 +220,7 @@ public class ProjectWorkspaceFactory implements Serializable {
 			try {
 				fis.close();
 			} catch (IOException e) {
-				extender.stdout.println("FileInputStream cannot safe close");
+				extender.logOutput("FileInputStream cannot safe close");
 			}
 		}
 	}

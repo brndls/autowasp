@@ -17,10 +17,8 @@
 package autowasp.checklist;
 
 import autowasp.*;
-import autowasp.logger.entryTable.LoggerEntry;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.List;
 
 @SuppressWarnings("serial")
 public class ChecklistTableModel extends AbstractTableModel {
@@ -66,7 +64,8 @@ public class ChecklistTableModel extends AbstractTableModel {
 		}
 		return "";
 	}
-	public Class getColumnClass(int column) {
+	@Override
+public Class<?> getColumnClass(int column) {
 		return (getValueAt(0, column).getClass());
 	}
 

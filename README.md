@@ -28,17 +28,18 @@ Autowasp Logger tab gives penetration testers the ability to extract and consoli
 
 # Prerequisites #
 
- - Burp Suite Professional
+ - Burp Suite Professional (2022.1 or later)
+ - Java 21 or later
 
 # Dependencies #
 
-- Apache commons collections 4.3
-- Apache commons compress 1.18
-- GSON 2.8.5
-- Jsoup 1.12.1
-- Apache POI 4.1.0
-- XMLBeans 3.1.0
-- Burp Extender APIs 1.7.13
+- Montoya API 2025.12 (Burp Suite Extension API)
+- Apache Commons Collections 4.4
+- Apache Commons Compress 1.27
+- GSON 2.11.0
+- Jsoup 1.18.3
+- Apache POI 5.3.0
+- XMLBeans 5.2.2
 
 # Installation #
 ## Building the jar 
@@ -60,18 +61,18 @@ git clone https://github.com/govtech-csg/Autowasp.git
 8. Click Build Project (***Build > Build Project***)
 9. The autowasp.jar file will be built in `/Autowasp/out/artifacts/autowasp_jar/autowasp.jar`
 
-### Using Command Line
+### Using Command Line (Recommended)
 
 1. Clone the repository to a location of your choice
-```
+```bash
 git clone https://github.com/govtech-csg/Autowasp.git
 ```
-2. Run the following command
-```
+2. Build using Gradle
+```bash
 cd Autowasp
-mvn clean compile assembly:single
+./gradlew build
 ```
-3. The autowasp.jar file will be built in `/Autowasp/target/autowasp-1.0-SNAPSHOT-jar-with-dependencies.jar`
+3. The JAR file will be built in `build/libs/autowasp-jar-with-dependencies.jar`
 
 ## Installing the jar
  1. Download the release build [here](https://github.com/govtech-csg/Autowasp/releases).

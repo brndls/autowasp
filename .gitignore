@@ -10,16 +10,16 @@ bin/
 # IDE
 .idea/
 *.iml
+.vscode/
+.classpath
+.project
+.settings/
 
 # macOS
 .DS_Store
-src/main/.DS_Store
-src/main/java/.DS_Store
 
-# Generated Burp API files (keep only BurpExtender.java)
-src/main/java/burp/
-!src/main/java/burp/BurpExtender.java
-!src/main/java/burp/.gitignore
+# Legacy backup from migration (can be deleted after verification)
+.legacy-backup/
 
 # IDE metadata
 src/main/java/META-INF/

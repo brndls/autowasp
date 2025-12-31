@@ -101,8 +101,8 @@ public class ChecklistLogic implements Serializable {
 			return pageElements.select("a[href]").eachAttr("abs:href");
 		}		
 		catch (IOException e) {
-			extender.stderr.println("Error 1, Github page not found. Cancel fetch");
-			extender.callbacks.issueAlert("Error 1, Github page not found. Cancel fetch");
+			extender.logError("Error 1, Github page not found. Cancel fetch");
+			extender.issueAlert("Error 1, Github page not found. Cancel fetch");
 			extender.extenderPanelUI.scanStatusLabel.setText("Error 1, Github page not found. Cancel fetch");
 		}
 		return null;
@@ -132,8 +132,8 @@ public class ChecklistLogic implements Serializable {
 			return tableElements;
 		}		
 		catch (IOException e) {
-			extender.stderr.println("Error 2, table element not found. Cancel Fetch");
-			extender.callbacks.issueAlert("Error 2, table element not found. Cancel Fetch");
+			extender.logError("Error 2, table element not found. Cancel Fetch");
+			extender.issueAlert("Error 2, table element not found. Cancel Fetch");
 			extender.extenderPanelUI.scanStatusLabel.setText("Error 2, table element not found. Cancel Fetch");
 		}
 		return null;
@@ -198,8 +198,8 @@ public class ChecklistLogic implements Serializable {
 			return contentElements;
 		}		
 		catch (IOException e) {
-			extender.stderr.println("Error 3, Content page not found. Cancel fetch");
-			extender.callbacks.issueAlert("Error 3, Content page not found. Cancel fetch");
+			extender.logError("Error 3, Content page not found. Cancel fetch");
+			extender.issueAlert("Error 3, Content page not found. Cancel fetch");
 			extender.extenderPanelUI.scanStatusLabel.setText("Error 3, Content page not found. Cancel fetch");
 		}
 		return null;
@@ -223,8 +223,7 @@ public class ChecklistLogic implements Serializable {
 			outputStream.close();
 
 			extender.extenderPanelUI.scanStatusLabel.setText("File saved to " + absoluteFilePath + File.separator + "OWASP_WSTG_local");
-			extender.callbacks.issueAlert("File saved to " + absoluteFilePath + File.separator + "OWASP_WSTG_local");
-			File savedFile = new File(absoluteFilePath + File.separator + "OWASP_WSTG_local");
+			extender.issueAlert("File saved to " + absoluteFilePath + File.separator + "OWASP_WSTG_local");
 		}
 
 		finally {
@@ -385,10 +384,10 @@ public class ChecklistLogic implements Serializable {
 			extender.loggerTable.generateWSTGList();
 			objectInputStream.close();
 		} catch (IOException e) {
-			extender.stdout.println("Cannot read local import file");
+			extender.logOutput("Cannot read local import file");
 		}
 		catch (ClassNotFoundException e) {
-			extender.stdout.println("LoggerEntry class not found");
+			extender.logOutput("LoggerEntry class not found");
 		}
 		finally {
 			if (inputStream != null){
@@ -516,10 +515,10 @@ public class ChecklistLogic implements Serializable {
 			FileOutputStream excelWriter = new FileOutputStream(new File(absoluteFilePath + File.separator + "OWASP Checklist.xlsx"));
 			checklistWorkbook.write(excelWriter);
 			excelWriter.close();
-			extender.callbacks.issueAlert("Excel report generated!");
+			extender.issueAlert("Excel report generated!");
 			extender.extenderPanelUI.scanStatusLabel.setText("Excel report generated!");
 		} catch (IOException e) {
-			extender.callbacks.issueAlert("Error, file not found");
+			extender.issueAlert("Error, file not found");
 		}
 	}
 	
@@ -530,7 +529,7 @@ public class ChecklistLogic implements Serializable {
 		try {
 			TimeUnit.MILLISECONDS.sleep(1000);
 		} catch (InterruptedException e) {
-			extender.stdout.println("Error in fetching the url: " + url);
+			extender.logOutput("Error in fetching the url: " + url);
 		}
 		ChecklistEntry checklistEntry = new ChecklistEntry(this.getTableElements(url), this.getContentElements(url), url);
 		checklistEntry.cleanEntry();
@@ -569,7 +568,7 @@ public class ChecklistLogic implements Serializable {
 			result = sb.toString();
 		}
 		catch(IOException ioe){
-			extender.stderr.println("Error exception at toHash");
+			extender.logError("Error exception at toHash");
 		}
 		finally {
 			safeClose(fis);
@@ -584,7 +583,7 @@ public class ChecklistLogic implements Serializable {
 			try {
 				fos.close();
 			} catch (IOException e) {
-				extender.stdout.println("FileOutputStream cannot perform safeClose");
+				extender.logOutput("FileOutputStream cannot perform safeClose");
 			}
 		}
 	}
@@ -594,7 +593,7 @@ public class ChecklistLogic implements Serializable {
 			try{
 				fis.close();
 			} catch (IOException e) {
-				extender.stdout.println("FileInputStream cannot perform safeClose");
+				extender.logOutput("FileInputStream cannot perform safeClose");
 			}
 
 		}

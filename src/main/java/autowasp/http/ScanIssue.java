@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2021 Government Technology Agency
+ * Copyright (c) 2024 Autowasp Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +17,29 @@
 
 package autowasp.http;
 
-import burp.IHttpRequestResponse;
-import burp.IScanIssue;
+import burp.api.montoya.http.message.HttpRequestResponse;
+import burp.api.montoya.scanner.audit.issues.AuditIssue;
+import burp.api.montoya.scanner.audit.issues.AuditIssueConfidence;
+import burp.api.montoya.scanner.audit.issues.AuditIssueSeverity;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ScanIssue implements IScanIssue {
+/**
+ * Scan Issue Wrapper - Montoya API
+ * 
+ * Catatan Pembelajaran - Migrasi dari Legacy API:
+ * 
+ * Legacy API:
+ * - IScanIssue dengan getIssueBackground(), getRemediationBackground()
+ * 
+ * Montoya API:
+ * - AuditIssue dengan definition() untuk mendapatkan background info
+ * - Tidak ada method langsung background()/remediationBackground()
+ * - Gunakan definition().description() dan definition().remediation()
+ */
+public class ScanIssue {
 
     private final HTTPService httpService;
     private final URL url;
@@ -31,76 +49,130 @@ public class ScanIssue implements IScanIssue {
     private final String confidence;
     private final String name;
     private final String remediation;
+    private final String background;
+    private final String remediationBackground;
 
-    public ScanIssue(IScanIssue copy)
-    {
-        this.name = copy.getIssueName();
-        this.detail = copy.getIssueDetail();
-        this.severity = copy.getSeverity();
-        this.httpService = new HTTPService(copy.getHttpService());
-        this.url = copy.getUrl();
-        IHttpRequestResponse[] iHttpRequestResponse = copy.getHttpMessages();
-        HTTPRequestResponse[] allhttpMessages = new HTTPRequestResponse[iHttpRequestResponse.length];
-        for (int i = 0; i < iHttpRequestResponse.length; i++)
-        {
-            allhttpMessages[i] = new HTTPRequestResponse(iHttpRequestResponse[i]);
+    /**
+     * Constructor dari Montoya AuditIssue
+     */
+    public ScanIssue(AuditIssue auditIssue) {
+        this.name = auditIssue.name();
+        this.detail = auditIssue.detail() != null ? auditIssue.detail() : "";
+        this.severity = convertSeverity(auditIssue.severity());
+        this.confidence = convertConfidence(auditIssue.confidence());
+
+        // Di Montoya API, background dan remediation background
+        // didapat dari definition() jika tersedia
+        if (auditIssue.definition() != null) {
+            this.background = auditIssue.definition().background() != null ? auditIssue.definition().background()
+                    : "";
+            this.remediationBackground = auditIssue.definition().remediation() != null
+                    ? auditIssue.definition().remediation()
+                    : "";
+        } else {
+            this.background = "";
+            this.remediationBackground = "";
         }
-        this.httpMessages = allhttpMessages;
-        this.confidence = copy.getConfidence();
-        this.remediation = copy.getRemediationDetail();
+
+        this.remediation = auditIssue.remediation() != null ? auditIssue.remediation() : "";
+
+        // Parse URL
+        URL parsedUrl = null;
+        try {
+            parsedUrl = java.net.URI.create(auditIssue.baseUrl()).toURL();
+        } catch (Exception e) {
+            // Log error, keep null
+        }
+        this.url = parsedUrl;
+
+        // Create HTTPService dari base URL
+        if (parsedUrl != null) {
+            boolean secure = "https".equalsIgnoreCase(parsedUrl.getProtocol());
+            int port = parsedUrl.getPort();
+            if (port == -1) {
+                port = secure ? 443 : 80;
+            }
+            this.httpService = new HTTPService(parsedUrl.getHost(), port, secure);
+        } else {
+            this.httpService = null;
+        }
+
+        // Convert HttpRequestResponse list ke HTTPRequestResponse array
+        List<HttpRequestResponse> requestResponses = auditIssue.requestResponses();
+        List<HTTPRequestResponse> convertedList = new ArrayList<>();
+        if (requestResponses != null) {
+            for (HttpRequestResponse rr : requestResponses) {
+                convertedList.add(new HTTPRequestResponse(rr));
+            }
+        }
+        this.httpMessages = convertedList.toArray(new HTTPRequestResponse[0]);
     }
 
-    @Override
+    /**
+     * Konversi AuditIssueSeverity enum ke String
+     */
+    private String convertSeverity(AuditIssueSeverity severity) {
+        if (severity == null)
+            return "Information";
+        return switch (severity) {
+            case HIGH -> "High";
+            case MEDIUM -> "Medium";
+            case LOW -> "Low";
+            case INFORMATION -> "Information";
+            default -> "Information";
+        };
+    }
+
+    /**
+     * Konversi AuditIssueConfidence enum ke String
+     */
+    private String convertConfidence(AuditIssueConfidence confidence) {
+        if (confidence == null)
+            return "Tentative";
+        return switch (confidence) {
+            case CERTAIN -> "Certain";
+            case FIRM -> "Firm";
+            case TENTATIVE -> "Tentative";
+            default -> "Tentative";
+        };
+    }
+
     public URL getUrl() {
         return url;
     }
 
-    @Override
     public String getIssueName() {
         return name;
     }
 
-    @Override
-    public int getIssueType() {
-        return 0;
-    }
-
-    @Override
     public String getSeverity() {
         return severity;
     }
 
-    @Override
     public String getConfidence() {
         return confidence;
     }
 
-    @Override
     public String getIssueBackground() {
-        return null;
+        return background;
     }
 
-    @Override
     public String getRemediationBackground() {
-        return null;
+        return remediationBackground;
     }
 
-    @Override
     public String getIssueDetail() {
         return detail;
     }
 
-    @Override
     public String getRemediationDetail() {
         return remediation;
     }
 
-    @Override
     public HTTPRequestResponse[] getHttpMessages() {
         return httpMessages;
     }
 
-    @Override
     public HTTPService getHttpService() {
         return httpService;
     }

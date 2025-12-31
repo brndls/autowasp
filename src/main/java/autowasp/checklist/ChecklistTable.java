@@ -19,7 +19,6 @@ package autowasp.checklist;
 import autowasp.Autowasp;
 
 import javax.swing.*;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 @SuppressWarnings("serial")
