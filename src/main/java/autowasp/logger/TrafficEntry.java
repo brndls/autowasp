@@ -21,19 +21,19 @@ import java.net.URL;
 
 public class TrafficEntry {
 
-	public final String flag;
-	public final HTTPRequestResponse requestResponse;
-	public final URL url;
-	public final TrafficInstance affectedInstancesList;
-	public final String evidence;
-	public final String trafficMsg;
-	
-	TrafficEntry(String flag, HTTPRequestResponse requestResponse, URL url, TrafficInstance affectedInstancesList, String evidence, String trafficMsg){
-		this.flag = flag;
-		this.requestResponse = requestResponse;
-		this.url = url;
-		this.affectedInstancesList = affectedInstancesList;
-		this.evidence = evidence;
-		this.trafficMsg = trafficMsg;
-	}
+    public final String flag;
+    public final HTTPRequestResponse requestResponse;
+    public final URL url;
+    public final TrafficInstance affectedInstancesList;
+    public final String evidence;
+    public final String trafficMsg;
+
+    TrafficEntry(String flag, HTTPRequestResponse requestResponse, URL url, TrafficInstance affectedInstancesList, String evidence, String trafficMsg){
+        this.flag = flag;
+        this.requestResponse = requestResponse;
+        this.url = url;
+        this.affectedInstancesList = affectedInstancesList;
+        this.evidence = evidence;
+        this.trafficMsg = trafficMsg;
+    }
 }

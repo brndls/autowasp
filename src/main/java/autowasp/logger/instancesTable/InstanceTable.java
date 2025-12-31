@@ -25,108 +25,108 @@ import javax.swing.table.TableModel;
 
 @SuppressWarnings("serial")
 public class InstanceTable extends JTable {
-	private final Autowasp extender;
-	private int currentRow;
+    private final Autowasp extender;
+    private int currentRow;
 
-	public InstanceTable(TableModel tableModel, Autowasp extender) {
-		super(tableModel);
-		this.extender = extender;
-		setColumnWidths(50, 80, 2500, 350, 150, 300, 150, Integer.MAX_VALUE);
-	}
+    public InstanceTable(TableModel tableModel, Autowasp extender) {
+        super(tableModel);
+        this.extender = extender;
+        setColumnWidths(50, 80, 2500, 350, 150, 300, 150, Integer.MAX_VALUE);
+    }
 
-	public void setColumnWidths(int... widths) {
-		for (int i = 0; i < widths.length; i += 2) {
-			if ((i / 2) < columnModel.getColumnCount()) {
-				columnModel.getColumn(i / 2).setPreferredWidth(widths[i]);
-				columnModel.getColumn(i / 2).setMaxWidth(widths[i + 1]);
-			} else
-				continue;
-		}
-	}
+    public void setColumnWidths(int... widths) {
+        for (int i = 0; i < widths.length; i += 2) {
+            if ((i / 2) < columnModel.getColumnCount()) {
+                columnModel.getColumn(i / 2).setPreferredWidth(widths[i]);
+                columnModel.getColumn(i / 2).setMaxWidth(widths[i + 1]);
+            } else
+                continue;
+        }
+    }
 
-	// Method for table view change selection
-	// Migrasi Montoya API: Menggunakan HttpRequestEditor.setRequest() dan
-	// HttpResponseEditor.setResponse()
-	@Override
-	public void changeSelection(int row, int col, boolean toggle, boolean extend) {
-		// show the log entry for the selected row
-		currentRow = row;
-		InstanceEntry instanceEntry = extender.instanceLog.get(row);
-		if (instanceEntry.isRequestResponseNull()) {
-			// Kosongkan editor jika tidak ada request/response
-			extender.extenderPanelUI.requestEditor.setRequest(
-					burp.api.montoya.http.message.requests.HttpRequest.httpRequest(""));
-			extender.extenderPanelUI.responseEditor.setResponse(
-					burp.api.montoya.http.message.responses.HttpResponse.httpResponse(""));
-		} else {
-			// Set request dan response ke editor
-			// Montoya API: HttpRequest.httpRequest(ByteArray) dan
-			// HttpResponse.httpResponse(ByteArray)
-			byte[] reqBytes = instanceEntry.requestResponse.getRequest();
-			byte[] resBytes = instanceEntry.requestResponse.getResponse();
+    // Method for table view change selection
+    // Montoya API Migration: Using HttpRequestEditor.setRequest() and
+    // HttpResponseEditor.setResponse()
+    @Override
+    public void changeSelection(int row, int col, boolean toggle, boolean extend) {
+        // show the log entry for the selected row
+        currentRow = row;
+        InstanceEntry instanceEntry = extender.instanceLog.get(row);
+        if (instanceEntry.isRequestResponseNull()) {
+            // Kosongkan editor jika tidak ada request/response
+            extender.extenderPanelUI.requestEditor.setRequest(
+                    burp.api.montoya.http.message.requests.HttpRequest.httpRequest(""));
+            extender.extenderPanelUI.responseEditor.setResponse(
+                    burp.api.montoya.http.message.responses.HttpResponse.httpResponse(""));
+        } else {
+            // Set request dan response ke editor
+            // Montoya API: HttpRequest.httpRequest(ByteArray) dan
+            // HttpResponse.httpResponse(ByteArray)
+            byte[] reqBytes = instanceEntry.requestResponse.getRequest();
+            byte[] resBytes = instanceEntry.requestResponse.getResponse();
 
-			extender.extenderPanelUI.requestEditor.setRequest(
-					burp.api.montoya.http.message.requests.HttpRequest.httpRequest(
-							burp.api.montoya.core.ByteArray.byteArray(reqBytes)));
-			extender.extenderPanelUI.responseEditor.setResponse(
-					burp.api.montoya.http.message.responses.HttpResponse.httpResponse(
-							burp.api.montoya.core.ByteArray.byteArray(resBytes)));
-		}
-		super.changeSelection(row, col, toggle, extend);
-		extender.extenderPanelUI.deleteInstanceButtonEnabled();
-	}
+            extender.extenderPanelUI.requestEditor.setRequest(
+                    burp.api.montoya.http.message.requests.HttpRequest.httpRequest(
+                            burp.api.montoya.core.ByteArray.byteArray(reqBytes)));
+            extender.extenderPanelUI.responseEditor.setResponse(
+                    burp.api.montoya.http.message.responses.HttpResponse.httpResponse(
+                            burp.api.montoya.core.ByteArray.byteArray(resBytes)));
+        }
+        super.changeSelection(row, col, toggle, extend);
+        extender.extenderPanelUI.deleteInstanceButtonEnabled();
+    }
 
-	// Method to setup confidence column with dropdown combo
-	public void setUpConfidenceColumn(TableColumn column) {
-		DefaultCellEditor dce = new DefaultCellEditor(extender.comboBox2);
-		column.setCellEditor(dce);
-	}
+    // Method to setup confidence column with dropdown combo
+    public void setUpConfidenceColumn(TableColumn column) {
+        DefaultCellEditor dce = new DefaultCellEditor(extender.comboBox2);
+        column.setCellEditor(dce);
+    }
 
-	// Method to setup Severity column with dropdown combo
-	public void setupSeverityColumn(TableColumn column) {
-		DefaultCellEditor dce = new DefaultCellEditor(extender.comboBox3);
-		column.setCellEditor(dce);
-	}
+    // Method to setup Severity column with dropdown combo
+    public void setupSeverityColumn(TableColumn column) {
+        DefaultCellEditor dce = new DefaultCellEditor(extender.comboBox3);
+        column.setCellEditor(dce);
+    }
 
-	// Method to prepare confidence dropdown combo
-	public void generateConfidenceList() {
-		JComboBox<String> comboBox = extender.comboBox2;
-		comboBox.addItem("False Positive");
-		comboBox.addItem("Certain");
-		comboBox.addItem("Firm");
-		comboBox.addItem("Tentative");
-	}
+    // Method to prepare confidence dropdown combo
+    public void generateConfidenceList() {
+        JComboBox<String> comboBox = extender.comboBox2;
+        comboBox.addItem("False Positive");
+        comboBox.addItem("Certain");
+        comboBox.addItem("Firm");
+        comboBox.addItem("Tentative");
+    }
 
-	// Method to prepare severity dropdown combo
-	public void generateSeverityList() {
-		JComboBox<String> comboBox = extender.comboBox3;
-		comboBox.addItem("High");
-		comboBox.addItem("Medium");
-		comboBox.addItem("Low");
-		comboBox.addItem("Information");
-	}
+    // Method to prepare severity dropdown combo
+    public void generateSeverityList() {
+        JComboBox<String> comboBox = extender.comboBox3;
+        comboBox.addItem("High");
+        comboBox.addItem("Medium");
+        comboBox.addItem("Low");
+        comboBox.addItem("Information");
+    }
 
-	// Method to delete instance
-	public void deleteInstance() {
-		// delete instance
-		extender.extenderPanelUI.deleteInstanceButton.setEnabled(false);
-		extender.loggerList.get(extender.currentEntryRow).getInstanceList().remove(currentRow);
-		// update UI
-		// If there are remaining instances
-		if (extender.loggerList.get(extender.currentEntryRow).getInstanceList().size() != 0) {
-			// Inform user about instance deletion
-			extender.extenderPanelUI.scanStatusLabel.setText("Instance deleted");
-			extender.issueAlert("Instance deleted");
-			// Repaint instances table
-			extender.instancesTableModel.clearInstanceEntryList();
-			extender.instancesTableModel
-					.addAllInstanceEntry(extender.loggerList.get(extender.currentEntryRow).instancesList);
-		}
-		// Else, no more instances left in entry
-		else {
-			// delete entries instead
-			extender.loggerTable.deleteEntry();
-		}
-	}
+    // Method to delete instance
+    public void deleteInstance() {
+        // delete instance
+        extender.extenderPanelUI.deleteInstanceButton.setEnabled(false);
+        extender.loggerList.get(extender.currentEntryRow).getInstanceList().remove(currentRow);
+        // update UI
+        // If there are remaining instances
+        if (extender.loggerList.get(extender.currentEntryRow).getInstanceList().size() != 0) {
+            // Inform user about instance deletion
+            extender.extenderPanelUI.scanStatusLabel.setText("Instance deleted");
+            extender.issueAlert("Instance deleted");
+            // Repaint instances table
+            extender.instancesTableModel.clearInstanceEntryList();
+            extender.instancesTableModel
+                    .addAllInstanceEntry(extender.loggerList.get(extender.currentEntryRow).instancesList);
+        }
+        // Else, no more instances left in entry
+        else {
+            // delete entries instead
+            extender.loggerTable.deleteEntry();
+        }
+    }
 
 }

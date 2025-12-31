@@ -22,81 +22,81 @@ import java.util.List;
 
 @SuppressWarnings("serial")
 public class InstancesTableModel extends AbstractTableModel{
-	private final List<InstanceEntry> listInstanceEntry;
-	private final String[] columnNames = { "ID", "Instance URL Path", "Confidence", "Severity" };
+    private final List<InstanceEntry> listInstanceEntry;
+    private final String[] columnNames = { "ID", "Instance URL Path", "Confidence", "Severity" };
 
-	public InstancesTableModel(List<InstanceEntry> listInstanceEntry) {
-		this.listInstanceEntry = listInstanceEntry;
-	}
+    public InstancesTableModel(List<InstanceEntry> listInstanceEntry) {
+        this.listInstanceEntry = listInstanceEntry;
+    }
 
-	// Method to get column count
-	@Override
-	public int getColumnCount() {
-		return columnNames.length;
-	}
+    // Method to get column count
+    @Override
+    public int getColumnCount() {
+        return columnNames.length;
+    }
 
-	// Method to get row count
-	@Override
-	public int getRowCount() {
-		return listInstanceEntry.size();
-	}
+    // Method to get row count
+    @Override
+    public int getRowCount() {
+        return listInstanceEntry.size();
+    }
 
-	// Method to get column name
-	public String getColumnName(int columnIndex) {
-		return columnNames[columnIndex];
-	}
+    // Method to get column name
+    public String getColumnName(int columnIndex) {
+        return columnNames[columnIndex];
+    }
 
-	// Method to get value at selected row and column
-	@Override
-	public String getValueAt(int rowIndex, int columnIndex) {
-		String returnValue = "";
-		InstanceEntry instanceEntry = listInstanceEntry.get(rowIndex);
-		switch (columnIndex) {
-			case 0:
-				returnValue = rowIndex + 1 + "";
-				break;
-			case 1:
-				returnValue = instanceEntry.url.toString();
-				break;
-			case 2:
-				returnValue = instanceEntry.confidence;
-				break;
-			case 3:
-				returnValue = instanceEntry.severity;
-				break;
-		}
-		
-		return returnValue;
-	}
+    // Method to get value at selected row and column
+    @Override
+    public String getValueAt(int rowIndex, int columnIndex) {
+        String returnValue = "";
+        InstanceEntry instanceEntry = listInstanceEntry.get(rowIndex);
+        switch (columnIndex) {
+            case 0:
+                returnValue = rowIndex + 1 + "";
+                break;
+            case 1:
+                returnValue = instanceEntry.url.toString();
+                break;
+            case 2:
+                returnValue = instanceEntry.confidence;
+                break;
+            case 3:
+                returnValue = instanceEntry.severity;
+                break;
+        }
 
-	// Method to set value at selected row and column
-	@Override
-	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		InstanceEntry instanceEntry = listInstanceEntry.get(rowIndex);
-		if (columnIndex == 2) {
-			instanceEntry.setConfidence((String) aValue);
-		}
-		if (columnIndex == 3){
-			instanceEntry.setSeverity((String) aValue);
-		}
-	}
+        return returnValue;
+    }
 
-	// Method to re-add all instances from existing list to table view
-	public void addAllInstanceEntry(List<InstanceEntry> listInstanceEntry) {
-		this.listInstanceEntry.addAll(listInstanceEntry);
-		this.fireTableDataChanged();
-	}
+    // Method to set value at selected row and column
+    @Override
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        InstanceEntry instanceEntry = listInstanceEntry.get(rowIndex);
+        if (columnIndex == 2) {
+            instanceEntry.setConfidence((String) aValue);
+        }
+        if (columnIndex == 3){
+            instanceEntry.setSeverity((String) aValue);
+        }
+    }
 
-	// Method to clear instance entry from table view
-	public void clearInstanceEntryList() {
-		this.listInstanceEntry.clear();
-	}
+    // Method to re-add all instances from existing list to table view
+    public void addAllInstanceEntry(List<InstanceEntry> listInstanceEntry) {
+        this.listInstanceEntry.addAll(listInstanceEntry);
+        this.fireTableDataChanged();
+    }
 
-	// Method to restrict editable cell to those with dropdown combo.
-	public boolean isCellEditable(int row, int col) {
-		if (col == 2)
-			return true;
-		else return col == 3;
-	}
+    // Method to clear instance entry from table view
+    public void clearInstanceEntryList() {
+        this.listInstanceEntry.clear();
+    }
+
+    // Method to restrict editable cell to those with dropdown combo.
+    public boolean isCellEditable(int row, int col) {
+        if (col == 2)
+            return true;
+        else return col == 3;
+    }
 
 }

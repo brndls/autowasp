@@ -25,7 +25,7 @@ import java.io.Serializable;
 
 /**
  * HTTP Request/Response Wrapper - Montoya API
- * 
+ *
  * Purpose: Serializable wrapper for HttpRequestResponse data.
  * Needed because Montoya's HttpRequestResponse is not serializable,
  * and we need to persist request/response data for project save/load.

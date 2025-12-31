@@ -28,16 +28,17 @@ import java.util.List;
 
 /**
  * Scan Issue Wrapper - Montoya API
- * 
- * Catatan Pembelajaran - Migrasi dari Legacy API:
- * 
+ *
+ * Learning Notes - Migration from Legacy API:
+ *
  * Legacy API:
- * - IScanIssue dengan getIssueBackground(), getRemediationBackground()
- * 
+ * - IScanIssue with getIssueBackground(), getRemediationBackground()
+ * - Using IScanIssue.getIssueDetail()
+ *
  * Montoya API:
- * - AuditIssue dengan definition() untuk mendapatkan background info
- * - Tidak ada method langsung background()/remediationBackground()
- * - Gunakan definition().description() dan definition().remediation()
+ * - AuditIssue with definition() to get background info
+ * - Use definition().description() and definition().remediation()Background()
+ * - Use definition().description() and definition().remediation()
  */
 public class ScanIssue {
 
@@ -53,7 +54,7 @@ public class ScanIssue {
     private final String remediationBackground;
 
     /**
-     * Constructor dari Montoya AuditIssue
+     * Constructor from Montoya AuditIssue
      */
     public ScanIssue(AuditIssue auditIssue) {
         this.name = auditIssue.name();
@@ -61,8 +62,8 @@ public class ScanIssue {
         this.severity = convertSeverity(auditIssue.severity());
         this.confidence = convertConfidence(auditIssue.confidence());
 
-        // Di Montoya API, background dan remediation background
-        // didapat dari definition() jika tersedia
+        // In Montoya API, background and remediation background
+        // are retrieved from definition() if available
         if (auditIssue.definition() != null) {
             this.background = auditIssue.definition().background() != null ? auditIssue.definition().background()
                     : "";
@@ -85,7 +86,7 @@ public class ScanIssue {
         }
         this.url = parsedUrl;
 
-        // Create HTTPService dari base URL
+        // Create HTTPService from base URL
         if (parsedUrl != null) {
             boolean secure = "https".equalsIgnoreCase(parsedUrl.getProtocol());
             int port = parsedUrl.getPort();
@@ -97,7 +98,7 @@ public class ScanIssue {
             this.httpService = null;
         }
 
-        // Convert HttpRequestResponse list ke HTTPRequestResponse array
+        // Convert HttpRequestResponse list to HTTPRequestResponse array
         List<HttpRequestResponse> requestResponses = auditIssue.requestResponses();
         List<HTTPRequestResponse> convertedList = new ArrayList<>();
         if (requestResponses != null) {
@@ -109,7 +110,7 @@ public class ScanIssue {
     }
 
     /**
-     * Konversi AuditIssueSeverity enum ke String
+     * Convert AuditIssueSeverity enum to String
      */
     private String convertSeverity(AuditIssueSeverity severity) {
         if (severity == null)
@@ -124,7 +125,7 @@ public class ScanIssue {
     }
 
     /**
-     * Konversi AuditIssueConfidence enum ke String
+     * Convert AuditIssueConfidence enum to String
      */
     private String convertConfidence(AuditIssueConfidence confidence) {
         if (confidence == null)

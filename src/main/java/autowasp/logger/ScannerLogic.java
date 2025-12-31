@@ -34,122 +34,124 @@ import java.util.ArrayList;
 
 /**
  * Scanner Logic - Montoya API
- * 
- * Catatan Pembelajaran - Migrasi dari Legacy API:
- * 
+ *
+ * Learning Notes - Migration from Legacy API:
+ *
  * Legacy API:
- * - IScanIssue dari callbacks.getScanIssues()
+ * - IScanIssue from callbacks.getScanIssues()
  * - callbacks.registerScannerListener()
- * 
+ *
  * Montoya API:
- * - AuditIssue dari AuditIssueHandler
+ * - AuditIssue from AuditIssueHandler
+ * - No direct access to "all scan issues" like legacy API
+ * - Must maintain own list of issues via AuditIssueHandler
  * - api.scanner().registerAuditIssueHandler()
- * 
+ *
  * Perubahan terminologi:
- * - Scanner → Audit
- * - ScanIssue → AuditIssue
+ * - Scanner -> Audit
+ * - ScanIssue -> AuditIssue
  */
 public class ScannerLogic {
-	private final Autowasp extender;
-	public final ArrayList<String> repeatedIssue;
+    private final Autowasp extender;
+    public final ArrayList<String> repeatedIssue;
 
-	public ArrayList<String> getRepeatedIssue() {
-		return repeatedIssue;
-	}
+    public ArrayList<String> getRepeatedIssue() {
+        return repeatedIssue;
+    }
 
-	public ScannerLogic(Autowasp extender) {
-		this.extender = extender;
-		this.repeatedIssue = new ArrayList<>();
-	}
+    public ScannerLogic(Autowasp extender) {
+        this.extender = extender;
+        this.repeatedIssue = new ArrayList<>();
+    }
 
-	/**
-	 * Method untuk log new instance dari AuditIssue (Montoya API)
-	 */
-	public void logNewInstance(AuditIssue auditIssue) {
-		// Konversi ke ScanIssue wrapper
-		ScanIssue issue = new ScanIssue(auditIssue);
-		logNewInstance(issue);
-	}
+    /**
+     * Method to log new instance of AuditIssue (Montoya API)
+     */
+    public void logNewInstance(AuditIssue auditIssue) {
+        // Convert to ScanIssue wrapper
+        ScanIssue issue = new ScanIssue(auditIssue);
+        logNewInstance(issue);
+    }
 
-	/**
-	 * Method untuk log new scan dari AuditIssue (Montoya API)
-	 */
-	public void logNewScan(AuditIssue auditIssue) {
-		// Konversi ke ScanIssue wrapper
-		ScanIssue issue = new ScanIssue(auditIssue);
-		logNewScan(issue);
-	}
+    /**
+     * Method to log new scan of AuditIssue (Montoya API)
+     */
+    public void logNewScan(AuditIssue auditIssue) {
+        // Convert to ScanIssue wrapper
+        ScanIssue issue = new ScanIssue(auditIssue);
+        logNewScan(issue);
+    }
 
-	/**
-	 * Method to log new instance to a particular issue
-	 */
-	public void logNewInstance(ScanIssue issue) {
-		// form up instances information
-		URL url = issue.getUrl();
-		String confidence = issue.getConfidence();
-		String severity = issue.getSeverity();
-		HTTPRequestResponse requestResponse = null;
+    /**
+     * Method to log new instance to a particular issue
+     */
+    public void logNewInstance(ScanIssue issue) {
+        // form up instances information
+        URL url = issue.getUrl();
+        String confidence = issue.getConfidence();
+        String severity = issue.getSeverity();
+        HTTPRequestResponse requestResponse = null;
 
-		if (issue.getHttpMessages() != null && issue.getHttpMessages().length != 0) {
-			requestResponse = issue.getHttpMessages()[0];
-		}
+        if (issue.getHttpMessages() != null && issue.getHttpMessages().length != 0) {
+            requestResponse = issue.getHttpMessages()[0];
+        }
 
-		InstanceEntry instance = new InstanceEntry(url, confidence, severity, requestResponse);
-		String issueHost = issue.getHttpService() != null ? issue.getHttpService().getHost() : "";
-		String issueVulnType = issue.getIssueName();
+        InstanceEntry instance = new InstanceEntry(url, confidence, severity, requestResponse);
+        String issueHost = issue.getHttpService() != null ? issue.getHttpService().getHost() : "";
+        String issueVulnType = issue.getIssueName();
 
-		for (LoggerEntry entry : this.extender.loggerList) {
-			if (entry.getHost().equals(issueHost) && entry.getVulnType().equals(issueVulnType)) {
-				boolean toAddFlag = true;
-				for (InstanceEntry ie : entry.getInstanceList()) {
-					// check if instanceList contain similar URL.
-					if (url != null && ie.getUrl().equals(url.toString())) {
-						// if url is not unique, set toAddFlag to false
-						toAddFlag = false;
-					}
-				}
-				// add new instance if toAddFlag is true
-				if (toAddFlag) {
-					entry.addInstance(instance);
-				}
-			}
-		}
-	}
+        for (LoggerEntry entry : this.extender.loggerList) {
+            if (entry.getHost().equals(issueHost) && entry.getVulnType().equals(issueVulnType)) {
+                boolean toAddFlag = true;
+                for (InstanceEntry ie : entry.getInstanceList()) {
+                    // check if instanceList contain similar URL.
+                    if (url != null && ie.getUrl().equals(url.toString())) {
+                        // if url is not unique, set toAddFlag to false
+                        toAddFlag = false;
+                    }
+                }
+                // add new instance if toAddFlag is true
+                if (toAddFlag) {
+                    entry.addInstance(instance);
+                }
+            }
+        }
+    }
 
-	/**
-	 * Method to log new scan entry
-	 */
-	public void logNewScan(ScanIssue issue) {
-		// Form scan issue information
-		String host = issue.getHttpService() != null ? issue.getHttpService().getHost() : "";
-		String action = "Burp Scanner";
-		String issueName = "";
-		String vulnType = issue.getIssueName();
-		String defaultComments = "Burp Scanner detected the following issue type: " + issue.getIssueName();
-		String evidences = issue.getIssueDetail();
-		if (evidences == null || evidences.isEmpty()) {
-			evidences = "Refer to affected instances Request and Response.";
-		}
-		Document document = Jsoup.parse(evidences);
-		evidences = document.text();
+    /**
+     * Method to log new scan entry
+     */
+    public void logNewScan(ScanIssue issue) {
+        // Form scan issue information
+        String host = issue.getHttpService() != null ? issue.getHttpService().getHost() : "";
+        String action = "Burp Scanner";
+        String issueName = "";
+        String vulnType = issue.getIssueName();
+        String defaultComments = "Burp Scanner detected the following issue type: " + issue.getIssueName();
+        String evidences = issue.getIssueDetail();
+        if (evidences == null || evidences.isEmpty()) {
+            evidences = "Refer to affected instances Request and Response.";
+        }
+        Document document = Jsoup.parse(evidences);
+        evidences = document.text();
 
-		LoggerEntry entry = new LoggerEntry(host, action, vulnType, issueName);
-		entry.instancesList.clear();
-		entry.setPenTesterComments(defaultComments);
-		entry.setEvidence(evidences);
-		extender.loggerTableModel.addAllLoggerEntry(entry);
-	}
+        LoggerEntry entry = new LoggerEntry(host, action, vulnType, issueName);
+        entry.instancesList.clear();
+        entry.setPenTesterComments(defaultComments);
+        entry.setEvidence(evidences);
+        extender.loggerTableModel.addAllLoggerEntry(entry);
+    }
 
-	/**
-	 * Extract existing scan issues (jika diperlukan)
-	 * 
-	 * Catatan: Di Montoya API, tidak ada metode langsung untuk mendapatkan
-	 * semua existing scan issues. Issues diterima melalui AuditIssueHandler
-	 * saat scan berjalan.
-	 */
-	public void extractExistingScan() {
-		// Di Montoya API, issues diterima melalui AuditIssueHandler
-		// Tidak ada callbacks.getScanIssues() equivalent
-		extender.logOutput("Listening for new audit issues...");
-	}
+    /**
+     * Extract existing scan issues (jika diperlukan)
+     *
+     * Note: In Montoya API, there is no direct method to get
+     * all scan issues. We must rely on our own list. AuditIssueHandler
+     * saat scan berjalan.
+     */
+    public void extractExistingScan() {
+        // In Montoya API, issues are received via AuditIssueHandler
+        // There is no callbacks.getScanIssues() equivalent
+        extender.logOutput("Listening for new audit issues...");
+    }
 }

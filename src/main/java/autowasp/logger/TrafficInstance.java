@@ -17,60 +17,60 @@
 package autowasp.logger;
 
 public class TrafficInstance {
-	
-	public boolean isUnencrypted;
-	public boolean isBase64;
-	public boolean isXContent;
-	public final boolean isServerInfoLeaked;
-	public boolean isServerErrorInfoLeaked;
-	public boolean isCorHeaders;
-	public final boolean isUnauthorisedDisclosure;
-	public final boolean isXSS;
-	public boolean isCGI;
-	public boolean isHTTPVerb;
-	
-	public TrafficInstance(){
-		this.isUnencrypted = false;
-		this.isBase64 = false;
-		this.isXContent = false;
-		this.isServerInfoLeaked = false;
-		this.isServerErrorInfoLeaked = false;
-		this.isCorHeaders = false;
-		this.isUnauthorisedDisclosure = false;
-		this.isXSS = false;
-		this.isCGI = false;
-		this.isHTTPVerb = false;
-	}
-	
-	public void setUnencrypted() {
-		this.isUnencrypted = true;
-	}
-	
-	public void setServerInfoLeaked() {
-		this.isServerErrorInfoLeaked = true;
-	}
-	
-	public void setServerErrorInfoLeaked() {
-		this.isServerErrorInfoLeaked = true;
-	}
-	
-	public void setCGI() {
-		this.isCGI = true;
-	}
-	
-	public void setBase64() {
-		this.isBase64 = true;
-	}
-	
-	public void setCorHeaders() {
-		this.isCorHeaders = true;
-	}
-	
-	public void setHttpVerb() {
-		this.isHTTPVerb = true;
-	}
-	
-	public void setXContentHeaders() {
-		this.isXContent = true;
-	}
+
+    public boolean isUnencrypted;
+    public boolean isBase64;
+    public boolean isXContent;
+    public final boolean isServerInfoLeaked;
+    public boolean isServerErrorInfoLeaked;
+    public boolean isCorHeaders;
+    public final boolean isUnauthorisedDisclosure;
+    public final boolean isXSS;
+    public boolean isCGI;
+    public boolean isHTTPVerb;
+
+    public TrafficInstance(){
+        this.isUnencrypted = false;
+        this.isBase64 = false;
+        this.isXContent = false;
+        this.isServerInfoLeaked = false;
+        this.isServerErrorInfoLeaked = false;
+        this.isCorHeaders = false;
+        this.isUnauthorisedDisclosure = false;
+        this.isXSS = false;
+        this.isCGI = false;
+        this.isHTTPVerb = false;
+    }
+
+    public void setUnencrypted() {
+        this.isUnencrypted = true;
+    }
+
+    public void setServerInfoLeaked() {
+        this.isServerErrorInfoLeaked = true;
+    }
+
+    public void setServerErrorInfoLeaked() {
+        this.isServerErrorInfoLeaked = true;
+    }
+
+    public void setCGI() {
+        this.isCGI = true;
+    }
+
+    public void setBase64() {
+        this.isBase64 = true;
+    }
+
+    public void setCorHeaders() {
+        this.isCorHeaders = true;
+    }
+
+    public void setHttpVerb() {
+        this.isHTTPVerb = true;
+    }
+
+    public void setXContentHeaders() {
+        this.isXContent = true;
+    }
 }

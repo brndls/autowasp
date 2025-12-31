@@ -35,23 +35,23 @@ import java.util.List;
 
 /**
  * Context Menu Factory - Montoya API
- * 
- * Catatan Pembelajaran - Migrasi dari Legacy API:
- * 
+ *
+ * Learning Notes - Migration from Legacy API:
+ *
  * Legacy API:
  * - implements IContextMenuFactory
- * - createMenuItems(IContextMenuInvocation invocation) -> List<JMenuItem>
- * - Menggunakan byte constants untuk context (CONTEXT_PROXY_HISTORY, dll)
- * 
+ * - createMenuItems(IContextMenuInvocation)
+ * - Using byte constants for context (CONTEXT_PROXY_HISTORY, etc)
+ *
  * Montoya API:
  * - implements ContextMenuItemsProvider
- * - provideMenuItems(ContextMenuEvent event) -> List<Component>
- * - Menggunakan enum InvocationSource untuk context
- * 
- * Keuntungan Montoya API:
- * 1. Enum lebih type-safe daripada byte constants
- * 2. Method names lebih consistent dengan Java conventions
- * 3. Akses ke requests/responses lebih straightforward
+ * - provideMenuItems(ContextMenuEvent)
+ * - Using InvocationSource enum for context
+ *
+ * Benefits:
+ * 1. Event object is richer and easier to use
+ * 2. Method names are more consistent with Java conventions
+ * 3. Access to requests/responses is more straightforward
  */
 public class ContextMenuFactory implements ContextMenuItemsProvider {
 
@@ -63,7 +63,7 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
 
     /**
      * Provide menu items berdasarkan context invocation
-     * Menggantikan createMenuItems() dari Legacy API
+     * Replaces createMenuItems() from Legacy API
      */
     @Override
     public List<Component> provideMenuItems(ContextMenuEvent event) {
@@ -76,12 +76,12 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
         List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
 
         if (selectedItems.isEmpty()) {
-            return menuItems; // Tidak ada item yang dipilih
+            return menuItems; // No item selected
         }
 
         JMenuItem item;
 
-        // Context menu untuk Proxy History
+        // Context menu for Proxy History
         if (invocationType == InvocationType.PROXY_HISTORY) {
             item = new JMenuItem("Send proxy finding to Autowasp", null);
             item.addActionListener(e -> {
@@ -91,7 +91,7 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
             });
             menuItems.add(item);
         }
-        // Context menu untuk Repeater - cek MESSAGE_EDITOR di Repeater
+        // Context menu for Repeater - check MESSAGE_EDITOR in Repeater
         else if (invocationType == InvocationType.MESSAGE_EDITOR_REQUEST ||
                 invocationType == InvocationType.MESSAGE_VIEWER_REQUEST) {
             item = new JMenuItem("Send repeater finding to Autowasp", null);
@@ -102,7 +102,7 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
             });
             menuItems.add(item);
         }
-        // Context menu untuk Intruder
+        // Context menu for Intruder
         else if (invocationType == InvocationType.INTRUDER_PAYLOAD_POSITIONS ||
                 invocationType == InvocationType.INTRUDER_ATTACK_RESULTS) {
             item = new JMenuItem("Send intruder finding to Autowasp", null);
@@ -118,8 +118,8 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
     }
 
     /**
-     * Mendapatkan comment dari annotations
-     * Montoya API menggunakan annotations() untuk mendapatkan notes
+     * Get comment from annotations
+     * Montoya API uses annotations() to get notes
      */
     private String getAnnotationsComment(HttpRequestResponse requestResponse) {
         if (requestResponse.annotations() != null &&
@@ -133,7 +133,7 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
      * Log finding ke Autowasp logger
      */
     private void logToAutowasp(String action, String comments, List<HttpRequestResponse> selectedItems) {
-        // Dapatkan host dari request pertama
+        // Get host from first request
         HttpRequestResponse firstItem = selectedItems.get(0);
         String host = firstItem.request().httpService().host();
 
@@ -145,11 +145,11 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
 
         for (HttpRequestResponse httpRequestResponse : selectedItems) {
             try {
-                // Buat URL dari request
+                // Create URL from request
                 URL url = java.net.URI.create(httpRequestResponse.request().url()).toURL();
                 extender.issueAlert("URL = " + url.toString());
 
-                // Buat instance entry dengan data dari Montoya API
+                // Create instance entry with data from Montoya API
                 InstanceEntry instanceEntry = new InstanceEntry(
                         url,
                         confidence,

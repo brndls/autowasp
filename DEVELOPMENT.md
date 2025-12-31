@@ -179,7 +179,7 @@ For any platform without the above tools.
 
 The JAR file will be created at:
 
-```
+```text
 build/libs/autowasp-jar-with-dependencies.jar
 ```
 
@@ -195,7 +195,7 @@ build/libs/autowasp-jar-with-dependencies.jar
 
 ## Project Structure
 
-```
+```text
 autowasp/
 ├── .devcontainer/          # DevContainer configuration
 ├── .envrc.example          # direnv template
@@ -217,6 +217,7 @@ autowasp/
 | `./gradlew build`        | Compile and build JAR    |
 | `./gradlew clean build`  | Clean build from scratch |
 | `./gradlew shadowJar`    | Build fat JAR only       |
+| `./gradlew spotlessApply`| Auto-format code         |
 | `./gradlew dependencies` | Show dependency tree     |
 
 ## Development Workflow

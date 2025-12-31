@@ -25,7 +25,7 @@ pkgs.mkShell {
 
   shellHook = ''
     # Set JAVA_HOME to Java 21 from Nix
-    export JAVA_HOME="${pkgs.openjdk21}/lib/openjdk"
+    export JAVA_HOME="${pkgs.openjdk21.home}"
     export GRADLE_USER_HOME="''${XDG_DATA_HOME:-$HOME/.local/share}/gradle"
 
     # Project-specific settings

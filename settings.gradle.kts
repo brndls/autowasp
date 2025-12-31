@@ -1,12 +1,11 @@
 /**
- * settings.gradle.kts - Konfigurasi Project Gradle
+ * settings.gradle.kts - Gradle Project Configuration
  * 
- * 📚 PEMBELAJARAN:
- * File ini mendefinisikan "identitas" project.
- * Untuk single project, hanya berisi nama project.
- * 
- * Untuk multi-project (monorepo), file ini juga mendefinisikan
- * sub-projects yang tergabung.
+ * 📚 LEARNING:
+ * Gradle project settings file.
+ * For single project, only contains project name.
+ * For multi-project (monorepo), this file also defines
+ * sub-projects included in the build.
  */
 
 rootProject.name = "autowasp"

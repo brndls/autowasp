@@ -22,22 +22,22 @@ import burp.api.montoya.proxy.http.ProxyResponseReceivedAction;
 import burp.api.montoya.proxy.http.ProxyResponseToBeSentAction;
 
 /**
- * Handler untuk Proxy Response - Montoya API
- * 
- * Catatan Pembelajaran - Migrasi dari Legacy API:
- * 
- * Legacy API menggunakan IProxyListener dengan method:
+ * Handler for Proxy Response - Montoya API
+ *
+ * Learning Notes - Migration from Legacy API:
+ *
+ * Legacy API uses IProxyListener with method:
  * - processProxyMessage(boolean messageIsRequest, IInterceptedProxyMessage
  * message)
- * 
- * Montoya API memisahkan menjadi dua handler:
- * - ProxyRequestHandler: untuk request yang masuk
- * - ProxyResponseHandler: untuk response yang keluar
- * 
- * Keuntungan Montoya API:
- * 1. Separation of concerns - request dan response terpisah
- * 2. Tipe yang lebih aman - tidak perlu cek messageIsRequest
- * 3. API yang lebih fluent - method chaining
+ *
+ * Montoya API uses ProxyRequestHandler and ProxyResponseHandler:
+ * - ProxyRequestHandler: for incoming requests
+ * - ProxyResponseHandler: for outgoing responses
+ *
+ * Benefits:
+ * 1. Separation of concerns - request and response are separated
+ * 2. Safer types - no need to check messageIsRequest
+ * 3. More fluent API - method chaining
  */
 public class AutowaspProxyResponseHandler implements ProxyResponseHandler {
 
@@ -48,8 +48,8 @@ public class AutowaspProxyResponseHandler implements ProxyResponseHandler {
     }
 
     /**
-     * Dipanggil saat response diterima dari server
-     * Menggantikan logika di processProxyMessage() dengan messageIsRequest = false
+     * Called when response is received from server
+     * Replaces logic in processProxyMessage() with messageIsRequest = false
      */
     @Override
     public ProxyResponseReceivedAction handleResponseReceived(InterceptedResponse interceptedResponse) {
@@ -59,7 +59,7 @@ public class AutowaspProxyResponseHandler implements ProxyResponseHandler {
 
             if (extender.isInScope(url)) {
                 synchronized (extender.trafficLog) {
-                    // Klasifikasi traffic menggunakan TrafficLogic
+                    // Classify traffic using TrafficLogic
                     extender.trafficLogic.classifyTraffic(interceptedResponse);
                 }
             }
@@ -72,8 +72,8 @@ public class AutowaspProxyResponseHandler implements ProxyResponseHandler {
     }
 
     /**
-     * Dipanggil sebelum response dikirim ke client
-     * Bisa digunakan untuk modifikasi response jika diperlukan
+     * Called before response is sent to client
+     * Can be used to modify response if needed
      */
     @Override
     public ProxyResponseToBeSentAction handleResponseToBeSent(InterceptedResponse interceptedResponse) {

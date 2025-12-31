@@ -16,22 +16,22 @@
 
 package autowasp;
 
-// Montoya API - package yang benar: scanner.audit bukan scanner.audit.issues
+// Montoya API - correct package: scanner.audit not scanner.audit.issues
 import burp.api.montoya.scanner.audit.AuditIssueHandler;
 import burp.api.montoya.scanner.audit.issues.AuditIssue;
 
 /**
- * Handler untuk Audit Issues - Montoya API
- * 
- * Catatan Pembelajaran - Migrasi dari Legacy API:
- * 
- * Legacy API menggunakan IScannerListener dengan method:
+ * Audit Issues Handler - Montoya API
+ *
+ * Learning Notes - Migration from Legacy API:
+ *
+ * Legacy API uses IScannerListener with method:
  * - newScanIssue(IScanIssue issue)
- * 
- * Montoya API menggunakan AuditIssueHandler dengan method:
+ *
+ * Montoya API uses AuditIssueHandler with method:
  * - handleNewAuditIssue(AuditIssue issue) - void return
- * 
- * Perbedaan terminologi:
+ *
+ * Terminology differences:
  * - Legacy: "Scanner" / "ScanIssue"
  * - Montoya: "Audit" / "AuditIssue"
  */
@@ -44,15 +44,16 @@ public class AutowaspAuditIssueHandler implements AuditIssueHandler {
     }
 
     /**
-     * Dipanggil saat ada audit/scan issue baru ditemukan
-     * Menggantikan newScanIssue() dari Legacy API
-     * 
-     * Note: Method ini void, tidak mengembalikan nilai
+     * Called when a new audit/scan issue is found
+     * Replaces newScanIssue() from Legacy API
+     *
+     * Note: This method is void, does not return a value
      */
+
     @Override
     public void handleNewAuditIssue(AuditIssue auditIssue) {
         try {
-            // Cek apakah URL dalam scope
+            // Check if URL is in scope
             String baseUrl = auditIssue.baseUrl();
 
             if (extender.isInScope(baseUrl)) {
@@ -60,7 +61,7 @@ public class AutowaspAuditIssueHandler implements AuditIssueHandler {
 
                 // Cek apakah issue sudah pernah di-log (avoid duplicate)
                 if (!extender.scannerLogic.getRepeatedIssue().contains(issueName)) {
-                    // Tambah ke daftar issue yang sudah di-log
+                    // Add to the list of logged issues
                     extender.scannerLogic.getRepeatedIssue().add(issueName);
 
                     // Alert user

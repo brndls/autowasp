@@ -27,89 +27,89 @@ import java.net.URL;
 
 /**
  * Instance Entry - Montoya API
- * 
- * Catatan Pembelajaran - Migrasi dari Legacy API:
- * 
+ *
+ * Learning Notes - Migration from Legacy API:
+ *
  * Legacy API:
- * - IHttpRequestResponse untuk menyimpan request/response
- * 
+ * - IHttpRequestResponse to store request/response
+ *
  * Montoya API:
- * - HttpRequestResponse untuk request/response
- * - Class ini menyimpan data dalam HTTPRequestResponse wrapper
- * yang lebih portable untuk serialisasi
+ * - HttpRequestResponse for request/response
+ * - Wrapper class is needed to maintain existing table structure
+ * which is more portable for serialization
  */
 public class InstanceEntry implements Serializable {
-	public int id = 0;
-	public final URL url;
-	public String confidence;
-	public String severity;
-	public final HTTPRequestResponse requestResponse;
-	final boolean falsePositive;
+    public int id = 0;
+    public final URL url;
+    public String confidence;
+    public String severity;
+    public final HTTPRequestResponse requestResponse;
+    final boolean falsePositive;
 
-	/**
-	 * Constructor dari HTTPRequestResponse wrapper (untuk backward compatibility)
-	 */
-	public InstanceEntry(URL url, String confidence, String severity, HTTPRequestResponse requestResponse) {
-		this.id = this.id + 1;
-		this.url = url;
-		this.confidence = confidence;
-		this.severity = severity;
-		this.requestResponse = requestResponse;
-		this.falsePositive = false;
-	}
+    /**
+     * Constructor from HTTPRequestResponse wrapper (for backward compatibility)
+     */
+    public InstanceEntry(URL url, String confidence, String severity, HTTPRequestResponse requestResponse) {
+        this.id = this.id + 1;
+        this.url = url;
+        this.confidence = confidence;
+        this.severity = severity;
+        this.requestResponse = requestResponse;
+        this.falsePositive = false;
+    }
 
-	/**
-	 * Constructor dari Montoya HttpRequestResponse
-	 */
-	public InstanceEntry(URL url, String confidence, String severity, HttpRequestResponse montoyaRequestResponse) {
-		this.id = this.id + 1;
-		this.url = url;
-		this.confidence = confidence;
-		this.severity = severity;
-		// Konversi ke HTTPRequestResponse wrapper
-		this.requestResponse = montoyaRequestResponse != null ? new HTTPRequestResponse(montoyaRequestResponse) : null;
-		this.falsePositive = false;
-	}
+    /**
+     * Constructor from Montoya HttpRequestResponse
+     */
+    public InstanceEntry(URL url, String confidence, String severity, HttpRequestResponse montoyaRequestResponse) {
+        this.id = this.id + 1;
+        this.url = url;
+        this.confidence = confidence;
+        this.severity = severity;
+        // Konversi ke HTTPRequestResponse wrapper
+        this.requestResponse = montoyaRequestResponse != null ? new HTTPRequestResponse(montoyaRequestResponse) : null;
+        this.falsePositive = false;
+    }
 
-	public void setConfidence(String confidence) {
-		this.confidence = confidence;
-	}
+    public void setConfidence(String confidence) {
+        this.confidence = confidence;
+    }
 
-	public String getConfidence() {
-		return this.confidence;
-	}
+    public String getConfidence() {
+        return this.confidence;
+    }
 
-	public void setSeverity(String severity) {
-		this.severity = severity;
-	}
+    public void setSeverity(String severity) {
+        this.severity = severity;
+    }
 
-	public String getSeverity() {
-		return severity;
-	}
+    public String getSeverity() {
+        return severity;
+    }
 
-	/**
-	 * Mendapatkan request/response wrapper
-	 * Menggantikan getResReq() yang mengembalikan IHttpRequestResponse
-	 */
-	public HTTPRequestResponse getRequestResponse() {
-		return this.requestResponse;
-	}
+    /**
+     * Mendapatkan request/response wrapper
+     * Replaces getResReq() which returns IHttpRequestResponse
+     */
+    public HTTPRequestResponse getRequestResponse() {
+        return this.requestResponse;
+    }
 
-	/**
-	 * Getter lama untuk backward compatibility
-	 * 
-	 * @deprecated Gunakan getRequestResponse() untuk Montoya API
-	 */
-	@Deprecated
-	public HTTPRequestResponse getResReq() {
-		return this.requestResponse;
-	}
+    /**
+     * Old getter for backward compatibility
+     *
+     * @deprecated Use getRequestResponse() for Montoya API
+     */
+    @Deprecated
+    public HTTPRequestResponse getResReq() {
+        return this.requestResponse;
+    }
 
-	public boolean isRequestResponseNull() {
-		return this.requestResponse == null;
-	}
+    public boolean isRequestResponseNull() {
+        return this.requestResponse == null;
+    }
 
-	public String getUrl() {
-		return url != null ? url.toString() : "";
-	}
+    public String getUrl() {
+        return url != null ? url.toString() : "";
+    }
 }

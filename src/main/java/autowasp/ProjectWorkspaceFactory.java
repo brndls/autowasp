@@ -25,203 +25,203 @@ import java.util.List;
 import java.util.ListIterator;
 
 public class ProjectWorkspaceFactory implements Serializable {
-	private final Autowasp extender;
-	
-	public ProjectWorkspaceFactory(Autowasp extender){
-		this.extender = extender;
-	}
+    private final Autowasp extender;
 
-	// Method to save project to file directory
-	public void saveFile(String absoluteFilePath) throws IOException {
-		FileOutputStream fileOutputStream = null;
-		try{
-			fileOutputStream = new FileOutputStream(absoluteFilePath + File.separator + "autowasp_project.ser");
-			ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
-			for (LoggerEntry loggerEntry : extender.loggerList) {
-				outputStream.writeObject(loggerEntry);
-			}
-			outputStream.close();
-			extender.extenderPanelUI.scanStatusLabel.setText("File saved to " + absoluteFilePath + File.separator + "autowasp_project.ser");
-			extender.issueAlert("File saved to " + absoluteFilePath + File.separator + "autowasp_project.ser");
-		}
-		finally {
-			if (fileOutputStream !=null){
-				safeClose(fileOutputStream);
-			}
-		}
-	}
+    public ProjectWorkspaceFactory(Autowasp extender){
+        this.extender = extender;
+    }
 
-	// Method to obtain file directory
-	public void readFromFile(String absoluteFilePath) {
-		boolean eof = false;
-		LoggerEntry loggerEntryTemp;
-		extender.loggerTableModel.clearLoggerList();
-		List<LoggerEntry> loggerEntryList = new List<LoggerEntry>() {
-			@Override
-			public int size() {
-				return 0;
-			}
+    // Method to save project to file directory
+    public void saveFile(String absoluteFilePath) throws IOException {
+        FileOutputStream fileOutputStream = null;
+        try{
+            fileOutputStream = new FileOutputStream(absoluteFilePath + File.separator + "autowasp_project.ser");
+            ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
+            for (LoggerEntry loggerEntry : extender.loggerList) {
+                outputStream.writeObject(loggerEntry);
+            }
+            outputStream.close();
+            extender.extenderPanelUI.scanStatusLabel.setText("File saved to " + absoluteFilePath + File.separator + "autowasp_project.ser");
+            extender.issueAlert("File saved to " + absoluteFilePath + File.separator + "autowasp_project.ser");
+        }
+        finally {
+            if (fileOutputStream !=null){
+                safeClose(fileOutputStream);
+            }
+        }
+    }
 
-			@Override
-			public boolean isEmpty() {
-				return false;
-			}
+    // Method to obtain file directory
+    public void readFromFile(String absoluteFilePath) {
+        boolean eof = false;
+        LoggerEntry loggerEntryTemp;
+        extender.loggerTableModel.clearLoggerList();
+        List<LoggerEntry> loggerEntryList = new List<LoggerEntry>() {
+            @Override
+            public int size() {
+                return 0;
+            }
 
-			@Override
-			public boolean contains(Object o) {
-				return false;
-			}
+            @Override
+            public boolean isEmpty() {
+                return false;
+            }
 
-			@Override
-			public Iterator<LoggerEntry> iterator() {
-				return null;
-			}
+            @Override
+            public boolean contains(Object o) {
+                return false;
+            }
 
-			@Override
-			public Object[] toArray() {
-				return new Object[0];
-			}
+            @Override
+            public Iterator<LoggerEntry> iterator() {
+                return null;
+            }
 
-			@Override
-			public <T> T[] toArray(T[] a) {
-				return null;
-			}
+            @Override
+            public Object[] toArray() {
+                return new Object[0];
+            }
 
-			@Override
-			public boolean add(LoggerEntry loggerEntry) {
-				return false;
-			}
+            @Override
+            public <T> T[] toArray(T[] a) {
+                return null;
+            }
 
-			@Override
-			public boolean remove(Object o) {
-				return false;
-			}
+            @Override
+            public boolean add(LoggerEntry loggerEntry) {
+                return false;
+            }
 
-			@Override
-			public boolean containsAll(Collection<?> c) {
-				return false;
-			}
+            @Override
+            public boolean remove(Object o) {
+                return false;
+            }
 
-			@Override
-			public boolean addAll(Collection<? extends LoggerEntry> c) {
-				return false;
-			}
+            @Override
+            public boolean containsAll(Collection<?> c) {
+                return false;
+            }
 
-			@Override
-			public boolean addAll(int index, Collection<? extends LoggerEntry> c) {
-				return false;
-			}
+            @Override
+            public boolean addAll(Collection<? extends LoggerEntry> c) {
+                return false;
+            }
 
-			@Override
-			public boolean removeAll(Collection<?> c) {
-				return false;
-			}
+            @Override
+            public boolean addAll(int index, Collection<? extends LoggerEntry> c) {
+                return false;
+            }
 
-			@Override
-			public boolean retainAll(Collection<?> c) {
-				return false;
-			}
+            @Override
+            public boolean removeAll(Collection<?> c) {
+                return false;
+            }
 
-			@Override
-			public void clear() {
+            @Override
+            public boolean retainAll(Collection<?> c) {
+                return false;
+            }
 
-			}
+            @Override
+            public void clear() {
 
-			@Override
-			public LoggerEntry get(int index) {
-				return null;
-			}
+            }
 
-			@Override
-			public LoggerEntry set(int index, LoggerEntry element) {
-				return null;
-			}
+            @Override
+            public LoggerEntry get(int index) {
+                return null;
+            }
 
-			@Override
-			public void add(int index, LoggerEntry element) {
+            @Override
+            public LoggerEntry set(int index, LoggerEntry element) {
+                return null;
+            }
 
-			}
+            @Override
+            public void add(int index, LoggerEntry element) {
 
-			@Override
-			public LoggerEntry remove(int index) {
-				return null;
-			}
+            }
 
-			@Override
-			public int indexOf(Object o) {
-				return 0;
-			}
+            @Override
+            public LoggerEntry remove(int index) {
+                return null;
+            }
 
-			@Override
-			public int lastIndexOf(Object o) {
-				return 0;
-			}
+            @Override
+            public int indexOf(Object o) {
+                return 0;
+            }
 
-			@Override
-			public ListIterator<LoggerEntry> listIterator() {
-				return null;
-			}
+            @Override
+            public int lastIndexOf(Object o) {
+                return 0;
+            }
 
-			@Override
-			public ListIterator<LoggerEntry> listIterator(int index) {
-				return null;
-			}
+            @Override
+            public ListIterator<LoggerEntry> listIterator() {
+                return null;
+            }
 
-			@Override
-			public List<LoggerEntry> subList(int fromIndex, int toIndex) {
-				return null;
-			}
-		};
-		FileInputStream fileInputStream = null;
-		try {
-			fileInputStream = new FileInputStream(absoluteFilePath);
-			ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            @Override
+            public ListIterator<LoggerEntry> listIterator(int index) {
+                return null;
+            }
 
-			while(!eof){
-				try {
-					loggerEntryTemp = (LoggerEntry) objectInputStream.readObject();
-					loggerEntryList.add(loggerEntryTemp);
-					extender.loggerTableModel.addAllLoggerEntry(loggerEntryTemp);
-					extender.scannerLogic.repeatedIssue.add(loggerEntryTemp.getVulnType());
-				} catch (EOFException e) {
-					eof = true;
-				}
-			}
-			objectInputStream.close();
-		} catch (FileNotFoundException e){
-			extender.logOutput("File not found");
-		} catch (IOException e){
-			extender.logOutput("Cannot read file");
-		} catch (ClassNotFoundException e)
-		{
-			extender.logOutput("LoggerEntry class not found");
-		}
-		finally {
-			if (fileInputStream != null){
-				safeClose(fileInputStream);
-			}
-		}
-	}
+            @Override
+            public List<LoggerEntry> subList(int fromIndex, int toIndex) {
+                return null;
+            }
+        };
+        FileInputStream fileInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(absoluteFilePath);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
-	// Method for save closing of FileOutputStream
-	public  void safeClose(FileOutputStream fos) {
-		if (fos != null) {
-			try {
-				fos.close();
-			} catch (IOException e) {
-				extender.logOutput("FileOutputStream cannot safe close");
-			}
-		}
-	}
+            while(!eof){
+                try {
+                    loggerEntryTemp = (LoggerEntry) objectInputStream.readObject();
+                    loggerEntryList.add(loggerEntryTemp);
+                    extender.loggerTableModel.addAllLoggerEntry(loggerEntryTemp);
+                    extender.scannerLogic.repeatedIssue.add(loggerEntryTemp.getVulnType());
+                } catch (EOFException e) {
+                    eof = true;
+                }
+            }
+            objectInputStream.close();
+        } catch (FileNotFoundException e){
+            extender.logOutput("File not found");
+        } catch (IOException e){
+            extender.logOutput("Cannot read file");
+        } catch (ClassNotFoundException e)
+        {
+            extender.logOutput("LoggerEntry class not found");
+        }
+        finally {
+            if (fileInputStream != null){
+                safeClose(fileInputStream);
+            }
+        }
+    }
 
-	// Method for save closing of FileInputStream
-	public  void safeClose(FileInputStream fis) {
-		if (fis != null) {
-			try {
-				fis.close();
-			} catch (IOException e) {
-				extender.logOutput("FileInputStream cannot safe close");
-			}
-		}
-	}
+    // Method for save closing of FileOutputStream
+    public  void safeClose(FileOutputStream fos) {
+        if (fos != null) {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                extender.logOutput("FileOutputStream cannot safe close");
+            }
+        }
+    }
+
+    // Method for save closing of FileInputStream
+    public  void safeClose(FileInputStream fis) {
+        if (fis != null) {
+            try {
+                fis.close();
+            } catch (IOException e) {
+                extender.logOutput("FileInputStream cannot safe close");
+            }
+        }
+    }
 }

@@ -19,6 +19,18 @@
 plugins {
     java
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.diffplug.spotless") version "6.25.0"
+}
+
+spotless {
+    java {
+        // palantirJavaFormat() -> Still failing, fallback to basic rules (KISS)
+        indentWithSpaces(4)
+        trimTrailingWhitespace()
+        endWithNewline()
+        removeUnusedImports()
+        target("src/**/*.java")
+    }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -74,8 +86,8 @@ repositories {
  */
 dependencies {
     // Burp Suite Montoya API - compile-only since Burp Suite provides it at runtime
-    // Montoya API adalah pengganti modern untuk Legacy Extender API
-    // Dokumentasi: https://portswigger.github.io/burp-extensions-montoya-api/javadoc/
+    // Montoya API is the modern replacement for the Legacy Extender API
+    // Documentation: https://portswigger.github.io/burp-extensions-montoya-api/javadoc/
     compileOnly("net.portswigger.burp.extensions:montoya-api:2025.12")
 
     // Apache Commons Collections - utilities for Collection types

@@ -35,25 +35,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Extender Panel UI - Montoya API
- * 
- * Catatan Pembelajaran - Migrasi dari Legacy API:
- * 
+ *
+ * Learning Notes - Migration from Legacy API:
+ *
  * Legacy API:
- * - IMessageEditor dari callbacks.createMessageEditor()
- * - callbacks.includeInScope() untuk scope
- * - callbacks.issueAlert() untuk alert
- * 
+ * - IMessageEditor from callbacks.createMessageEditor()
+ * - callbacks.includeInScope() for scope
+ * - callbacks.issueAlert() for alert
+ *
  * Montoya API:
- * - HttpRequestEditor dan HttpResponseEditor terpisah
- * - api.scope().includeInScope() untuk scope
- * - api.logging().logToOutput() untuk output
+ * - HttpRequestEditor and HttpResponseEditor are separate
+ * - api.scope().includeInScope() for scope
+ * - api.logging().logToOutput() for output
  */
 public class ExtenderPanelUI implements Runnable {
 
     private final Autowasp extender;
     private JSplitPane gtScannerSplitPane;
 
-    // Montoya API: MessageEditor terpisah untuk request dan response
+    // Montoya API: Separate MessageEditor for request and response
     public HttpRequestEditor requestEditor;
     public HttpResponseEditor responseEditor;
 
@@ -271,7 +271,8 @@ public class ExtenderPanelUI implements Runnable {
                 scanStatusLabel.setText("Please fetch the checklist from the web first");
                 extender.issueAlert("Please fetch the checklist from the web first");
             } else {
-                final int userOption = destDirChooser.showSaveDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
+                final int userOption = destDirChooser
+                        .showSaveDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
 
                 if (userOption == JFileChooser.APPROVE_OPTION) {
                     checklistDestDir = destDirChooser.getSelectedFile();
@@ -293,7 +294,8 @@ public class ExtenderPanelUI implements Runnable {
                 scanStatusLabel.setText("Please fetch the checklist from the web first");
                 extender.issueAlert("Please fetch the checklist from the web first");
             } else {
-                final int userOption = destDirChooser.showSaveDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
+                final int userOption = destDirChooser
+                        .showSaveDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
 
                 if (userOption == JFileChooser.APPROVE_OPTION) {
                     checklistDestDir = destDirChooser.getSelectedFile();
@@ -309,7 +311,8 @@ public class ExtenderPanelUI implements Runnable {
         // Save project button
         JButton saveCurrentProjectButton = new JButton("Save Project");
         saveCurrentProjectButton.addActionListener(e -> {
-            final int userOption = destDirChooser.showSaveDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
+            final int userOption = destDirChooser
+                    .showSaveDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
 
             if (userOption == JFileChooser.APPROVE_OPTION) {
                 checklistDestDir = destDirChooser.getSelectedFile();
@@ -323,7 +326,8 @@ public class ExtenderPanelUI implements Runnable {
 
         loadProjectButton = new JButton("Load Project");
         loadProjectButton.addActionListener(e -> {
-            final int userOption = fileChooser.showOpenDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
+            final int userOption = fileChooser
+                    .showOpenDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
 
             if (userOption == JFileChooser.APPROVE_OPTION) {
                 File chosenFile = fileChooser.getSelectedFile();

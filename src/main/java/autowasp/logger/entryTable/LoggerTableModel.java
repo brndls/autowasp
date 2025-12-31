@@ -19,82 +19,82 @@ import java.util.List;
 
 @SuppressWarnings("serial")
 public class LoggerTableModel extends AbstractTableModel{
-	private final List<LoggerEntry> listFindingEntry;
+    private final List<LoggerEntry> listFindingEntry;
     private final String[] columnNames = { "#", "Host", "Action", "Vuln Type", "Mapped to OWASP WSTG" };
-	
-	public LoggerTableModel(List<LoggerEntry> listFindingEntry) {
-		this.listFindingEntry = listFindingEntry;
-	}
 
-	// Method to get column count
-	@Override
-	public int getColumnCount() {
-		return columnNames.length;
-	}
+    public LoggerTableModel(List<LoggerEntry> listFindingEntry) {
+        this.listFindingEntry = listFindingEntry;
+    }
 
-	// Method to get row count
-	@Override
-	public int getRowCount() {
-		return listFindingEntry.size();
-	}
+    // Method to get column count
+    @Override
+    public int getColumnCount() {
+        return columnNames.length;
+    }
 
-	// Method to get column name
-	public String getColumnName(int columnIndex) {
+    // Method to get row count
+    @Override
+    public int getRowCount() {
+        return listFindingEntry.size();
+    }
+
+    // Method to get column name
+    public String getColumnName(int columnIndex) {
         return columnNames[columnIndex];
-	}
+    }
 
-	// Method to get value at selected row and column
-	@Override
-	public String getValueAt(int rowIndex, int columnIndex) {
-		String returnValue = "";
-		LoggerEntry loggerEntry = listFindingEntry.get(rowIndex);
-		switch (columnIndex) {
-			case 0:
-				returnValue = rowIndex + 1 + "";
-				break;
-			case 1:
-				returnValue = loggerEntry.host;
-				break;
-			case 2:
-				returnValue = loggerEntry.action;
-				break;
-			case 3:
-				returnValue = loggerEntry.vulnType;
-				break;
-			case 4:
-				returnValue = loggerEntry.checklistIssue;
-				break;
-		}
-		return returnValue;
-	}
+    // Method to get value at selected row and column
+    @Override
+    public String getValueAt(int rowIndex, int columnIndex) {
+        String returnValue = "";
+        LoggerEntry loggerEntry = listFindingEntry.get(rowIndex);
+        switch (columnIndex) {
+            case 0:
+                returnValue = rowIndex + 1 + "";
+                break;
+            case 1:
+                returnValue = loggerEntry.host;
+                break;
+            case 2:
+                returnValue = loggerEntry.action;
+                break;
+            case 3:
+                returnValue = loggerEntry.vulnType;
+                break;
+            case 4:
+                returnValue = loggerEntry.checklistIssue;
+                break;
+        }
+        return returnValue;
+    }
 
-	// Method to set value at selected row and column
-	@Override
-	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		LoggerEntry loggerEntry = listFindingEntry.get(rowIndex);
-		if (columnIndex == 4) {
-			loggerEntry.setChecklistIssue((String) aValue);
-		}
-	}
+    // Method to set value at selected row and column
+    @Override
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        LoggerEntry loggerEntry = listFindingEntry.get(rowIndex);
+        if (columnIndex == 4) {
+            loggerEntry.setChecklistIssue((String) aValue);
+        }
+    }
 
-	// Method to clear instance entry from table view
-	public void clearLoggerList() {
-		this.listFindingEntry.clear();
-	}
+    // Method to clear instance entry from table view
+    public void clearLoggerList() {
+        this.listFindingEntry.clear();
+    }
 
-	// Method to re-add all entry from existing list to table view
-	public void addAllLoggerEntry(LoggerEntry loggerEntry) {
-		this.listFindingEntry.add(loggerEntry);
-		this.fireTableDataChanged();
-	}
+    // Method to re-add all entry from existing list to table view
+    public void addAllLoggerEntry(LoggerEntry loggerEntry) {
+        this.listFindingEntry.add(loggerEntry);
+        this.fireTableDataChanged();
+    }
 
-	// Method to update entry in table view
-	public void updateLoggerEntryTable() {
-		this.fireTableDataChanged();
-	}
+    // Method to update entry in table view
+    public void updateLoggerEntryTable() {
+        this.fireTableDataChanged();
+    }
 
-	// Method to restrict editable cell to those with dropdown combo.
-	public boolean isCellEditable(int row, int col) {
-		return col == 4;
-	}
+    // Method to restrict editable cell to those with dropdown combo.
+    public boolean isCellEditable(int row, int col) {
+        return col == 4;
+    }
 }

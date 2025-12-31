@@ -21,81 +21,81 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class LoggerEntry implements Serializable {
-	
-	public final String host;
-	public final String action;
-	public final String vulnType;
-	public String checklistIssue;
-	public final ArrayList<InstanceEntry> instancesList;
-	public String penTesterComments;
-	public String evidences;
-	public final Integer issueNumber; //Points to the test case in the OWASP checklist that the user maps this particular finding to
-	
-	public LoggerEntry(String host, String action, String vulnType, String checklistIssue){
-		this.host = host;
-		this.action = action;
-		this.vulnType = vulnType;
-		this.checklistIssue = checklistIssue;
-		this.issueNumber = null;
-		instancesList = new ArrayList<>();
-		penTesterComments = "Please insert comments";
-		evidences = "nil";
-	}
-	
-	public LoggerEntry(String host, String action, String vulnType, String checklistIssue, String comments){
-		this.host = host;
-		this.action = action;
-		this.vulnType = vulnType;
-		this.checklistIssue = checklistIssue;
-		this.issueNumber = null;
-		instancesList = new ArrayList<>();
-		penTesterComments = comments;
-		evidences = "Please insert evidences";
-	}
 
-	public String getHost(){ return this.host;}
+    public final String host;
+    public final String action;
+    public final String vulnType;
+    public String checklistIssue;
+    public final ArrayList<InstanceEntry> instancesList;
+    public String penTesterComments;
+    public String evidences;
+    public final Integer issueNumber; //Points to the test case in the OWASP checklist that the user maps this particular finding to
 
-	public String getChecklistIssue() {
-		return this.checklistIssue;
-	}
-	
-	public void setChecklistIssue(String checklistIssue) {
-		this.checklistIssue = checklistIssue;
-	}
-	
-	public void setPenTesterComments(String penTesterComments) {
-		this.penTesterComments = penTesterComments;
-	}
-	
-	public String getPenTesterComments() {
-		return this.penTesterComments;
-	}
-	
-	public void setEvidence(String evidence) {
-		this.evidences = evidence;
-	}
-	
-	public String getEvidence() {
-		return this.evidences;
-	}
-	
-	public ArrayList<InstanceEntry> getInstanceList() {
-		return this.instancesList;
-	}
-	
-	public void addInstance(InstanceEntry instance) {
-		this.instancesList.add(instance);
-	}
+    public LoggerEntry(String host, String action, String vulnType, String checklistIssue){
+        this.host = host;
+        this.action = action;
+        this.vulnType = vulnType;
+        this.checklistIssue = checklistIssue;
+        this.issueNumber = null;
+        instancesList = new ArrayList<>();
+        penTesterComments = "Please insert comments";
+        evidences = "nil";
+    }
 
-	public int getIssueNumber() {
-		return this.issueNumber;
-	}
+    public LoggerEntry(String host, String action, String vulnType, String checklistIssue, String comments){
+        this.host = host;
+        this.action = action;
+        this.vulnType = vulnType;
+        this.checklistIssue = checklistIssue;
+        this.issueNumber = null;
+        instancesList = new ArrayList<>();
+        penTesterComments = comments;
+        evidences = "Please insert evidences";
+    }
 
-	public String getVulnType() {
-		return vulnType;
-	}
+    public String getHost(){ return this.host;}
 
-	public String toString() {
-		return "host: " + this.host +  ";action: " + this.action + ";issue: " + this.checklistIssue;
-	}
+    public String getChecklistIssue() {
+        return this.checklistIssue;
+    }
+
+    public void setChecklistIssue(String checklistIssue) {
+        this.checklistIssue = checklistIssue;
+    }
+
+    public void setPenTesterComments(String penTesterComments) {
+        this.penTesterComments = penTesterComments;
+    }
+
+    public String getPenTesterComments() {
+        return this.penTesterComments;
+    }
+
+    public void setEvidence(String evidence) {
+        this.evidences = evidence;
+    }
+
+    public String getEvidence() {
+        return this.evidences;
+    }
+
+    public ArrayList<InstanceEntry> getInstanceList() {
+        return this.instancesList;
+    }
+
+    public void addInstance(InstanceEntry instance) {
+        this.instancesList.add(instance);
+    }
+
+    public int getIssueNumber() {
+        return this.issueNumber;
+    }
+
+    public String getVulnType() {
+        return vulnType;
+    }
+
+    public String toString() {
+        return "host: " + this.host +  ";action: " + this.action + ";issue: " + this.checklistIssue;
+    }
 }

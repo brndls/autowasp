@@ -23,23 +23,23 @@ import java.io.Serializable;
 
 /**
  * HTTP Service Wrapper - Montoya API
- * 
- * Catatan Pembelajaran - Migrasi dari Legacy API:
- * 
+ *
+ * Learning Notes - Migration from Legacy API:
+ *
  * Legacy API:
  * - implements IHttpService
  * - Methods: getHost(), getPort(), getProtocol()
- * 
+ *
  * Montoya API:
- * - HttpService adalah interface yang sudah ada
- * - Class ini sekarang menjadi simple POJO untuk menyimpan data
- * - Tidak perlu implement interface karena HttpService di Montoya
- * sudah menyediakan akses langsung
- * 
- * Pendekatan:
- * - Simpan data dari HttpService Montoya ke local fields
- * - Provide getter methods untuk akses data
- * - Tetap Serializable untuk persistensi
+ * - HttpService is an existing interface from the Montoya API
+ * - Java class is now a simple POJO for data storage
+ * - No need to implement interface as Montoya HttpService
+ * provides direct access
+ *
+ * Approach:
+ * - Store data from Montoya HttpService into local fields
+ * - Provide getter methods for data access
+ * - Remains Serializable for persistence
  */
 public class HTTPService implements Serializable {
 
@@ -50,7 +50,7 @@ public class HTTPService implements Serializable {
     private final boolean secure;
 
     /**
-     * Constructor dari Montoya HttpService
+     * Constructor from Montoya HttpService
      */
     public HTTPService(HttpService httpService) {
         this.host = httpService.host();
@@ -59,7 +59,7 @@ public class HTTPService implements Serializable {
     }
 
     /**
-     * Constructor manual untuk kasus khusus
+     * Manual constructor for special cases
      */
     public HTTPService(String host, int port, boolean secure) {
         this.host = host;
@@ -79,7 +79,7 @@ public class HTTPService implements Serializable {
     }
 
     /**
-     * Di Montoya API, protokol ditentukan oleh flag secure
+     * In Montoya API, protocol is determined by the secure flag
      * true = https, false = http
      */
     public String getProtocol() {
