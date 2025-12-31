@@ -29,7 +29,7 @@ plugins {
  * - version: Software version (SNAPSHOT = still in development)
  */
 group = "autowasp"
-version = "1.0-SNAPSHOT"
+version = "2.0.0"
 
 // ════════════════════════════════════════════════════════════════════════════
 // JAVA CONFIGURATION
