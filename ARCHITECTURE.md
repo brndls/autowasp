@@ -14,6 +14,17 @@ Autowasp is an extension for Burp Suite Professional that provides:
 
 ---
 
+## Technology Stack
+
+| Component    | Technology              |
+| ------------ | ----------------------- |
+| API          | Montoya API 2025.12     |
+| Language     | Java 21                 |
+| Build System | Gradle                  |
+| Dependencies | Apache POI, Jsoup, GSON |
+
+---
+
 ## Main Class/Package Diagram
 
 The following diagram shows the main class structure and relationships between components:
@@ -22,24 +33,33 @@ The following diagram shows the main class structure and relationships between c
 classDiagram
     direction TB
     
-    class BurpExtender {
-        +main(String[] args)
-    }
-    
     class Autowasp {
-        +IBurpExtenderCallbacks callbacks
-        +IExtensionHelpers helpers
+        +MontoyaApi api
+        +Logging logging
         +TrafficLogic trafficLogic
         +ScannerLogic scannerLogic
         +ChecklistLogic checklistLogic
         +ExtenderPanelUI extenderPanelUI
         +ProjectWorkspaceFactory projectWorkspace
-        +registerExtenderCallbacks()
-        +newScanIssue()
-        +processProxyMessage()
+        +initialize(MontoyaApi api)
+        +getApi()
+        +logOutput()
+        +logError()
+        +isInScope()
+    }
+    
+    class AutowaspProxyResponseHandler {
+        +handleResponseReceived()
+        +handleResponseToBeSent()
+    }
+    
+    class AutowaspAuditIssueHandler {
+        +handleNewAuditIssue()
     }
     
     class ExtenderPanelUI {
+        +HttpRequestEditor requestEditor
+        +HttpResponseEditor responseEditor
         +run()
         -buildChecklistPanel()
         -buildLoggerPanel()
@@ -51,27 +71,19 @@ classDiagram
         +parseChecklistEntry()
     }
     
-    class ChecklistTable {
-        +ChecklistTableModel model
-    }
-    
     class ScannerLogic {
-        +logNewScan()
-        +logNewInstance()
+        +logNewScan(AuditIssue)
+        +logNewInstance(AuditIssue)
         +getRepeatedIssue()
     }
     
     class TrafficLogic {
-        +classifyTraffic()
+        +classifyTraffic(InterceptedResponse)
         +logTrafficEntry()
     }
     
-    class LoggerTable {
-        +LoggerTableModel model
-    }
-    
-    class InstanceTable {
-        +InstancesTableModel model
+    class ContextMenuFactory {
+        +provideMenuItems(ContextMenuEvent)
     }
     
     class ProjectWorkspaceFactory {
@@ -79,26 +91,15 @@ classDiagram
         +loadProject()
     }
     
-    class ContextMenuFactory {
-        +createMenuItems()
-    }
-    
-    BurpExtender --|> Autowasp : extends
+    Autowasp ..|> BurpExtension : implements
     Autowasp --> ExtenderPanelUI : creates
     Autowasp --> ChecklistLogic : uses
     Autowasp --> ScannerLogic : uses
     Autowasp --> TrafficLogic : uses
     Autowasp --> ProjectWorkspaceFactory : uses
     Autowasp --> ContextMenuFactory : registers
-    
-    ExtenderPanelUI --> ChecklistTable : displays
-    ExtenderPanelUI --> LoggerTable : displays
-    ExtenderPanelUI --> InstanceTable : displays
-    
-    ChecklistLogic --> ChecklistTable : populates
-    ScannerLogic --> LoggerTable : populates
-    ScannerLogic --> InstanceTable : populates
-    TrafficLogic --> LoggerTable : populates
+    Autowasp --> AutowaspProxyResponseHandler : registers
+    Autowasp --> AutowaspAuditIssueHandler : registers
 ```
 
 ---
@@ -117,15 +118,15 @@ flowchart TB
     end
     
     subgraph Autowasp["Autowasp Extension"]
-        subgraph Input["Input Layer"]
-            ContextMenu[ContextMenuFactory<br/>Right-click menu]
-            ProxyListener[IProxyListener<br/>processProxyMessage]
-            ScannerListener[IScannerListener<br/>newScanIssue]
+        subgraph Input["Input Layer (Montoya API)"]
+            ContextMenu[ContextMenuItemsProvider<br/>Right-click menu]
+            ProxyHandler[ProxyResponseHandler<br/>handleResponseReceived]
+            AuditHandler[AuditIssueHandler<br/>handleNewAuditIssue]
         end
         
         subgraph Core["Core Logic Layer"]
             TrafficLogic[TrafficLogic<br/>Classify & log traffic]
-            ScannerLogic[ScannerLogic<br/>Log scan issues]
+            ScannerLogic[ScannerLogic<br/>Log audit issues]
             ChecklistLogic[ChecklistLogic<br/>Fetch/Parse WSTG]
         end
         
@@ -154,13 +155,13 @@ flowchart TB
         LocalWSTG[Local WSTG Cache]
     end
     
-    Proxy --> ProxyListener
-    Scanner --> ScannerListener
+    Proxy --> ProxyHandler
+    Scanner --> AuditHandler
     Intruder --> ContextMenu
     Repeater --> ContextMenu
     
-    ProxyListener --> TrafficLogic
-    ScannerListener --> ScannerLogic
+    ProxyHandler --> TrafficLogic
+    AuditHandler --> ScannerLogic
     ContextMenu --> ScannerLogic
     
     TrafficLogic --> TrafficEntry
@@ -191,44 +192,48 @@ flowchart TB
 
 ## Architecture Components
 
-### 1. Entry Point
+### 1. Entry Point (Montoya API)
 
-- **BurpExtender**: Main class that extends Autowasp and serves as the entry point for the Burp extension
+- **Autowasp**: Implements `BurpExtension` interface with `initialize(MontoyaApi api)` method
 
-### 2. Core Class (Autowasp)
+### 2. Handlers (Montoya API)
 
-Implements Burp Suite interfaces:
-
-- `IBurpExtenderCallbacks`: Callbacks to Burp Suite
-- `IExtensionHelpers`: Helper utilities
-- `IScannerListener`: Listener for scanner events
-- `IProxyListener`: Listener for proxy events
+| Handler                          | Interface                  | Purpose                              |
+| -------------------------------- | -------------------------- | ------------------------------------ |
+| **AutowaspProxyResponseHandler** | `ProxyResponseHandler`     | Intercept and classify proxy traffic |
+| **AutowaspAuditIssueHandler**    | `AuditIssueHandler`        | Handle scanner audit issues          |
+| **ContextMenuFactory**           | `ContextMenuItemsProvider` | Provide right-click menu items       |
 
 ### 3. Logic Layer
 
-| Component          | Description                                                      |
-| ------------------ | ---------------------------------------------------------------- |
-| **ChecklistLogic** | Fetch and parse OWASP WSTG checklist from GitHub or local cache  |
-| **ScannerLogic**   | Manage logging and grouping of scan issues                       |
-| **TrafficLogic**   | Classify and log HTTP traffic                                    |
+| Component          | Description                                                     |
+| ------------------ | --------------------------------------------------------------- |
+| **ChecklistLogic** | Fetch and parse OWASP WSTG checklist from GitHub or local cache |
+| **ScannerLogic**   | Manage logging and grouping of audit issues                     |
+| **TrafficLogic**   | Classify and log HTTP traffic                                   |
 
 ### 4. Data Layer
 
-| Model              | Description                           |
-| ------------------ | ------------------------------------- |
-| **LoggerEntry**    | Representation of discovered issues   |
-| **InstanceEntry**  | Specific instance of an issue         |
-| **ChecklistEntry** | Test case from WSTG                   |
-| **TrafficEntry**   | HTTP traffic record                   |
+| Model                   | Description                             |
+| ----------------------- | --------------------------------------- |
+| **LoggerEntry**         | Representation of discovered issues     |
+| **InstanceEntry**       | Specific instance of an issue           |
+| **ChecklistEntry**      | Test case from WSTG                     |
+| **TrafficEntry**        | HTTP traffic record                     |
+| **HTTPRequestResponse** | Wrapper for Montoya HttpRequestResponse |
+| **HTTPService**         | Wrapper for Montoya HttpService         |
+| **ScanIssue**           | Wrapper for Montoya AuditIssue          |
 
 ### 5. UI Layer
 
-| Component           | Description                           |
-| ------------------- | ------------------------------------- |
-| **ExtenderPanelUI** | Main panel displayed in Burp tab      |
-| **ChecklistTable**  | Table displaying WSTG checklist       |
-| **LoggerTable**     | Table displaying discovered issues    |
-| **InstanceTable**   | Table displaying instances per issue  |
+| Component              | Description                          |
+| ---------------------- | ------------------------------------ |
+| **ExtenderPanelUI**    | Main panel displayed in Burp tab     |
+| **ChecklistTable**     | Table displaying WSTG checklist      |
+| **LoggerTable**        | Table displaying discovered issues   |
+| **InstanceTable**      | Table displaying instances per issue |
+| **HttpRequestEditor**  | Montoya API request viewer           |
+| **HttpResponseEditor** | Montoya API response viewer          |
 
 ### 6. Output Layer
 
@@ -237,48 +242,39 @@ Implements Burp Suite interfaces:
 
 ---
 
-## Feature and Workflow Diagrams
+## Montoya API Integration
 
-### Testing Checklist - OWASP WSTG
+### API Migration Summary
 
-![OWASP WSTG Checklist](./images/OWASP%20WSTG.PNG)
+| Legacy API               | Montoya API                                |
+| ------------------------ | ------------------------------------------ |
+| `IBurpExtender`          | `BurpExtension`                            |
+| `IBurpExtenderCallbacks` | `MontoyaApi`                               |
+| `IProxyListener`         | `ProxyResponseHandler`                     |
+| `IScannerListener`       | `AuditIssueHandler`                        |
+| `IContextMenuFactory`    | `ContextMenuItemsProvider`                 |
+| `IMessageEditor`         | `HttpRequestEditor` / `HttpResponseEditor` |
+| `IScanIssue`             | `AuditIssue`                               |
+| `IHttpRequestResponse`   | `HttpRequestResponse`                      |
 
-**Fetch Checklist from OWASP GitHub:**
-![Fetch Checklist](./images/fetchChecklist.gif)
+### Registration Pattern
 
-**Load Local Checklist:**
-![Upload Checklist](./images/uploadChecklist.gif)
-
----
-
-### Logger Tool
-
-![Logger Tool](./images/Logger%20Tool.PNG)
-
-**Traffic Logging:**
-![Traffic Logging](./images/trafficLogging.gif)
-
-**Scanner Logic:**
-![Scanner Logic](./images/scannerLogic.gif)
-
----
-
-### Usage Workflow
-
-**1. Add Target Scope:**
-![Add Target Scope](./images/addTargetScope.gif)
-
-**2. Send from Proxy/Intruder/Repeater:**
-![Send from Proxy](./images/SendfromProxy.gif)
-
-**3. Map to Checklist:**
-![Map to Checklist](./images/mapToCheckList.gif)
-
-**4. Write Comments:**
-![Write Comments](./images/writeComments.gif)
-
-**5. Generate Report:**
-![Generate Report](./images/generateReport.gif)
+```java
+public void initialize(MontoyaApi api) {
+    // Register handlers
+    api.proxy().registerResponseHandler(new AutowaspProxyResponseHandler(this));
+    api.scanner().registerAuditIssueHandler(new AutowaspAuditIssueHandler(this));
+    api.userInterface().registerContextMenuItemsProvider(new ContextMenuFactory(this));
+    
+    // Register tab
+    api.userInterface().registerSuiteTab("Autowasp", mainPanel);
+    
+    // Register unload handler
+    api.extension().registerUnloadingHandler(() -> {
+        // Cleanup resources
+    });
+}
+```
 
 ---
 
@@ -286,48 +282,55 @@ Implements Burp Suite interfaces:
 
 | Library                    | Version | Purpose                   |
 | -------------------------- | ------- | ------------------------- |
-| Apache Commons Collections | 4.3     | Collection utilities      |
-| Apache Commons Compress    | 1.18    | Compression support       |
-| GSON                       | 2.8.5   | JSON parsing              |
-| Jsoup                      | 1.12.1  | HTML parsing (fetch WSTG) |
-| Apache POI                 | 4.1.0   | Excel report generation   |
-| XMLBeans                   | 3.1.0   | XML support for POI       |
-| Burp Extender APIs         | 1.7.13  | Burp Suite integration    |
+| Montoya API                | 2025.12 | Burp Suite integration    |
+| Apache Commons Collections | 4.4     | Collection utilities      |
+| Apache Commons Compress    | 1.27    | Compression support       |
+| GSON                       | 2.11.0  | JSON parsing              |
+| Jsoup                      | 1.18.3  | HTML parsing (fetch WSTG) |
+| Apache POI                 | 5.3.0   | Excel report generation   |
+| XMLBeans                   | 5.2.2   | XML support for POI       |
 
 ---
 
 ## Source Code Structure
 
-```shell
+```
 src/main/java/
-├── burp/
-│   └── BurpExtender.java          # Entry point
 ├── autowasp/
-│   ├── Autowasp.java              # Core class
-│   ├── logic/
-│   │   ├── ChecklistLogic.java    # WSTG checklist handling
-│   │   ├── ScannerLogic.java      # Scanner issue handling
-│   │   └── TrafficLogic.java      # Traffic classification
-│   ├── model/
-│   │   ├── LoggerEntry.java       # Issue model
-│   │   ├── InstanceEntry.java     # Instance model
-│   │   ├── ChecklistEntry.java    # Checklist item model
-│   │   └── TrafficEntry.java      # Traffic model
-│   ├── ui/
-│   │   ├── ExtenderPanelUI.java   # Main UI
-│   │   ├── ChecklistTable.java    # Checklist display
-│   │   ├── LoggerTable.java       # Logger display
-│   │   └── InstanceTable.java     # Instance display
-│   ├── context/
-│   │   └── ContextMenuFactory.java # Right-click menu
-│   └── workspace/
-│       └── ProjectWorkspaceFactory.java # Save/load state
+│   ├── Autowasp.java                    # Core class (BurpExtension)
+│   ├── AutowaspProxyResponseHandler.java # Proxy handler
+│   ├── AutowaspAuditIssueHandler.java   # Audit issue handler
+│   ├── ExtenderPanelUI.java             # Main UI
+│   ├── ProjectWorkspaceFactory.java     # Save/load state
+│   ├── checklist/
+│   │   ├── ChecklistLogic.java          # WSTG handling
+│   │   ├── ChecklistTable.java          # Checklist display
+│   │   ├── ChecklistTableModel.java
+│   │   └── ChecklistEntry.java
+│   ├── http/
+│   │   ├── ContextMenuFactory.java      # Right-click menu
+│   │   ├── HTTPRequestResponse.java     # Request/Response wrapper
+│   │   ├── HTTPService.java             # Service wrapper
+│   │   └── ScanIssue.java               # AuditIssue wrapper
+│   └── logger/
+│       ├── ScannerLogic.java            # Scanner issue handling
+│       ├── TrafficLogic.java            # Traffic classification
+│       ├── TrafficEntry.java
+│       ├── entryTable/
+│       │   ├── LoggerEntry.java
+│       │   ├── LoggerTable.java
+│       │   └── LoggerTableModel.java
+│       └── instancesTable/
+│           ├── InstanceEntry.java
+│           ├── InstanceTable.java
+│           └── InstancesTableModel.java
 ```
 
 ---
 
 ## References
 
+- [Montoya API Documentation](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/)
+- [Montoya API GitHub](https://github.com/PortSwigger/burp-extensions-montoya-api)
 - [OWASP Web Security Testing Guide (WSTG)](https://owasp.org/www-project-web-security-testing-guide/)
-- [Burp Extender APIs](https://portswigger.net/burp/extender/api/burp/package-summary.html)
-- [Repository GitHub Autowasp](https://github.com/govtech-csg/Autowasp)
+- [PortSwigger Extension Development](https://portswigger.net/burp/documentation/desktop/extend-burp/extensions/creating)
