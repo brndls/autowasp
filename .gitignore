@@ -21,5 +21,8 @@ bin/
 # Legacy backup from migration (can be deleted after verification)
 .legacy-backup/
 
+# direnv (machine-specific, use .envrc.example as template)
+.envrc
+
 # IDE metadata
 src/main/java/META-INF/

@@ -1,47 +1,189 @@
 # Development Guide
 
-This document provides instructions for setting up a development environment for Autowasp using DevContainers.
+This document provides instructions for setting up a development environment for Autowasp.
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) - Required for DevContainer
+- **Java 21** - Required for building
+- **Burp Suite Professional** - For testing the extension
+
+## Quick Start
+
+Choose one of the following methods based on your platform and preference:
+
+| Method                                                         | Best For                | Requirements    |
+| -------------------------------------------------------------- | ----------------------- | --------------- |
+| [DevContainer](#option-1-devcontainer-recommended-for-windows) | Windows, cross-platform | Docker, VS Code |
+| [direnv](#option-2-using-direnv)                               | macOS, Linux            | direnv, Java 21 |
+| [Nix Shell](#option-3-using-nix-shell)                         | NixOS, Nix users        | Nix             |
+| [Manual](#option-4-manual-setup)                               | Any platform            | Java 21         |
+
+---
+
+## Option 1: DevContainer (Recommended for Windows)
+
+DevContainer provides a consistent, pre-configured development environment using Docker. This is the recommended approach for Windows users.
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/)
 - [VS Code](https://code.visualstudio.com/) or compatible IDE (Cursor, Antigravity)
 - [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-- [Burp Suite Professional](https://portswigger.net/burp/pro) - For testing the extension
 
-## Getting Started with DevContainer
+### Steps
 
-### 1. Open in DevContainer
-
-1. Clone this repository:
+1. Clone the repository:
 
    ```bash
    git clone https://github.com/brndls/autowasp.git
    cd autowasp
    ```
 
-2. Open the folder in VS Code/Antigravity
+2. Open the folder in VS Code
 
 3. When prompted "Reopen in Container", click **Reopen in Container**
    - Or use Command Palette: `Dev Containers: Reopen in Container`
 
 4. Wait for the container to build (first time may take a few minutes)
 
-### 2. Build the Extension
+5. Build the extension:
 
-Inside the DevContainer, run:
+   ```bash
+   ./gradlew build
+   ```
+
+---
+
+## Option 2: Using direnv
+
+[direnv](https://direnv.net/) automatically loads environment variables when entering the project directory.
+
+### Prerequisites
+
+- direnv installed (`brew install direnv` on macOS)
+- Java 21 installed via Homebrew, Nix, or package manager
+- Shell hook configured
+
+### Steps
+
+1. Clone and enter the repository:
+
+   ```bash
+   git clone https://github.com/brndls/autowasp.git
+   cd autowasp
+   ```
+
+2. Copy and configure environment:
+
+   ```bash
+   cp .envrc.example .envrc
+   ```
+
+3. Edit `.envrc` and set `JAVA_HOME` for your system:
+
+   ```bash
+   # macOS (Homebrew)
+   export JAVA_HOME="/opt/homebrew/opt/openjdk@21"
+   
+   # macOS/Linux (Nix)
+   export JAVA_HOME="/nix/store/xxx-zulu-ca-jdk-21.x.x/..."
+   
+   # Linux (apt)
+   export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+   ```
+
+4. Allow direnv:
+
+   ```bash
+   direnv allow
+   ```
+
+5. Build:
+
+   ```bash
+   ./gradlew build
+   ```
+
+### Shell Hook Setup
+
+If not already configured, add to your `~/.zshrc` or `~/.bashrc`:
 
 ```bash
-./gradlew clean build
+eval "$(direnv hook zsh)"  # or bash
 ```
+
+---
+
+## Option 3: Using Nix Shell
+
+A `shell.nix` is provided for Nix users with all dependencies pre-configured.
+
+### Steps
+
+1. Clone and enter the repository:
+
+   ```bash
+   git clone https://github.com/brndls/autowasp.git
+   cd autowasp
+   ```
+
+2. Enter Nix shell:
+
+   ```bash
+   nix-shell
+   ```
+
+   Or with direnv (if `use nix` is configured):
+
+   ```bash
+   direnv allow
+   ```
+
+3. Build:
+
+   ```bash
+   ./gradlew build
+   ```
+
+---
+
+## Option 4: Manual Setup
+
+For any platform without the above tools.
+
+### Steps
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/brndls/autowasp.git
+   cd autowasp
+   ```
+
+2. Set JAVA_HOME manually:
+
+   ```bash
+   export JAVA_HOME="/path/to/java-21"
+   export PATH="$JAVA_HOME/bin:$PATH"
+   ```
+
+3. Build:
+
+   ```bash
+   ./gradlew build
+   ```
+
+---
+
+## Build Output
 
 The JAR file will be created at:
 
-```shell
-build/libs/autowasp-<version>-jar-with-dependencies.jar
+```
+build/libs/autowasp-jar-with-dependencies.jar
 ```
 
-### 3. Install in Burp Suite
+## Install in Burp Suite
 
 1. Open Burp Suite Professional
 2. Go to **Extensions** tab
@@ -49,40 +191,42 @@ build/libs/autowasp-<version>-jar-with-dependencies.jar
 4. Select the JAR file from `build/libs/` directory
 5. Verify the "Autowasp" tab appears
 
+---
+
 ## Project Structure
 
-```shell
+```
 autowasp/
 ├── .devcontainer/          # DevContainer configuration
-│   ├── Dockerfile          # Java 21 image
-│   └── devcontainer.json   # VS Code settings & extensions
+├── .envrc.example          # direnv template
+├── shell.nix               # Nix shell environment
 ├── src/main/java/
-│   ├── autowasp/           # Core extension logic
-│   │   ├── checklist/      # OWASP WSTG checklist
-│   │   ├── http/           # HTTP handling wrappers
-│   │   └── logger/         # Traffic & scan logging
-│   └── burp/               # Burp Suite entry point
+│   └── autowasp/           # Core extension logic
+│       ├── checklist/      # OWASP WSTG checklist
+│       ├── http/           # HTTP handling wrappers
+│       └── logger/         # Traffic & scan logging
 ├── src/main/resources/     # WSTG local cache
 ├── build.gradle.kts        # Gradle configuration
 └── README.md               # Project overview
 ```
 
+## Gradle Commands
+
+| Command                  | Description              |
+| ------------------------ | ------------------------ |
+| `./gradlew build`        | Compile and build JAR    |
+| `./gradlew clean build`  | Clean build from scratch |
+| `./gradlew shadowJar`    | Build fat JAR only       |
+| `./gradlew dependencies` | Show dependency tree     |
+
 ## Development Workflow
 
 1. Make changes to Java source files in `src/main/java/`
-2. Rebuild: `./gradlew clean build`
+2. Rebuild: `./gradlew build`
 3. Reload extension in Burp Suite (Extensions > Remove > Add)
 4. Test your changes
 
-## Gradle Commands
-
-| Command                     | Description                     |
-| --------------------------- | ------------------------------- |
-| `./gradlew clean`           | Remove build artifacts          |
-| `./gradlew build`           | Compile and build JAR           |
-| `./gradlew clean build`     | Clean build from scratch        |
-| `./gradlew dependencies`    | Show dependency tree            |
-| `./gradlew shadowJar`       | Build fat JAR only              |
+---
 
 ## Troubleshooting
 
@@ -92,18 +236,28 @@ autowasp/
 - Verify the JAR was built successfully
 - Check Burp's Extensions > Errors tab for details
 
+### Java version mismatch
+
+This extension requires Java 21. Verify with:
+
+```bash
+java -version
+# Should show: openjdk version "21.x.x"
+```
+
 ### DevContainer build fails
 
 - Ensure Docker is running
 - Try rebuilding: `Dev Containers: Rebuild Container`
 - Check Docker logs for errors
 
-### Java version mismatch
+### direnv not loading
 
-This extension requires Java 21. Ensure:
+- Ensure direnv hook is in your shell config
+- Run `direnv allow` in the project directory
+- Check `.envrc` has correct `JAVA_HOME` path
 
-- DevContainer uses `eclipse-temurin:21-jdk` image
-- `build.gradle.kts` uses `JavaVersion.VERSION_21`
+---
 
 ## Contributing
 

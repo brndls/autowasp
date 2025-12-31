@@ -1,0 +1,28 @@
+# Autowasp Development Environment
+# Requires: direnv (https://direnv.net/)
+#
+# Copy this file to .envrc and adjust JAVA_HOME for your system:
+#   cp .envrc.example .envrc
+#   # Edit JAVA_HOME path
+#   direnv allow
+#
+# Finding your Java 21 path:
+#   macOS (Homebrew): /opt/homebrew/opt/openjdk@21
+#   macOS (Nix):      /nix/store/xxx-zulu-ca-jdk-21.x.x/zulu-21.jdk/Contents/Home
+#   Linux (Nix):      /nix/store/xxx-zulu-ca-jdk-21.x.x/lib/openjdk
+#   Linux (apt):      /usr/lib/jvm/java-21-openjdk-amd64
+
+# Java 21 LTS - adjust path for your system
+export JAVA_HOME="/path/to/java-21"
+export PATH="$JAVA_HOME/bin:$PATH"
+
+# Gradle settings (optional)
+export GRADLE_USER_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/gradle"
+
+# Project-specific settings
+export AUTOWASP_DEV=1
+
+# Log environment activation
+echo "🔧 Autowasp dev environment loaded"
+echo "   JAVA_HOME: $JAVA_HOME"
+echo "   Java: $(java -version 2>&1 | head -1)"
