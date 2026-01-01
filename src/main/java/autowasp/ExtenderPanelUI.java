@@ -30,8 +30,9 @@ import javax.swing.event.HyperlinkEvent;
 import java.io.IOException;
 import java.io.File;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import autowasp.checklist.ChecklistFetchWorker;
 
 /**
  * Extender Panel UI - Montoya API
@@ -67,8 +68,9 @@ public class ExtenderPanelUI implements Runnable {
     public JTextPane referencesTextPane;
     JButton enableScanningButton;
     private JButton generateWebChecklistButton;
-    private Thread thread;
+    private ChecklistFetchWorker fetchWorker;
     public final AtomicBoolean running = new AtomicBoolean(false);
+    private JProgressBar fetchProgressBar;
     public JButton cancelFetchButton;
     private JButton saveLocalCopyButton;
     private JButton generateLocalChecklistButton;
@@ -194,7 +196,15 @@ public class ExtenderPanelUI implements Runnable {
         fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
+        // Progress bar for fetch operations (BApp Store Criteria #5)
+        fetchProgressBar = new JProgressBar();
+        fetchProgressBar.setIndeterminate(true);
+        fetchProgressBar.setVisible(false);
+        fetchProgressBar.setStringPainted(true);
+        fetchProgressBar.setString("Fetching...");
+
         // On clicking, fetches checklist data from the web and displays it
+        // Uses SwingWorker for background threading (BApp Store Criteria #5)
         generateWebChecklistButton = new JButton("Fetch WSTG Checklist");
         generateWebChecklistButton.addActionListener(e -> {
             extender.issueAlert("Fetching checklist now");
@@ -202,69 +212,34 @@ public class ExtenderPanelUI implements Runnable {
             generateLocalChecklistButton.setEnabled(false);
             cancelFetchButton.setEnabled(true);
             generateWebChecklistButton.setEnabled(false);
+            fetchProgressBar.setVisible(true);
             extender.checklistLog.clear();
             running.set(true);
-            Runnable runnable = () -> {
-                int successCount = 0;
-                int skippedCount = 0;
-                List<String> articleURLs;
-                articleURLs = extender.checklistLogic.scrapeArticleURLs();
 
-                if (articleURLs.isEmpty()) {
-                    scanStatusLabel.setText("Failed to fetch article URLs. Check network connection.");
-                    cancelFetchButton.setEnabled(false);
-                    generateWebChecklistButton.setEnabled(true);
-                    generateLocalChecklistButton.setEnabled(true);
-                    return;
-                }
-
-                int total = articleURLs.size();
-                for (String urlStr : articleURLs) {
-                    if (!running.get()) {
-                        extender.checklistLog.clear();
-                        break;
-                    }
-                    try {
-                        Thread.sleep(500);
-                        boolean success = extender.checklistLogic.logNewChecklistEntry(urlStr);
-                        if (success) {
-                            successCount++;
-                        } else {
-                            skippedCount++;
-                        }
-                        scanStatusLabel.setText("Fetching " + (successCount + skippedCount) + "/" + total
-                                + " (skipped: " + skippedCount + ")");
-                    } catch (InterruptedException e1) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                }
-
-                cancelFetchButton.setEnabled(false);
-                generateExcelReportButton.setEnabled(true);
-                saveLocalCopyButton.setEnabled(true);
-
-                String summary = "Fetch complete: " + successCount + " loaded, " + skippedCount + " skipped";
-                scanStatusLabel.setText(summary);
-                extender.issueAlert(summary);
-                extender.loggerTable.generateWSTGList();
-            };
-            thread = new Thread(runnable);
-            thread.start();
+            // Use SwingWorker for proper background threading
+            fetchWorker = new ChecklistFetchWorker(
+                    extender,
+                    scanStatusLabel,
+                    fetchProgressBar,
+                    generateWebChecklistButton,
+                    generateLocalChecklistButton,
+                    cancelFetchButton,
+                    generateExcelReportButton,
+                    saveLocalCopyButton,
+                    running,
+                    null // No additional callback needed
+            );
+            fetchWorker.execute();
         });
 
         // On clicking, cancel fetch checklist from web
         cancelFetchButton = new JButton("Cancel Fetch");
         cancelFetchButton.addActionListener(e -> {
-            generateWebChecklistButton.setEnabled(true);
-            generateLocalChecklistButton.setEnabled(true);
-            generateExcelReportButton.setEnabled(false);
-            saveLocalCopyButton.setEnabled(false);
-            cancelFetchButton.setEnabled(false);
             running.set(false);
-            Thread.currentThread().interrupt();
-            extender.issueAlert("Fetch checklist cancelled");
-            scanStatusLabel.setText("Fetch checklist cancelled");
+            if (fetchWorker != null && !fetchWorker.isDone()) {
+                fetchWorker.cancel(true);
+            }
+            // UI cleanup is handled in SwingWorker.done()
         });
 
         // On clicking, loads WSTG checklist from bundled JSON (offline)
@@ -379,6 +354,7 @@ public class ExtenderPanelUI implements Runnable {
         testingPanel.add(generateWebChecklistButton);
         testingPanel.add(cancelFetchButton);
         testingPanel.add(generateLocalChecklistButton);
+        testingPanel.add(fetchProgressBar);
         if (selfUpdateLocal) {
             testingPanel.add(saveLocalCopyButton);
         }
