@@ -44,7 +44,7 @@ public class LocalChecklistLoader {
     public List<ChecklistEntry> loadFromResources() {
         List<ChecklistEntry> entries = new ArrayList<>();
 
-        try (InputStream is = getClass().getResourceAsStream(CHECKLIST_PATH)) {
+        try (InputStream is = getResourceAsStream(CHECKLIST_PATH)) {
             if (is == null) {
                 return entries;
             }
@@ -93,6 +93,16 @@ public class LocalChecklistLoader {
         }
 
         return entries;
+    }
+
+    /**
+     * Get resource as stream. Protected for testability.
+     *
+     * @param path Resource path
+     * @return InputStream for the resource, or null if not found
+     */
+    protected InputStream getResourceAsStream(String path) {
+        return getClass().getResourceAsStream(path);
     }
 
     /**

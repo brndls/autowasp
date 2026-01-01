@@ -1,0 +1,6 @@
+{
+    "categories": {
+        "Invalid": {
+            "tests": "not-an-array"
+        }
+    }
