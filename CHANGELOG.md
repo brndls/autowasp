@@ -19,7 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Progress Indicator**: Added progress bar during checklist fetch operations.
 - **Background Threading**: Fetch operations now use SwingWorker for proper EDT handling (BApp Criteria #5).
 - **Unit Test Framework**: Added JUnit 5, Mockito, and JaCoCo for test coverage reporting.
-- **LocalChecklistLoader Tests**: Added comprehensive unit tests with 98% code coverage
+- **LocalChecklistLoader Tests**: Added comprehensive unit tests with 98% code coverage.
+- **ChecklistLogic Tests**: Added unit tests for fetch logic, scraping, and error handling.
 
 ### Changed
 

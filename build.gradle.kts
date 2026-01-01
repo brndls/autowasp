@@ -118,6 +118,8 @@ dependencies {
     // Testing - Mockito for mocking
     testImplementation("org.mockito:mockito-core:5.8.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.8.0")
+    testImplementation("org.mockito:mockito-inline:5.2.0") // Support for static mocking
+    testImplementation("net.portswigger.burp.extensions:montoya-api:2025.12")
 }
 
 // ════════════════════════════════════════════════════════════════════════════

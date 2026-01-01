@@ -205,8 +205,6 @@ public class TrafficLogic {
             if (lines[0].contains("POST")) {
                 this.evidence = "";
 
-                String host = httpService.getHost();
-
                 for (String method : httpVerbList) {
                     String newRequestString = requestString.replace("POST", method);
 
