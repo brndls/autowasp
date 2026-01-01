@@ -205,36 +205,49 @@ public class ExtenderPanelUI implements Runnable {
             extender.checklistLog.clear();
             running.set(true);
             Runnable runnable = () -> {
-                int counter = 1;
+                int successCount = 0;
+                int skippedCount = 0;
                 List<String> articleURLs;
                 articleURLs = extender.checklistLogic.scrapeArticleURLs();
 
-                while (running.get() && counter < articleURLs.size()) {
-                    for (String urlStr : articleURLs) {
-                        if (running.get()) {
-                            try {
-                                Thread.sleep(500);
-                                extender.checklistLogic.logNewChecklistEntry(urlStr);
-                                scanStatusLabel.setText("Fetching " + counter + " out of " + articleURLs.size());
-                                counter++;
-                            } catch (InterruptedException e1) {
-                                Thread.currentThread().interrupt();
-                            }
-                        } else {
-                            extender.checklistLog.clear();
-                            break;
-                        }
-                    }
-                    Thread.currentThread().interrupt();
-                    break;
+                if (articleURLs.isEmpty()) {
+                    scanStatusLabel.setText("Failed to fetch article URLs. Check network connection.");
+                    cancelFetchButton.setEnabled(false);
+                    generateWebChecklistButton.setEnabled(true);
+                    generateLocalChecklistButton.setEnabled(true);
+                    return;
                 }
+
+                int total = articleURLs.size();
+                for (String urlStr : articleURLs) {
+                    if (!running.get()) {
+                        extender.checklistLog.clear();
+                        break;
+                    }
+                    try {
+                        Thread.sleep(500);
+                        boolean success = extender.checklistLogic.logNewChecklistEntry(urlStr);
+                        if (success) {
+                            successCount++;
+                        } else {
+                            skippedCount++;
+                        }
+                        scanStatusLabel.setText("Fetching " + (successCount + skippedCount) + "/" + total
+                                + " (skipped: " + skippedCount + ")");
+                    } catch (InterruptedException e1) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+
                 cancelFetchButton.setEnabled(false);
                 generateExcelReportButton.setEnabled(true);
                 saveLocalCopyButton.setEnabled(true);
-                scanStatusLabel.setText("Checklist successfully generated from the web");
-                extender.issueAlert("Checklist successfully generated from the web");
+
+                String summary = "Fetch complete: " + successCount + " loaded, " + skippedCount + " skipped";
+                scanStatusLabel.setText(summary);
+                extender.issueAlert(summary);
                 extender.loggerTable.generateWSTGList();
-                Thread.currentThread().interrupt();
             };
             thread = new Thread(runnable);
             thread.start();
@@ -254,14 +267,15 @@ public class ExtenderPanelUI implements Runnable {
             scanStatusLabel.setText("Fetch checklist cancelled");
         });
 
-        // On clicking, opens a file chooser for the user to upload a local copy
-        generateLocalChecklistButton = new JButton("Upload Local WSTG Checklist");
+        // On clicking, loads WSTG checklist from bundled JSON (offline)
+        generateLocalChecklistButton = new JButton("Load Bundled WSTG (Offline)");
         generateLocalChecklistButton.addActionListener(e -> {
             generateLocalChecklistButton.setEnabled(false);
             generateWebChecklistButton.setEnabled(false);
             generateExcelReportButton.setEnabled(true);
             extender.checklistLogic.loadLocalCopy();
-            scanStatusLabel.setText("Local checklist uploaded to Autowasp.");
+            int count = extender.checklistLog.size();
+            scanStatusLabel.setText("Loaded " + count + " items from bundled WSTG v4.2 (offline).");
         });
 
         // On clicking, opens a file chooser for the user to save a local copy
