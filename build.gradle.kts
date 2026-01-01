@@ -167,4 +167,17 @@ tasks.jacocoTestReport {
         xml.required.set(true)
         html.required.set(true)
     }
+    classDirectories.setFrom(
+        sourceSets.main.get().output.asFileTree.matching {
+            exclude(
+                "autowasp/ExtenderPanelUI*",
+                "autowasp/checklist/*Table*",
+                "autowasp/logger/**/*Table*",
+                "autowasp/http/ContextMenuFactory*",
+                "autowasp/checklist/ChecklistFetchWorker*",
+                "autowasp/ProjectWorkspaceFactory*",
+                "autowasp/Autowasp*"
+            )
+        }
+    )
 }

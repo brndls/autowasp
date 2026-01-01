@@ -20,8 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Background Threading**: Fetch operations now use SwingWorker for proper EDT handling (BApp Criteria #5).
 - **Unit Test Framework**: Added JUnit 5, Mockito, and JaCoCo for test coverage reporting.
 - **LocalChecklistLoader Tests**: Added comprehensive unit tests with 98% code coverage.
-- **ChecklistLogic Tests**: Added unit tests for fetch logic, scraping, and error handling.
+- **ChecklistLogic Tests**: Added unit tests for fetch logic, scraping, File I/O, and error handling (>70% coverage).
 - **ChecklistFetchWorker Tests**: Added unit tests for background fetch execution and progress updates.
+- **Model & Helper Tests**: Achieved 100% coverage for `ChecklistEntry`, `LoggerEntry`, `InstanceEntry` (fixed deprecations), and wrappers.
 
 ### Changed
 
