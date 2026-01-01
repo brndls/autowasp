@@ -18,6 +18,7 @@
  */
 plugins {
     java
+    jacoco
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.diffplug.spotless") version "6.25.0"
 }
@@ -110,6 +111,13 @@ dependencies {
         // Exclude BouncyCastle crypto library (not needed)
         exclude(group = "org.bouncycastle")
     }
+
+    // Testing - JUnit 5
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+
+    // Testing - Mockito for mocking
+    testImplementation("org.mockito:mockito-core:5.8.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.8.0")
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -137,4 +145,24 @@ tasks.shadowJar {
 // When running `./gradlew build`, also run shadowJar
 tasks.build {
     dependsOn(tasks.shadowJar)
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TESTING
+// ════════════════════════════════════════════════════════════════════════════
+/**
+ * Test configuration for JUnit 5 and JaCoCo coverage reporting.
+ * Run tests: ./gradlew test
+ * Generate coverage report: ./gradlew jacocoTestReport
+ */
+tasks.test {
+    useJUnitPlatform()
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
 }

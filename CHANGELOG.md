@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Clean Unload**: Added proper unload handlers to release resources when extension is unloaded.
 - **Enhanced Logging**: Improved error logging with full stack traces.
 - **Development Tools**: Added `DevContainer`, `direnv`, and `Nix` support for easy development setup.
+- **Offline Mode**: Bundled WSTG v4.2 checklist for offline operation (BApp Criteria #8).
+- **Progress Indicator**: Added progress bar during checklist fetch operations.
+- **Background Threading**: Fetch operations now use SwingWorker for proper EDT handling (BApp Criteria #5).
+- **Unit Test Framework**: Added JUnit 5, Mockito, and JaCoCo for test coverage reporting.
 
 ### Changed
 
