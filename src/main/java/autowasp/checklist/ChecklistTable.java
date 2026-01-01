@@ -57,8 +57,7 @@ public class ChecklistTable extends JTable {
         extender.extenderPanelUI.howToTestTextPane
                 .setText(checklistEntry.howToTestHTML.replaceAll("\n", "").replaceAll("\r", ""));
         extender.extenderPanelUI.howToTestTextPane.setCaretPosition(0);
-        extender.extenderPanelUI.referencesTextPane.setText(
-                "<a href=" + checklistEntry.url + "><b>Link to Article</b></a>\n" + checklistEntry.referencesHTML);
+        extender.extenderPanelUI.referencesTextPane.setText(checklistEntry.referencesHTML);
         extender.extenderPanelUI.referencesTextPane.setCaretPosition(0);
 
         super.changeSelection(row, col, toggle, extend);

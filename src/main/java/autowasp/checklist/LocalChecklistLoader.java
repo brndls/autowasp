@@ -81,7 +81,7 @@ public class LocalChecklistLoader {
                             testName,
                             summaryHtml.toString(),
                             "<p>See OWASP reference for detailed testing methodology.</p>",
-                            "<p><a href=\"" + reference + "\">OWASP WSTG Reference</a></p>",
+                            "<p><a href=\"" + reference + "\">" + refNumber + "</a></p>",
                             reference);
 
                     entries.add(entry);
