@@ -19,6 +19,12 @@ package autowasp.checklist;
 import autowasp.Autowasp;
 import autowasp.logger.entryTable.LoggerEntry;
 import autowasp.logger.instancesTable.InstanceEntry;
+
+// Montoya HTTP API imports (BApp Store Criteria #7)
+import burp.api.montoya.http.message.HttpRequestResponse;
+import burp.api.montoya.http.message.requests.HttpRequest;
+import burp.api.montoya.http.message.responses.HttpResponse;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -62,20 +68,39 @@ public class ChecklistLogic implements Serializable {
     }
 
     /**
-     * Fetch a URL with retry logic and exponential backoff.
-     * Attempts up to MAX_RETRY_ATTEMPTS times with increasing delays.
+     * Fetch a URL using Burp's networking API with retry logic and exponential
+     * backoff.
+     * BApp Store Criteria #7: Use Burp Networking.
      *
      * @param url The URL to fetch
      * @return Document if successful, null if all retries failed
      */
     private Document fetchWithRetry(String url) {
         int attempt = 0;
-        IOException lastException = null;
+        Exception lastException = null;
 
         while (attempt < MAX_RETRY_ATTEMPTS) {
             try {
-                return Jsoup.connect(url).timeout(10000).get();
-            } catch (IOException e) {
+                // Use Burp's HTTP client for BApp Store compliance (Criteria #7)
+                // This ensures proxy settings and session handling rules are respected
+                HttpRequest request = HttpRequest.httpRequestFromUrl(url);
+                HttpRequestResponse response = extender.getApi().http().sendRequest(request);
+                HttpResponse httpResponse = response.response();
+
+                if (httpResponse != null && httpResponse.statusCode() == 200) {
+                    String html = httpResponse.bodyToString();
+                    // Use Jsoup.parse() for HTML parsing only (no connection)
+                    // Base URL is provided for resolving relative links
+                    return Jsoup.parse(html, url);
+                }
+
+                // Non-200 response, treat as failure for retry
+                String statusInfo = httpResponse != null
+                        ? "HTTP " + httpResponse.statusCode()
+                        : "null response";
+                throw new RuntimeException(statusInfo);
+
+            } catch (Exception e) {
                 lastException = e;
                 attempt++;
                 extender.logOutput("Fetch attempt " + attempt + "/" + MAX_RETRY_ATTEMPTS

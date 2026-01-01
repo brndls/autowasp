@@ -1,15 +1,12 @@
 package autowasp.logger.instancesTable;
 
 import autowasp.http.HTTPRequestResponse;
-import burp.api.montoya.http.message.requests.HttpRequest;
-import burp.api.montoya.http.message.responses.HttpResponse;
 import org.junit.jupiter.api.Test;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class InstanceEntryTest {
 

@@ -3,10 +3,11 @@ package autowasp.checklist;
 import autowasp.Autowasp;
 import autowasp.ExtenderPanelUI;
 import burp.api.montoya.MontoyaApi;
+import burp.api.montoya.http.Http;
+import burp.api.montoya.http.message.HttpRequestResponse;
+import burp.api.montoya.http.message.requests.HttpRequest;
+import burp.api.montoya.http.message.responses.HttpResponse;
 import burp.api.montoya.ui.UserInterface;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,17 +27,31 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for ChecklistLogic.
+ * 
+ * Tests now mock Burp's HTTP API (api.http().sendRequest()) instead of
+ * Jsoup.connect()
+ * following the refactoring for BApp Store Criteria #7 compliance.
+ */
 @ExtendWith(MockitoExtension.class)
 class ChecklistLogicTest {
 
     @Mock
     private Autowasp mockExtender;
 
-    // Use DEEP_STUBS to handle the chain
-    // api.userInterface().swingUtils().suiteFrame()
-    // without needing to import the SwingUtils class which is hard to find
+    // Use DEEP_STUBS to handle the chain api.http().sendRequest()
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private MontoyaApi mockApi;
+
+    @Mock
+    private Http mockHttp;
+
+    @Mock
+    private HttpRequestResponse mockHttpRequestResponse;
+
+    @Mock
+    private HttpResponse mockHttpResponse;
 
     @Mock
     private UserInterface mockUserInterface;
@@ -51,7 +66,7 @@ class ChecklistLogicTest {
     private ChecklistTableModel mockChecklistTableModel;
 
     private ChecklistLogic checklistLogic;
-    private MockedStatic<Jsoup> mockedJsoup;
+    private MockedStatic<HttpRequest> mockedHttpRequest;
 
     @BeforeEach
     void setUp() {
@@ -67,13 +82,13 @@ class ChecklistLogicTest {
 
         // Common API mocks
         lenient().when(mockExtender.getApi()).thenReturn(mockApi);
-        // By using deep stubs on mockApi, we can just define the end result
         lenient().when(mockApi.userInterface().swingUtils().suiteFrame()).thenReturn(mockSuiteFrame);
+        lenient().when(mockApi.http()).thenReturn(mockHttp);
 
         checklistLogic = new ChecklistLogic(mockExtender);
 
-        // Mock Jsoup static methods
-        mockedJsoup = Mockito.mockStatic(Jsoup.class, Mockito.CALLS_REAL_METHODS);
+        // Mock HttpRequest.httpRequestFromUrl() static method
+        mockedHttpRequest = Mockito.mockStatic(HttpRequest.class);
     }
 
     // Helper to set private/final fields on mocks
@@ -89,52 +104,63 @@ class ChecklistLogicTest {
 
     @AfterEach
     void tearDown() {
-        if (mockedJsoup != null) {
-            mockedJsoup.close();
+        if (mockedHttpRequest != null) {
+            mockedHttpRequest.close();
         }
     }
 
+    /**
+     * Helper to setup mock HTTP response for a given URL and HTML content.
+     */
+    private void setupMockHttpResponse(String url, String html, short statusCode) {
+        HttpRequest mockRequest = mock(HttpRequest.class);
+        mockedHttpRequest.when(() -> HttpRequest.httpRequestFromUrl(url)).thenReturn(mockRequest);
+        when(mockHttp.sendRequest(mockRequest)).thenReturn(mockHttpRequestResponse);
+        when(mockHttpRequestResponse.response()).thenReturn(mockHttpResponse);
+        when(mockHttpResponse.statusCode()).thenReturn(statusCode);
+        when(mockHttpResponse.bodyToString()).thenReturn(html);
+    }
+
+    /**
+     * Helper to setup mock HTTP failure (throws exception or null response).
+     */
+    private void setupMockHttpFailure(String url) {
+        HttpRequest mockRequest = mock(HttpRequest.class);
+        mockedHttpRequest.when(() -> HttpRequest.httpRequestFromUrl(url)).thenReturn(mockRequest);
+        when(mockHttp.sendRequest(mockRequest)).thenReturn(mockHttpRequestResponse);
+        when(mockHttpRequestResponse.response()).thenReturn(null); // Simulate connection failure
+    }
+
     @Test
-    void testScrapePageURLs_Success() throws IOException {
+    void testScrapePageURLs_Success() {
         String testUrl = "http://example.com";
         String html = "<html><article><a href='http://link1.com'>Link 1</a><a href='http://link2.com'>Link 2</a></article></html>";
 
-        Connection mockConnection = mock(Connection.class);
-        Connection mockConnectionWithTimeout = mock(Connection.class);
-        Document mockDoc = Jsoup.parse(html);
-
-        mockedJsoup.when(() -> Jsoup.connect(testUrl)).thenReturn(mockConnection);
-        when(mockConnection.timeout(anyInt())).thenReturn(mockConnectionWithTimeout);
-        when(mockConnectionWithTimeout.get()).thenReturn(mockDoc);
+        setupMockHttpResponse(testUrl, html, (short) 200);
 
         List<String> results = checklistLogic.scrapePageURLs(testUrl);
 
         assertTrue(results.contains("http://link1.com"));
-        verify(mockConnection, times(1)).timeout(10000);
+        verify(mockHttp, times(1)).sendRequest(any(HttpRequest.class));
     }
 
     @Test
-    void testScrapePageURLs_EmptyResponse() throws IOException {
+    void testScrapePageURLs_EmptyResponse() {
         String testUrl = "http://bad.com";
 
-        Connection mockConnection = mock(Connection.class);
-        Connection mockConnectionWithTimeout = mock(Connection.class);
-
-        mockedJsoup.when(() -> Jsoup.connect(testUrl)).thenReturn(mockConnection);
-        when(mockConnection.timeout(anyInt())).thenReturn(mockConnectionWithTimeout);
-        when(mockConnectionWithTimeout.get()).thenThrow(new IOException("Network error"));
+        setupMockHttpFailure(testUrl);
 
         List<String> results = checklistLogic.scrapePageURLs(testUrl);
 
         assertNotNull(results);
         assertTrue(results.isEmpty());
-        // Verify 3 retries
-        verify(mockConnectionWithTimeout, times(3)).get();
+        // Verify 3 retries (sendRequest called 3 times)
+        verify(mockHttp, times(3)).sendRequest(any(HttpRequest.class));
         verify(mockExtender).logError(contains("Failed to fetch after 3 attempts"));
     }
 
     @Test
-    void testGetTableElements_Valid() throws IOException {
+    void testGetTableElements_Valid() {
         String testUrl = "http://example.com/table";
         String html = "<html><body>" +
                 "<table><tr><td>WSTG-TEST-01</td></tr></table>" +
@@ -146,13 +172,7 @@ class ChecklistLogicTest {
                 "</div>" +
                 "</body></html>";
 
-        Connection mockConnection = mock(Connection.class);
-        Connection mockConnectionWithTimeout = mock(Connection.class);
-        Document mockDoc = Jsoup.parse(html);
-
-        mockedJsoup.when(() -> Jsoup.connect(testUrl)).thenReturn(mockConnection);
-        when(mockConnection.timeout(anyInt())).thenReturn(mockConnectionWithTimeout);
-        when(mockConnectionWithTimeout.get()).thenReturn(mockDoc);
+        setupMockHttpResponse(testUrl, html, (short) 200);
 
         HashMap<String, String> result = checklistLogic.getTableElements(testUrl);
 
@@ -163,7 +183,7 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testGetContentElements_Valid() throws IOException {
+    void testGetContentElements_Valid() {
         String testUrl = "http://example.com/content";
         String html = "<html><article>" +
                 "<h1>Title</h1>" +
@@ -173,13 +193,7 @@ class ChecklistLogicTest {
                 "<p>Step 1.</p>" +
                 "</article></html>";
 
-        Connection mockConnection = mock(Connection.class);
-        Connection mockConnectionWithTimeout = mock(Connection.class);
-        Document mockDoc = Jsoup.parse(html);
-
-        mockedJsoup.when(() -> Jsoup.connect(testUrl)).thenReturn(mockConnection);
-        when(mockConnection.timeout(anyInt())).thenReturn(mockConnectionWithTimeout);
-        when(mockConnectionWithTimeout.get()).thenReturn(mockDoc);
+        setupMockHttpResponse(testUrl, html, (short) 200);
 
         HashMap<String, String> result = checklistLogic.getContentElements(testUrl);
 
@@ -189,7 +203,7 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testLogNewChecklistEntry_Success() throws IOException {
+    void testLogNewChecklistEntry_Success() {
         String testUrl = "http://example.com/entry";
         String html = "<html><body>" +
                 "<table><tr><td>WSTG-TEST-02</td></tr></table>" +
@@ -202,13 +216,7 @@ class ChecklistLogicTest {
                 "<article><h2>Summary</h2><p>Content</p></article>" +
                 "</body></html>";
 
-        Connection mockConnection = mock(Connection.class);
-        Connection mockConnectionWithTimeout = mock(Connection.class);
-        Document mockDoc = Jsoup.parse(html);
-
-        mockedJsoup.when(() -> Jsoup.connect(testUrl)).thenReturn(mockConnection);
-        when(mockConnection.timeout(anyInt())).thenReturn(mockConnectionWithTimeout);
-        when(mockConnectionWithTimeout.get()).thenReturn(mockDoc);
+        setupMockHttpResponse(testUrl, html, (short) 200);
 
         boolean result = checklistLogic.logNewChecklistEntry(testUrl);
 
@@ -220,18 +228,12 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testLogNewChecklistEntry_Failure() throws IOException {
+    void testLogNewChecklistEntry_Failure() {
         String testUrl = "http://fail.com";
 
-        Connection mockConnection = mock(Connection.class);
-        Connection mockConnectionWithTimeout = mock(Connection.class);
+        setupMockHttpFailure(testUrl);
 
-        // Fail to connect
-        mockedJsoup.when(() -> Jsoup.connect(testUrl)).thenReturn(mockConnection);
-        when(mockConnection.timeout(anyInt())).thenReturn(mockConnectionWithTimeout);
-        when(mockConnectionWithTimeout.get()).thenThrow(new IOException("Fail"));
-
-        boolean result = checklistLogic.logNewChecklistEntry(testUrl); // Retries internally then returns false
+        boolean result = checklistLogic.logNewChecklistEntry(testUrl);
 
         assertFalse(result);
         verify(mockExtender).logOutput(contains("Skipping URL due to fetch failure"));
@@ -261,7 +263,6 @@ class ChecklistLogicTest {
         // Setup mock data
         ChecklistEntry entry1 = new ChecklistEntry(new HashMap<>(), new HashMap<>(), "url1");
         entry1.refNumber = "REF1";
-        checklistLogic.getClass(); // Just to reference access
         mockExtender.checklistLog.add(entry1);
 
         checklistLogic.saveLocalCopy(destPath);
@@ -280,7 +281,7 @@ class ChecklistLogicTest {
     void testSaveToExcelFile_NoContent(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tempDir) {
         String destPath = tempDir.toAbsolutePath().toString();
 
-        // No entries in blacklistLog/checklistLog
+        // No entries in checklistLog
         checklistLogic.saveToExcelFile(destPath);
 
         // Verify file created (even empty)
@@ -288,5 +289,24 @@ class ChecklistLogicTest {
         assertTrue(excelFile.exists());
 
         verify(mockExtender).issueAlert(contains("Excel report generated"));
+    }
+
+    @Test
+    void testFetchWithRetry_NonOKStatusCode() {
+        String testUrl = "http://notfound.com";
+
+        // Setup mock to return 404
+        HttpRequest mockRequest = mock(HttpRequest.class);
+        mockedHttpRequest.when(() -> HttpRequest.httpRequestFromUrl(testUrl)).thenReturn(mockRequest);
+        when(mockHttp.sendRequest(mockRequest)).thenReturn(mockHttpRequestResponse);
+        when(mockHttpRequestResponse.response()).thenReturn(mockHttpResponse);
+        when(mockHttpResponse.statusCode()).thenReturn((short) 404);
+
+        // scrapePageURLs internally calls fetchWithRetry
+        List<String> results = checklistLogic.scrapePageURLs(testUrl);
+
+        assertTrue(results.isEmpty());
+        // Verify 3 retries for non-200 status
+        verify(mockHttp, times(3)).sendRequest(any(HttpRequest.class));
     }
 }

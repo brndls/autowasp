@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-01-02
+
+### Added
+
+- **Burp Networking**: HTTP connections now use `api.http().sendRequest()` for proxy and session handling (BApp Criteria #7).
+
+### Changed
+
+- **Model & Helper Tests**: Improved test coverage for `ChecklistEntry`, `LoggerEntry`, `InstanceEntry`, and wrappers.
+
+---
+
 ## [2.0.0] - 2026-01-01
 
 ### Added
@@ -22,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **LocalChecklistLoader Tests**: Added comprehensive unit tests with 98% code coverage.
 - **ChecklistLogic Tests**: Added unit tests for fetch logic, scraping, File I/O, and error handling (>70% coverage).
 - **ChecklistFetchWorker Tests**: Added unit tests for background fetch execution and progress updates.
-- **Model & Helper Tests**: Achieved 100% coverage for `ChecklistEntry`, `LoggerEntry`, `InstanceEntry` (fixed deprecations), and wrappers.
 
 ### Changed
 
