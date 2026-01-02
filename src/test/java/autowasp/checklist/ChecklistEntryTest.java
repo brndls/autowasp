@@ -21,10 +21,10 @@ class ChecklistEntryTest {
         ChecklistEntry entry = new ChecklistEntry(tableElements, contentElements, "http://example.com");
 
         assertEquals("REF-01", entry.getRefNumber());
-        assertEquals("Info", entry.category);
+        assertEquals("Info", entry.getCategory());
         assertEquals("Test 1", entry.getTestName());
-        assertEquals("<p>Summary</p>", entry.summaryHTML);
-        assertEquals("http://example.com", entry.url);
+        assertEquals("<p>Summary</p>", entry.getSummaryHTML());
+        assertEquals("http://example.com", entry.getUrl());
         assertFalse(entry.isExcluded());
         assertFalse(entry.isTestcaseCompleted());
     }
@@ -35,9 +35,9 @@ class ChecklistEntryTest {
                 "REF-02", "Cat", "Test 2", "Sum", "How", "Ref", "http://url.com");
 
         assertEquals("REF-02", entry.getRefNumber());
-        assertEquals("Cat", entry.category);
+        assertEquals("Cat", entry.getCategory());
         assertEquals("Test 2", entry.getTestName());
-        assertEquals("Sum", entry.summaryHTML);
+        assertEquals("Sum", entry.getSummaryHTML());
     }
 
     @Test
@@ -45,21 +45,21 @@ class ChecklistEntryTest {
         // Create entry with empty maps which results in null fields
         ChecklistEntry entry = new ChecklistEntry(new HashMap<>(), new HashMap<>(), null);
         // Explicitly ensure nulls
-        entry.refNumber = null;
-        entry.category = null;
-        entry.testName = null;
-        entry.summaryHTML = null;
-        entry.howToTestHTML = null;
-        entry.referencesHTML = null;
+        entry.setRefNumber(null);
+        entry.setCategory(null);
+        entry.setTestName(null);
+        entry.setSummaryHTML(null);
+        entry.setHowToTestHTML(null);
+        entry.setReferencesHTML(null);
 
         entry.cleanEntry();
 
-        assertEquals("NIL", entry.refNumber);
-        assertEquals("NIL", entry.category);
-        assertEquals("NIL", entry.testName);
-        assertEquals("NIL", entry.summaryHTML);
-        assertEquals("NIL", entry.howToTestHTML);
-        assertEquals("", entry.referencesHTML); // Special case
+        assertEquals("NIL", entry.getRefNumber());
+        assertEquals("NIL", entry.getCategory());
+        assertEquals("NIL", entry.getTestName());
+        assertEquals("NIL", entry.getSummaryHTML());
+        assertEquals("NIL", entry.getHowToTestHTML());
+        assertEquals("", entry.getReferencesHTML()); // Special case
     }
 
     @Test
@@ -68,15 +68,15 @@ class ChecklistEntryTest {
 
         // Comments
         entry.setPenTesterComments("First.");
-        assertEquals("First.", entry.pentesterComments);
+        assertEquals("First.", entry.getPenTesterComments());
         entry.setPenTesterComments("Second.");
-        assertEquals("First.Second.", entry.pentesterComments);
+        assertEquals("First.Second.", entry.getPenTesterComments());
 
         // Evidence
         entry.setEvidence("Ev1.");
-        assertEquals("Ev1.", entry.evidence);
+        assertEquals("Ev1.", entry.getEvidence());
         entry.setEvidence("Ev2.");
-        assertEquals("Ev1.Ev2.", entry.evidence);
+        assertEquals("Ev1.Ev2.", entry.getEvidence());
 
         // Booleans
         entry.setExclusion(true);
@@ -96,9 +96,9 @@ class ChecklistEntryTest {
         entry.setEvidence("Evidence");
 
         entry.clearComments();
-        assertEquals("", entry.pentesterComments);
+        assertEquals("", entry.getPenTesterComments());
 
         entry.clearEvidences();
-        assertEquals("", entry.evidence);
+        assertEquals("", entry.getEvidence());
     }
 }

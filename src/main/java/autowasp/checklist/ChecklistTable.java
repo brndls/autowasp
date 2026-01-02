@@ -21,10 +21,11 @@ import autowasp.Autowasp;
 import javax.swing.*;
 import javax.swing.table.TableModel;
 
-@SuppressWarnings("serial")
 public class ChecklistTable extends JTable {
 
-    private final Autowasp extender;
+    private static final long serialVersionUID = 1L;
+
+    private final transient Autowasp extender;
 
     public ChecklistTable(TableModel tableModel, Autowasp extender) {
         super(tableModel);
@@ -41,8 +42,7 @@ public class ChecklistTable extends JTable {
             if ((i / 2) < columnModel.getColumnCount()) {
                 columnModel.getColumn(i / 2).setPreferredWidth(widths[i]);
                 columnModel.getColumn(i / 2).setMaxWidth(widths[i + 1]);
-            } else
-                continue;
+            }
         }
     }
 
@@ -52,13 +52,13 @@ public class ChecklistTable extends JTable {
 
         // Sets the text for each of the bottom tab panes. Setting the caret position to
         // 0 makes sure that the user starts reading from the top
-        extender.extenderPanelUI.summaryTextPane.setText(checklistEntry.summaryHTML);
-        extender.extenderPanelUI.summaryTextPane.setCaretPosition(0);
-        extender.extenderPanelUI.howToTestTextPane
-                .setText(checklistEntry.howToTestHTML.replaceAll("\n", "").replaceAll("\r", ""));
-        extender.extenderPanelUI.howToTestTextPane.setCaretPosition(0);
-        extender.extenderPanelUI.referencesTextPane.setText(checklistEntry.referencesHTML);
-        extender.extenderPanelUI.referencesTextPane.setCaretPosition(0);
+        extender.getExtenderPanelUI().getSummaryTextPane().setText(checklistEntry.getSummaryHTML());
+        extender.getExtenderPanelUI().getSummaryTextPane().setCaretPosition(0);
+        extender.getExtenderPanelUI().getHowToTestTextPane()
+                .setText(checklistEntry.getHowToTestHTML().replace("\n", "").replace("\r", ""));
+        extender.getExtenderPanelUI().getHowToTestTextPane().setCaretPosition(0);
+        extender.getExtenderPanelUI().getReferencesTextPane().setText(checklistEntry.getReferencesHTML());
+        extender.getExtenderPanelUI().getReferencesTextPane().setCaretPosition(0);
 
         super.changeSelection(row, col, toggle, extend);
     }

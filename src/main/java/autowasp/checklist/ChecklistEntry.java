@@ -17,26 +17,30 @@
 package autowasp.checklist;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Map;
 
 public class ChecklistEntry implements Serializable {
 
-    public String refNumber;
-    public String category;
-    public String testName;
-    public boolean exclusion;
-    public boolean testcaseCompleted;
-    public String summaryHTML;
-    public String howToTestHTML;
-    public String referencesHTML;
-    public final String url;
-    // Pentester's comments and evidence are sent from the scanner findings to a particular checklist entry when the user maps a finding to an entry
-    public String pentesterComments;
-    public String evidence;
-    public boolean testBoolean;
+    private static final long serialVersionUID = 1L;
 
-    // This constructor is used to create new checklist entry objects when fetching new checklist data from the web
-    public ChecklistEntry(HashMap<String, String> tableElements, HashMap<String, String> contentElements, String url) {
+    private String refNumber;
+    private String category;
+    private String testName;
+    private boolean exclusion;
+    private boolean testcaseCompleted;
+    private String summaryHTML;
+    private String howToTestHTML;
+    private String referencesHTML;
+    private final String url;
+    // Pentester's comments and evidence are sent from the scanner findings to a
+    // particular checklist entry when the user maps a finding to an entry
+    private String pentesterComments;
+    private String evidence;
+    private boolean testBoolean;
+
+    // This constructor is used to create new checklist entry objects when fetching
+    // new checklist data from the web
+    public ChecklistEntry(Map<String, String> tableElements, Map<String, String> contentElements, String url) {
         this.refNumber = tableElements.get("Reference Number");
         this.category = tableElements.get("Category");
         this.testName = tableElements.get("Test Name");
@@ -45,14 +49,17 @@ public class ChecklistEntry implements Serializable {
         this.referencesHTML = contentElements.get("references");
         this.exclusion = false;
         this.testcaseCompleted = false;
-        this.url = url;  //URL is included for ease of creating the hyperlinks when writing to excel file
+        this.url = url; // URL is included for ease of creating the hyperlinks when writing to excel
+                        // file
         this.pentesterComments = "";
         this.evidence = "";
         this.testBoolean = false;
     }
 
-    // This constructor is used for re-creating the checklist entry objects when loading data from a local file
-    public ChecklistEntry(String refNumber, String category, String testName, String summaryHTML, String howToTestHTML, String referencesHTML, String url) {
+    // This constructor is used for re-creating the checklist entry objects when
+    // loading data from a local file
+    public ChecklistEntry(String refNumber, String category, String testName, String summaryHTML, String howToTestHTML,
+            String referencesHTML, String url) {
         this.refNumber = refNumber;
         this.category = category;
         this.testName = testName;
@@ -61,12 +68,14 @@ public class ChecklistEntry implements Serializable {
         this.referencesHTML = referencesHTML;
         this.exclusion = false;
         this.testcaseCompleted = false;
-        this.url = url;  //URL is included for ease of creating the hyperlinks when writing to excel file
+        this.url = url; // URL is included for ease of creating the hyperlinks when writing to excel
+                        // file
         this.pentesterComments = "";
         this.evidence = "";
     }
 
-    // Used to clean the checklist entry objects to prevent null pointer exceptions when displaying the data in the UI
+    // Used to clean the checklist entry objects to prevent null pointer exceptions
+    // when displaying the data in the UI
     public void cleanEntry() {
         if (refNumber == null) {
             this.refNumber = "NIL";
@@ -84,7 +93,8 @@ public class ChecklistEntry implements Serializable {
             this.howToTestHTML = "NIL";
         }
         if (referencesHTML == null) {
-            // This is an empty string because every references panel will have at least the link to the OWASP article
+            // This is an empty string because every references panel will have at least the
+            // link to the OWASP article
             this.referencesHTML = "";
         }
     }
@@ -97,15 +107,21 @@ public class ChecklistEntry implements Serializable {
         return this.testName;
     }
 
-    public Boolean isExcluded() {return this.exclusion;}
+    public boolean isExcluded() {
+        return this.exclusion;
+    }
 
-    public Boolean isTestcaseCompleted(){return this.testcaseCompleted;}
+    public boolean isTestcaseCompleted() {
+        return this.testcaseCompleted;
+    }
 
-    public void setExclusion(Boolean value){
+    public void setExclusion(Boolean value) {
         this.exclusion = value;
     }
 
-    public void setTestCaseCompleted(Boolean value){ this.testcaseCompleted = value;}
+    public void setTestCaseCompleted(Boolean value) {
+        this.testcaseCompleted = value;
+    }
 
     public void setPenTesterComments(String comments) {
         // New comments are appended to prevent overwriting existing comments
@@ -117,17 +133,71 @@ public class ChecklistEntry implements Serializable {
         this.evidence += evidence;
     }
 
-    public void clearComments(){
+    public void clearComments() {
         this.pentesterComments = "";
     }
 
-    public void clearEvidences(){
+    public void clearEvidences() {
         this.evidence = "";
     }
 
-    public Boolean getTestBool() { return this.testBoolean; }
+    public boolean getTestBool() {
+        return this.testBoolean;
+    }
 
     public void setTestBoolean(Boolean testBoolean) {
         this.testBoolean = testBoolean;
+    }
+
+    public void setRefNumber(String refNumber) {
+        this.refNumber = refNumber;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public void setTestName(String testName) {
+        this.testName = testName;
+    }
+
+    public String getSummaryHTML() {
+        return summaryHTML;
+    }
+
+    public void setSummaryHTML(String summaryHTML) {
+        this.summaryHTML = summaryHTML;
+    }
+
+    public String getHowToTestHTML() {
+        return howToTestHTML;
+    }
+
+    public void setHowToTestHTML(String howToTestHTML) {
+        this.howToTestHTML = howToTestHTML;
+    }
+
+    public String getReferencesHTML() {
+        return referencesHTML;
+    }
+
+    public void setReferencesHTML(String referencesHTML) {
+        this.referencesHTML = referencesHTML;
+    }
+
+    public String getPenTesterComments() {
+        return pentesterComments;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getEvidence() {
+        return evidence;
     }
 }

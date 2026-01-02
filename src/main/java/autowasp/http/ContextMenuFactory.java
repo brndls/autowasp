@@ -18,8 +18,8 @@
 package autowasp.http;
 
 import autowasp.Autowasp;
-import autowasp.logger.entryTable.LoggerEntry;
-import autowasp.logger.instancesTable.InstanceEntry;
+import autowasp.logger.entrytable.LoggerEntry;
+import autowasp.logger.instancestable.InstanceEntry;
 
 // Montoya API imports
 import burp.api.montoya.http.message.HttpRequestResponse;
@@ -161,6 +161,6 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
             }
         }
 
-        extender.loggerTableModel.addAllLoggerEntry(findingEntry);
+        extender.getLoggerTableModel().addAllLoggerEntry(findingEntry);
     }
 }

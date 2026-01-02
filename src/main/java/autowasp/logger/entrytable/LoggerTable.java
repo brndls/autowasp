@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package autowasp.logger.entryTable;
+package autowasp.logger.entrytable;
 
 import autowasp.Autowasp;
 import autowasp.checklist.ChecklistEntry;
+// Explicit import might be needed if moved
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
@@ -24,9 +25,10 @@ import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
-@SuppressWarnings("serial")
 public class LoggerTable extends JTable {
-    private final Autowasp extender;
+
+    private static final long serialVersionUID = 1L;
+    private final transient Autowasp extender;
     private int currentRow;
 
     public LoggerTable(TableModel tableModel, Autowasp extender) {
@@ -40,8 +42,7 @@ public class LoggerTable extends JTable {
             if ((i / 2) < columnModel.getColumnCount()) {
                 columnModel.getColumn(i / 2).setPreferredWidth(widths[i]);
                 columnModel.getColumn(i / 2).setMaxWidth(widths[i + 1]);
-            } else
-                continue;
+            }
         }
     }
 
@@ -51,23 +52,23 @@ public class LoggerTable extends JTable {
         // show the log entry for the selected row
         LoggerEntry loggerEntry = extender.loggerList.get(row);
         currentRow = row;
-        extender.currentEntryRow = row;
-        extender.extenderPanelUI.penTesterCommentBox.setText(loggerEntry.getPenTesterComments());
-        extender.extenderPanelUI.evidenceBox.setText(loggerEntry.getEvidence());
-        extender.instancesTableModel.clearInstanceEntryList();
-        extender.instancesTableModel.addAllInstanceEntry(loggerEntry.instancesList);
+        extender.setCurrentEntryRow(row);
+        extender.getExtenderPanelUI().getPenTesterCommentBox().setText(loggerEntry.getPenTesterComments());
+        extender.getExtenderPanelUI().getEvidenceBox().setText(loggerEntry.getEvidence());
+        extender.getInstancesTableModel().clearInstanceEntryList();
+        extender.getInstancesTableModel().addAllInstanceEntry(loggerEntry.getInstanceList());
 
         super.changeSelection(row, col, toggle, extend);
-        extender.extenderPanelUI.deleteEntryButtonEnabled();
+        extender.getExtenderPanelUI().deleteEntryButtonEnabled();
     }
 
     // Method to modify pentester's comments text field
     public void modifyComments(String comments) {
         extender.loggerList.get(currentRow).setPenTesterComments(comments);
-        extender.loggerTableModel.fireTableDataChanged();
+        extender.getLoggerTableModel().fireTableDataChanged();
         // Checks if finding is mapped to a checklist entry
         // If it is, set the pentesterComments variable for that checklist entry
-        if (extender.loggerList.get(currentRow).issueNumber != null) {
+        if (extender.loggerList.get(currentRow).getIssueNumber() != null) {
             int issueNumber = extender.loggerList.get(currentRow).getIssueNumber();
             String finalComments = comments + "\n";
             extender.checklistLog.get(issueNumber).setPenTesterComments(finalComments);
@@ -77,10 +78,10 @@ public class LoggerTable extends JTable {
     // Method to modify pentester's evidences text field
     public void modifyEvidence(String evidences) {
         extender.loggerList.get(currentRow).setEvidence(evidences);
-        extender.loggerTableModel.fireTableDataChanged();
+        extender.getLoggerTableModel().fireTableDataChanged();
         // Checks if finding is mapped to a checklist entry
         // If it is, set the evidence variable for that checklist entry
-        if (extender.loggerList.get(currentRow).issueNumber != null) {
+        if (extender.loggerList.get(currentRow).getIssueNumber() != null) {
             int issueNumber = extender.loggerList.get(currentRow).getIssueNumber();
             String finalEvidence = evidences + "\n";
             extender.checklistLog.get(issueNumber).setEvidence(finalEvidence);
@@ -89,12 +90,12 @@ public class LoggerTable extends JTable {
 
     // Method to setup WSTG mapping column with dropdown combo
     public void setUpIssueColumn(TableColumn column) {
-        column.setCellEditor(new DefaultCellEditor(extender.comboBox));
+        column.setCellEditor(new DefaultCellEditor(extender.getComboBox()));
     }
 
     // Method to generate WSTG list for dropdown
     public void generateWSTGList() {
-        JComboBox<String> comboBox = extender.comboBox;
+        JComboBox<String> comboBox = extender.getComboBox();
         // Add an N.A. to mark finding as false positive
         comboBox.addItem("N.A.");
         for (ChecklistEntry entry : extender.checklistLog) {
@@ -105,12 +106,12 @@ public class LoggerTable extends JTable {
 
     // Method to reset WSTG mapping column
     public void resetList() {
-        extender.comboBox.removeAllItems();
-        JComboBox<String> comboBox = extender.comboBox;
+        extender.getComboBox().removeAllItems();
+        JComboBox<String> comboBox = extender.getComboBox();
         // Add an N.A. to mark finding as false positive
         comboBox.addItem("N.A.");
         for (ChecklistEntry entry : extender.checklistLog) {
-            if (!entry.isExcluded()) {
+            if (Boolean.FALSE.equals(entry.isExcluded())) {
                 String comboEntry = entry.getRefNumber() + " - " + entry.getTestName();
                 comboBox.addItem(comboEntry);
             }
@@ -119,13 +120,13 @@ public class LoggerTable extends JTable {
 
     // Method to delete logger entry
     public void deleteEntry() {
-        extender.extenderPanelUI.deleteEntryButton.setEnabled(false);
+        extender.getExtenderPanelUI().getDeleteEntryButton().setEnabled(false);
         extender.loggerList.remove(currentRow);
         // update UI
         // Inform user about entry deletion
-        extender.extenderPanelUI.scanStatusLabel.setText("Entry deleted");
+        extender.getExtenderPanelUI().getScanStatusLabel().setText("Entry deleted");
         extender.issueAlert("Entry deleted");
         // Repaint logger entries table
-        extender.loggerTableModel.updateLoggerEntryTable();
+        extender.getLoggerTableModel().updateLoggerEntryTable();
     }
 }

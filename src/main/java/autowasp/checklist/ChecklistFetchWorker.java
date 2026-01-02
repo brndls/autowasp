@@ -41,16 +41,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class ChecklistFetchWorker extends SwingWorker<Void, String> {
 
-    private final Autowasp extender;
-    private final JLabel statusLabel;
-    private final JProgressBar progressBar;
-    private final JButton fetchButton;
-    private final JButton localButton;
-    private final JButton cancelButton;
-    private final JButton excelButton;
-    private final JButton saveButton;
-    private final AtomicBoolean running;
-    private final Runnable onComplete;
+    /**
+     * Configuration for ChecklistFetchWorker components.
+     */
+    public record ChecklistFetchConfig(
+            Autowasp extender,
+            JLabel statusLabel,
+            JProgressBar progressBar,
+            JButton fetchButton,
+            JButton localButton,
+            JButton cancelButton,
+            JButton excelButton,
+            JButton saveButton,
+            AtomicBoolean running,
+            Runnable onComplete) {
+    }
+
+    private final ChecklistFetchConfig config;
 
     private int successCount = 0;
     private int skippedCount = 0;
@@ -70,32 +77,13 @@ public class ChecklistFetchWorker extends SwingWorker<Void, String> {
      * @param running      AtomicBoolean for cancel flag
      * @param onComplete   Callback after fetch completes
      */
-    public ChecklistFetchWorker(
-            Autowasp extender,
-            JLabel statusLabel,
-            JProgressBar progressBar,
-            JButton fetchButton,
-            JButton localButton,
-            JButton cancelButton,
-            JButton excelButton,
-            JButton saveButton,
-            AtomicBoolean running,
-            Runnable onComplete) {
-        this.extender = extender;
-        this.statusLabel = statusLabel;
-        this.progressBar = progressBar;
-        this.fetchButton = fetchButton;
-        this.localButton = localButton;
-        this.cancelButton = cancelButton;
-        this.excelButton = excelButton;
-        this.saveButton = saveButton;
-        this.running = running;
-        this.onComplete = onComplete;
+    public ChecklistFetchWorker(ChecklistFetchConfig config) {
+        this.config = config;
     }
 
     @Override
     protected Void doInBackground() {
-        List<String> articleURLs = extender.checklistLogic.scrapeArticleURLs();
+        List<String> articleURLs = config.extender().getChecklistLogic().scrapeArticleURLs();
 
         if (articleURLs.isEmpty()) {
             publish("Failed to fetch article URLs. Check network connection.");
@@ -106,14 +94,14 @@ public class ChecklistFetchWorker extends SwingWorker<Void, String> {
 
         for (String urlStr : articleURLs) {
             // Check for cancellation
-            if (isCancelled() || !running.get()) {
-                extender.checklistLog.clear();
-                break;
+            if (isCancelled() || !config.running().get()) {
+                config.extender().checklistLog.clear();
+                return null;
             }
 
             try {
                 Thread.sleep(500);
-                boolean success = extender.checklistLogic.logNewChecklistEntry(urlStr);
+                boolean success = config.extender().getChecklistLogic().logNewChecklistEntry(urlStr);
                 if (success) {
                     successCount++;
                 } else {
@@ -123,8 +111,9 @@ public class ChecklistFetchWorker extends SwingWorker<Void, String> {
                 publish("Fetching " + (successCount + skippedCount) + "/" + totalItems
                         + " (skipped: " + skippedCount + ")");
             } catch (InterruptedException e) {
+                config.extender().getApi().logging().logToError("Fetch interrupted: " + e.getMessage());
                 Thread.currentThread().interrupt();
-                break;
+                return null;
             }
         }
 
@@ -136,35 +125,35 @@ public class ChecklistFetchWorker extends SwingWorker<Void, String> {
         // process() is called on EDT, safe to update UI
         if (!chunks.isEmpty()) {
             String latestStatus = chunks.get(chunks.size() - 1);
-            statusLabel.setText(latestStatus);
+            config.statusLabel().setText(latestStatus);
         }
     }
 
     @Override
     protected void done() {
         // done() is called on EDT after doInBackground() completes
-        progressBar.setVisible(false);
-        cancelButton.setEnabled(false);
-        fetchButton.setEnabled(true);
-        localButton.setEnabled(true);
+        config.progressBar().setVisible(false);
+        config.cancelButton().setEnabled(false);
+        config.fetchButton().setEnabled(true);
+        config.localButton().setEnabled(true);
 
-        if (isCancelled() || !running.get()) {
-            statusLabel.setText("Fetch checklist cancelled");
-            extender.issueAlert("Fetch checklist cancelled");
+        if (isCancelled() || !config.running().get()) {
+            config.statusLabel().setText("Fetch checklist cancelled");
+            config.extender().issueAlert("Fetch checklist cancelled");
         } else if (totalItems == 0) {
             // Fetch failed completely
-            statusLabel.setText("Failed to fetch article URLs. Check network connection.");
+            config.statusLabel().setText("Failed to fetch article URLs. Check network connection.");
         } else {
-            excelButton.setEnabled(true);
-            saveButton.setEnabled(true);
+            config.excelButton().setEnabled(true);
+            config.saveButton().setEnabled(true);
             String summary = "Fetch complete: " + successCount + " loaded, " + skippedCount + " skipped";
-            statusLabel.setText(summary);
-            extender.issueAlert(summary);
-            extender.loggerTable.generateWSTGList();
+            config.statusLabel().setText(summary);
+            config.extender().issueAlert(summary);
+            config.extender().getLoggerTable().generateWSTGList();
         }
 
-        if (onComplete != null) {
-            onComplete.run();
+        if (config.onComplete() != null) {
+            config.onComplete().run();
         }
     }
 }

@@ -20,11 +20,13 @@ import autowasp.*;
 
 import javax.swing.table.AbstractTableModel;
 
-@SuppressWarnings("serial")
 public class ChecklistTableModel extends AbstractTableModel {
 
-    private final Autowasp extender;
-    private final String[] columnNames = { "Reference Number", "Category", "Test Name", "Test Case Completed", "To Exclude" };
+    private static final long serialVersionUID = 1L;
+
+    private final transient Autowasp extender;
+    private final String[] columnNames = { "Reference Number", "Category", "Test Name", "Test Case Completed",
+            "To Exclude" };
 
     public ChecklistTableModel(Autowasp extender) {
         this.extender = extender;
@@ -40,32 +42,34 @@ public class ChecklistTableModel extends AbstractTableModel {
         return extender.checklistLog.size();
     }
 
+    @Override
     public String getColumnName(int columnIndex) {
         return columnNames[columnIndex];
     }
 
     @Override
-    public Object  getValueAt(int rowIndex, int columnIndex) {
+    public Object getValueAt(int rowIndex, int columnIndex) {
         ChecklistEntry checklistEntry = extender.checklistLog.get(rowIndex);
         if (columnIndex == 0) {
-            return checklistEntry.refNumber;
+            return checklistEntry.getRefNumber();
         }
         if (columnIndex == 1) {
-            return checklistEntry.category;
+            return checklistEntry.getCategory();
         }
         if (columnIndex == 2) {
-            return checklistEntry.testName;
+            return checklistEntry.getTestName();
         }
-        if (columnIndex == 3){
-            return checklistEntry.testcaseCompleted;
+        if (columnIndex == 3) {
+            return checklistEntry.isTestcaseCompleted();
         }
         if (columnIndex == 4) {
-            return checklistEntry.exclusion;
+            return checklistEntry.isExcluded();
         }
         return "";
     }
+
     @Override
-public Class<?> getColumnClass(int column) {
+    public Class<?> getColumnClass(int column) {
         return (getValueAt(0, column).getClass());
     }
 
@@ -73,13 +77,12 @@ public Class<?> getColumnClass(int column) {
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         ChecklistEntry checklistEntry = extender.checklistLog.get(rowIndex);
-        if (columnIndex == 3){
+        if (columnIndex == 3) {
             checklistEntry.setTestCaseCompleted((Boolean) aValue);
-        }
-        else if (columnIndex == 4) {
+        } else if (columnIndex == 4) {
             checklistEntry.setExclusion((Boolean) aValue);
             // Refresh Mapping list for logger tab
-            extender.loggerTable.resetList();
+            extender.getLoggerTable().resetList();
         }
     }
 
@@ -89,10 +92,8 @@ public Class<?> getColumnClass(int column) {
     }
 
     // Method to restrict editable cell to those with dropdown combo.
+    @Override
     public boolean isCellEditable(int row, int col) {
-        if(col == 3 || col == 4){
-            return true;
-        }
-        return false;
+        return col == 3 || col == 4;
     }
 }

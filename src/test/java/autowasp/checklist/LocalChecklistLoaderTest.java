@@ -62,9 +62,9 @@ class LocalChecklistLoaderTest {
             ChecklistEntry firstEntry = entries.get(0);
 
             // Assert
-            assertEquals("WSTG-INFO-01", firstEntry.refNumber);
-            assertEquals("Information Gathering", firstEntry.category);
-            assertTrue(firstEntry.testName.contains("Search Engine Discovery"));
+            assertEquals("WSTG-INFO-01", firstEntry.getRefNumber());
+            assertEquals("Information Gathering", firstEntry.getCategory());
+            assertTrue(firstEntry.getTestName().contains("Search Engine Discovery"));
         }
     }
 
@@ -83,11 +83,11 @@ class LocalChecklistLoaderTest {
             ChecklistEntry firstEntry = entries.get(0);
 
             // Assert
-            assertNotNull(firstEntry.refNumber, "Reference number should not be null");
-            assertTrue(firstEntry.refNumber.startsWith("WSTG-"), "Reference should start with WSTG-");
-            assertNotNull(firstEntry.category, "Category should not be null");
-            assertNotNull(firstEntry.testName, "Test name should not be null");
-            assertFalse(firstEntry.testName.isEmpty(), "Test name should not be empty");
+            assertNotNull(firstEntry.getRefNumber(), "Reference number should not be null");
+            assertTrue(firstEntry.getRefNumber().startsWith("WSTG-"), "Reference should start with WSTG-");
+            assertNotNull(firstEntry.getCategory(), "Category should not be null");
+            assertNotNull(firstEntry.getTestName(), "Test name should not be null");
+            assertFalse(firstEntry.getTestName().isEmpty(), "Test name should not be empty");
         }
 
         @Test
@@ -101,9 +101,9 @@ class LocalChecklistLoaderTest {
             ChecklistEntry entry = entries.get(0);
 
             // Assert
-            assertTrue(entry.summaryHTML.startsWith("<ul>"), "Summary should start with <ul>");
-            assertTrue(entry.summaryHTML.endsWith("</ul>"), "Summary should end with </ul>");
-            assertTrue(entry.summaryHTML.contains("<li>"), "Summary should contain <li> elements");
+            assertTrue(entry.getSummaryHTML().startsWith("<ul>"), "Summary should start with <ul>");
+            assertTrue(entry.getSummaryHTML().endsWith("</ul>"), "Summary should end with </ul>");
+            assertTrue(entry.getSummaryHTML().contains("<li>"), "Summary should contain <li> elements");
         }
 
         @Test
@@ -117,9 +117,9 @@ class LocalChecklistLoaderTest {
             ChecklistEntry entry = entries.get(0);
 
             // Assert
-            assertNotNull(entry.url, "URL should not be null");
-            assertTrue(entry.url.startsWith("https://owasp.org"), "URL should point to OWASP");
-            assertTrue(entry.referencesHTML.contains("href="), "References HTML should contain link");
+            assertNotNull(entry.getUrl(), "URL should not be null");
+            assertTrue(entry.getUrl().startsWith("https://owasp.org"), "URL should point to OWASP");
+            assertTrue(entry.getReferencesHTML().contains("href="), "References HTML should contain link");
         }
     }
 

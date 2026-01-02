@@ -20,8 +20,8 @@ package autowasp.logger;
 import autowasp.Autowasp;
 import autowasp.http.HTTPRequestResponse;
 import autowasp.http.ScanIssue;
-import autowasp.logger.entryTable.LoggerEntry;
-import autowasp.logger.instancesTable.InstanceEntry;
+import autowasp.logger.entrytable.LoggerEntry;
+import autowasp.logger.instancestable.InstanceEntry;
 
 // Montoya API imports
 import burp.api.montoya.scanner.audit.issues.AuditIssue;
@@ -31,6 +31,7 @@ import org.jsoup.nodes.Document;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Scanner Logic - Montoya API
@@ -53,9 +54,9 @@ import java.util.ArrayList;
  */
 public class ScannerLogic {
     private final Autowasp extender;
-    public final ArrayList<String> repeatedIssue;
+    public final List<String> repeatedIssue;
 
-    public ArrayList<String> getRepeatedIssue() {
+    public List<String> getRepeatedIssue() {
         return repeatedIssue;
     }
 
@@ -102,19 +103,24 @@ public class ScannerLogic {
 
         for (LoggerEntry entry : this.extender.loggerList) {
             if (entry.getHost().equals(issueHost) && entry.getVulnType().equals(issueVulnType)) {
-                boolean toAddFlag = true;
-                for (InstanceEntry ie : entry.getInstanceList()) {
-                    // check if instanceList contain similar URL.
-                    if (url != null && ie.getUrl().equals(url.toString())) {
-                        // if url is not unique, set toAddFlag to false
-                        toAddFlag = false;
-                    }
-                }
-                // add new instance if toAddFlag is true
-                if (toAddFlag) {
-                    entry.addInstance(instance);
-                }
+                addInstanceIfUnique(entry, instance);
             }
+        }
+    }
+
+    private void addInstanceIfUnique(LoggerEntry entry, InstanceEntry instance) {
+        boolean isUnique = true;
+        String newUrl = instance.getUrl();
+
+        for (InstanceEntry ie : entry.getInstanceList()) {
+            if (newUrl != null && !newUrl.isEmpty() && ie.getUrl().equals(newUrl)) {
+                isUnique = false;
+                break;
+            }
+        }
+
+        if (isUnique) {
+            entry.addInstance(instance);
         }
     }
 
@@ -136,10 +142,10 @@ public class ScannerLogic {
         evidences = document.text();
 
         LoggerEntry entry = new LoggerEntry(host, action, vulnType, issueName);
-        entry.instancesList.clear();
+        entry.clearInstances();
         entry.setPenTesterComments(defaultComments);
         entry.setEvidence(evidences);
-        extender.loggerTableModel.addAllLoggerEntry(entry);
+        extender.getLoggerTableModel().addAllLoggerEntry(entry);
     }
 
     /**

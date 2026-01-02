@@ -17,8 +17,8 @@
 package autowasp.checklist;
 
 import autowasp.Autowasp;
-import autowasp.logger.entryTable.LoggerEntry;
-import autowasp.logger.instancesTable.InstanceEntry;
+import autowasp.logger.entrytable.LoggerEntry;
+import autowasp.logger.instancestable.InstanceEntry;
 
 // Montoya HTTP API imports (BApp Store Criteria #7)
 import burp.api.montoya.http.message.HttpRequestResponse;
@@ -55,9 +55,9 @@ import org.apache.poi.common.usermodel.HyperlinkType;
 
 public class ChecklistLogic implements Serializable {
 
-    private final Autowasp extender;
-    private Document anyPage;
-    public final String GITHUB_REPO_URL = "https://github.com/GovTech-CSG/wstg/blob/master/document/4-Web_Application_Security_Testing/README.md";
+    private final transient Autowasp extender;
+    private transient Document anyPage;
+    public static final String GITHUB_REPO_URL = "https://github.com/GovTech-CSG/wstg/blob/master/document/4-Web_Application_Security_Testing/README.md";
 
     // Retry configuration
     private static final int MAX_RETRY_ATTEMPTS = 3;
@@ -81,40 +81,14 @@ public class ChecklistLogic implements Serializable {
 
         while (attempt < MAX_RETRY_ATTEMPTS) {
             try {
-                // Use Burp's HTTP client for BApp Store compliance (Criteria #7)
-                // This ensures proxy settings and session handling rules are respected
-                HttpRequest request = HttpRequest.httpRequestFromUrl(url);
-                HttpRequestResponse response = extender.getApi().http().sendRequest(request);
-                HttpResponse httpResponse = response.response();
-
-                if (httpResponse != null && httpResponse.statusCode() == 200) {
-                    String html = httpResponse.bodyToString();
-                    // Use Jsoup.parse() for HTML parsing only (no connection)
-                    // Base URL is provided for resolving relative links
-                    return Jsoup.parse(html, url);
-                }
-
-                // Non-200 response, treat as failure for retry
-                String statusInfo = httpResponse != null
-                        ? "HTTP " + httpResponse.statusCode()
-                        : "null response";
-                throw new RuntimeException(statusInfo);
-
+                return attemptFetch(url);
             } catch (Exception e) {
                 lastException = e;
                 attempt++;
-                extender.logOutput("Fetch attempt " + attempt + "/" + MAX_RETRY_ATTEMPTS
-                        + " failed for: " + url + " (" + e.getMessage() + ")");
+                handleFetchError(url, attempt, e);
 
                 if (attempt < MAX_RETRY_ATTEMPTS) {
-                    try {
-                        // Exponential backoff: 1s, 2s, 4s
-                        long backoff = INITIAL_BACKOFF_MS * (1L << (attempt - 1));
-                        Thread.sleep(backoff);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
+                    performBackoff(attempt);
                 }
             }
         }
@@ -123,6 +97,42 @@ public class ChecklistLogic implements Serializable {
         extender.logError("Failed to fetch after " + MAX_RETRY_ATTEMPTS + " attempts: " + url
                 + (lastException != null ? " - " + lastException.getMessage() : ""));
         return null;
+    }
+
+    private Document attemptFetch(String url) throws IOException {
+        // Use Burp's HTTP client for BApp Store compliance (Criteria #7)
+        // This ensures proxy settings and session handling rules are respected
+        HttpRequest request = HttpRequest.httpRequestFromUrl(url);
+        HttpRequestResponse response = extender.getApi().http().sendRequest(request);
+        HttpResponse httpResponse = response.response();
+
+        if (httpResponse != null && httpResponse.statusCode() == 200) {
+            String html = httpResponse.bodyToString();
+            // Use Jsoup.parse() for HTML parsing only (no connection)
+            // Base URL is provided for resolving relative links
+            return Jsoup.parse(html, url);
+        }
+
+        // Non-200 response, treat as failure for retry
+        String statusInfo = httpResponse != null
+                ? "HTTP " + httpResponse.statusCode()
+                : "null response";
+        throw new IOException(statusInfo);
+    }
+
+    private void handleFetchError(String url, int attempt, Exception e) {
+        extender.logOutput("Fetch attempt " + attempt + "/" + MAX_RETRY_ATTEMPTS
+                + " failed for: " + url + " (" + e.getMessage() + ")");
+    }
+
+    private void performBackoff(int attempt) {
+        try {
+            // Exponential backoff: 1s, 2s, 4s
+            long backoff = INITIAL_BACKOFF_MS * (1L << (attempt - 1));
+            Thread.sleep(backoff);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
@@ -157,22 +167,19 @@ public class ChecklistLogic implements Serializable {
 
         // Cleans the list of URLs to exclude external links and links to headers within
         // the pages
-        for (int i = 0; i < articleURLs.size(); i++) {
+        articleURLs.removeIf(url -> {
             // do another check to remove "sub" article of a test cases
-            String[] array = articleURLs.get(i).split("/");
+            String[] array = url.split("/");
             int subArticleIndex = array[array.length - 1].indexOf(".");
             // Condition 1 filters out external URLs,
             // while condition 2 filters out anchor URLs that link to headers within the
             // article,
             // condition 3 filters out README.md and
             // condition 4 filters out sub-articles
-            if (!articleURLs.get(i).contains("https://github.com") || articleURLs.get(i).contains("#")
-                    || articleURLs.get(i).contains("README.md") || articleURLs.get(i).contains("00")
-                    || subArticleIndex == 2) {
-                articleURLs.remove(i);
-                i--;
-            }
-        }
+            return !url.contains("https://github.com") || url.contains("#")
+                    || url.contains("README.md") || url.contains("00")
+                    || subArticleIndex == 2;
+        });
         return articleURLs;
     }
 
@@ -181,7 +188,7 @@ public class ChecklistLogic implements Serializable {
     public List<String> scrapePageURLs(String anyURL) {
         anyPage = fetchWithRetry(anyURL);
         if (anyPage == null) {
-            extender.extenderPanelUI.scanStatusLabel.setText("Failed to fetch: " + anyURL);
+            extender.getExtenderPanelUI().getScanStatusLabel().setText("Failed to fetch: " + anyURL);
             return new ArrayList<>();
         }
 
@@ -196,10 +203,10 @@ public class ChecklistLogic implements Serializable {
 
     // Gets the Reference Number, Category, and Title of the article saved in a hash
     // map. Returns null on failure (skip-and-continue).
-    public HashMap<String, String> getTableElements(String anyURL) {
+    public Map<String, String> getTableElements(String anyURL) {
         anyPage = fetchWithRetry(anyURL);
         if (anyPage == null) {
-            return null;
+            return Collections.emptyMap();
         }
 
         try {
@@ -211,14 +218,14 @@ public class ChecklistLogic implements Serializable {
             String testName = filePathElements.get(8).text().split("-", 2)[1].replace("_", " ");
             testName = testName.split("[.]", 2)[0];
 
-            HashMap<String, String> tableElements = new HashMap<>();
+            Map<String, String> tableElements = new HashMap<>();
             tableElements.put("Reference Number", refNumber);
             tableElements.put("Category", category);
             tableElements.put("Test Name", testName);
             return tableElements;
         } catch (Exception e) {
             extender.logError("Error parsing table elements for: " + anyURL + " - " + e.getMessage());
-            return null;
+            return Collections.emptyMap();
         }
     }
 
@@ -227,10 +234,10 @@ public class ChecklistLogic implements Serializable {
      * saved in a hash map, with HTML format preserved to be rendered
      * within the Burp UI elements. Returns null on failure (skip-and-continue).
      */
-    public HashMap<String, String> getContentElements(String anyURL) {
+    public Map<String, String> getContentElements(String anyURL) {
         anyPage = fetchWithRetry(anyURL);
         if (anyPage == null) {
-            return null;
+            return Collections.emptyMap();
         }
 
         try {
@@ -253,7 +260,7 @@ public class ChecklistLogic implements Serializable {
             int state = 0;
             String currentHeader = "";
             StringBuilder currentParagraphs = new StringBuilder();
-            HashMap<String, String> contentElements = new HashMap<>();
+            Map<String, String> contentElements = new HashMap<>();
 
             while (index < articleElements.size()) {
                 switch (state) {
@@ -276,42 +283,38 @@ public class ChecklistLogic implements Serializable {
                         currentParagraphs = new StringBuilder();
                         state = 0;
                         break;
+                    default:
+                        // Ignore other states or unknown elements
+                        break;
                 }
             }
             return contentElements;
         } catch (Exception e) {
             extender.logError("Error parsing content for: " + anyURL + " - " + e.getMessage());
-            return null;
+            return Collections.emptyMap();
         }
     }
 
     // Saves a local copy of the checklist in a file called OWASPChecklistData.txt
     // at the directory dictated by the user
     public void saveLocalCopy(String absoluteFilePath) throws IOException {
-        FileOutputStream fileOutputStream = null;
-        try {
-            fileOutputStream = new FileOutputStream(absoluteFilePath + File.separator + "OWASP_WSTG_local");
-            ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
+        String filePath = absoluteFilePath + File.separator + "OWASP_WSTG_local";
+        try (FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+                ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream)) {
+
             for (ChecklistEntry entry : extender.checklistLog) {
-                if (entry.exclusion) {
+                if (entry.isExcluded()) {
                     ChecklistEntry tempChecklistEntry = entry;
-                    tempChecklistEntry.exclusion = false;
+                    tempChecklistEntry.setExclusion(false);
                     outputStream.writeObject(tempChecklistEntry);
                 } else {
                     outputStream.writeObject(entry);
                 }
             }
-            outputStream.close();
 
-            extender.extenderPanelUI.scanStatusLabel
-                    .setText("File saved to " + absoluteFilePath + File.separator + "OWASP_WSTG_local");
-            extender.issueAlert("File saved to " + absoluteFilePath + File.separator + "OWASP_WSTG_local");
-        }
-
-        finally {
-            if (fileOutputStream != null) {
-                safeClose(fileOutputStream);
-            }
+            extender.getExtenderPanelUI().getScanStatusLabel()
+                    .setText("File saved to " + filePath);
+            extender.issueAlert("File saved to " + filePath);
         }
     }
 
@@ -333,56 +336,72 @@ public class ChecklistLogic implements Serializable {
         }
 
         for (ChecklistEntry entry : entries) {
-            extender.checkListHashMap.put(entry.refNumber, entry);
+            extender.checkListHashMap.put(entry.getRefNumber(), entry);
             loadNewChecklistEntry(entry);
         }
 
-        extender.loggerTable.generateWSTGList();
+        extender.getLoggerTable().generateWSTGList();
         extender.logOutput("Loaded " + entries.size() + " items from bundled WSTG v" + loader.getVersion());
     }
 
     // Saves a local excel file at the directory specified by the user
-    @SuppressWarnings("resource")
     public void saveToExcelFile(String absoluteFilePath) {
-        // Populate your excel checklist data
-        for (LoggerEntry findingEntry : extender.loggerList) {
-            // Identify findings that was mapped to OWASP checklist
-            if (findingEntry.getChecklistIssue() == null || findingEntry.getChecklistIssue().isEmpty()
-                    || findingEntry.checklistIssue.equals("N.A.")) {
-                continue;
-            }
-            // Extract the refID using substring
-            int cutIndex = findingEntry.getChecklistIssue().indexOf(" -");
-            String findingRefID = findingEntry.getChecklistIssue().substring(0, cutIndex);
-            ChecklistEntry checklistEntry = extender.checkListHashMap.get(findingRefID);
+        populateChecklistEntryData();
 
-            // Retrieve findings entry comments, evidences and instances that are not false
-            // positive.
+        try (XSSFWorkbook checklistWorkbook = new XSSFWorkbook()) {
+            XSSFSheet checklistSheet = checklistWorkbook.createSheet("OWASP Checklist");
+
+            createHeaderRow(checklistWorkbook, checklistSheet);
+            writeChecklistRows(checklistWorkbook, checklistSheet);
+
+            autoSizeColumns(checklistSheet);
+
+            writeToFile(checklistWorkbook, absoluteFilePath);
+        } catch (IOException e) {
+            extender.issueAlert("Error initializing workbook");
+        }
+    }
+
+    private void populateChecklistEntryData() {
+        for (LoggerEntry findingEntry : extender.loggerList) {
+            processFindingEntry(findingEntry);
+        }
+    }
+
+    private void processFindingEntry(LoggerEntry findingEntry) {
+        String issue = findingEntry.getChecklistIssue();
+        if (issue == null || issue.isEmpty() || "N.A.".equals(issue)) {
+            return;
+        }
+
+        int cutIndex = issue.indexOf(" -");
+        if (cutIndex == -1) {
+            return;
+        }
+
+        String findingRefID = issue.substring(0, cutIndex);
+        ChecklistEntry checklistEntry = extender.checkListHashMap.get(findingRefID);
+
+        if (checklistEntry != null) {
             StringBuilder comments = new StringBuilder();
             comments.append(findingEntry.getPenTesterComments());
             comments.append("\nAffected Instance include(s):\n");
             for (InstanceEntry instanceEntry : findingEntry.getInstanceList()) {
-                // Processed instances url that are not marked as false positive
-                if (!instanceEntry.getConfidence().equals("False Positive")) {
-                    comments.append(instanceEntry.getUrl()).append(" - (").append(instanceEntry.getConfidence())
+                if (!"False Positive".equals(instanceEntry.getConfidence())) {
+                    comments.append(instanceEntry.getUrl()).append(" - (")
+                            .append(instanceEntry.getConfidence())
                             .append(")\n");
                 }
             }
-            String evidence = "";
-            evidence += findingEntry.getEvidence();
-
-            // Append break line in case of more findings mapped to similar issue
+            String evidence = findingEntry.getEvidence() + "\n\n";
             comments.append("\n\n");
-            evidence += "\n\n";
+
             checklistEntry.setPenTesterComments(comments.toString());
             checklistEntry.setEvidence(evidence);
         }
+    }
 
-        // Create a new workbook object and a new sheet
-        XSSFWorkbook checklistWorkbook = new XSSFWorkbook();
-        XSSFSheet checklistSheet = checklistWorkbook.createSheet("OWASP Checklist");
-
-        // Create the style object for the headers (first row)
+    private void createHeaderRow(XSSFWorkbook checklistWorkbook, XSSFSheet checklistSheet) {
         XSSFCellStyle headerStyle = checklistWorkbook.createCellStyle();
         XSSFFont headerFont = checklistWorkbook.createFont();
         headerFont.setBold(true);
@@ -390,19 +409,6 @@ public class ChecklistLogic implements Serializable {
         headerStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-        // Create the style object for the URL column
-        XSSFCellStyle urlStyle = checklistWorkbook.createCellStyle();
-        urlStyle.setWrapText(true);
-        XSSFFont urlFont = checklistWorkbook.createFont();
-        urlFont.setUnderline(XSSFFont.U_SINGLE);
-        urlFont.setColor(IndexedColors.BLUE.getIndex());
-        urlStyle.setFont(urlFont);
-
-        // Create the style object for the pentester comments and evidence cells
-        XSSFCellStyle cellStyle = checklistWorkbook.createCellStyle();
-        cellStyle.setWrapText(true);
-
-        // Create and style the headers row
         XSSFRow columnHeadersRow = checklistSheet.createRow(0);
         String[] headerArray = new String[] { "Reference Number", "Category", "Test Name", "Pentester Comments",
                 "Evidence", "URL" };
@@ -411,64 +417,71 @@ public class ChecklistLogic implements Serializable {
             cell.setCellValue(headerArray[i]);
             cell.setCellStyle(headerStyle);
         }
+    }
 
-        // Create and style the content rows
+    private void writeChecklistRows(XSSFWorkbook checklistWorkbook, XSSFSheet checklistSheet) {
+        XSSFCellStyle urlStyle = checklistWorkbook.createCellStyle();
+        urlStyle.setWrapText(true);
+        XSSFFont urlFont = checklistWorkbook.createFont();
+        urlFont.setUnderline(org.apache.poi.ss.usermodel.Font.U_SINGLE);
+        urlFont.setColor(IndexedColors.BLUE.getIndex());
+        urlStyle.setFont(urlFont);
+
+        XSSFCellStyle cellStyle = checklistWorkbook.createCellStyle();
+        cellStyle.setWrapText(true);
+
         int rowNum = 0;
         for (int i = 0; i < extender.checklistLog.size(); i++) {
             ChecklistEntry entry = extender.checklistLog.get(i);
-            String[] contentArray = new String[] { entry.refNumber, entry.category, entry.testName,
-                    entry.pentesterComments.trim(), entry.evidence.trim(), entry.url };
+            String[] contentArray = new String[] { entry.getRefNumber(), entry.getCategory(), entry.getTestName(),
+                    entry.getPenTesterComments().trim(), entry.getEvidence().trim(), entry.getUrl() };
             entry.clearComments();
             entry.clearEvidences();
 
-            // append "-" to rows that have no entry
-            if (contentArray[3].equals("")) {
+            if (contentArray[3].equals(""))
                 contentArray[3] = "N.A.";
-            }
-            if (contentArray[4].equals("")) {
+            if (contentArray[4].equals(""))
                 contentArray[4] = "N.A.";
-            }
 
             XSSFRow row = checklistSheet.createRow(++rowNum);
             for (int j = 0; j < 6; j++) {
                 XSSFCell cell = row.createCell(j);
                 cell.setCellValue(contentArray[j]);
-                // Checks if the cell is the URL cell, which needs to be styled differently
                 if (j != 5) {
                     cell.setCellStyle(cellStyle);
                 } else {
                     cell.setCellStyle(urlStyle);
-                    // Adds the hyperlink to the URL cell
                     CreationHelper helper = checklistWorkbook.getCreationHelper();
                     Hyperlink articleLink = helper.createHyperlink(HyperlinkType.URL);
-                    articleLink.setAddress(entry.url);
+                    articleLink.setAddress(entry.getUrl());
                     cell.setHyperlink(articleLink);
                 }
             }
-            // Sets cell height to excel default value so that word wrap doesn't make the
-            // rows super tall
             row.setHeight((short) -1);
         }
+    }
 
-        // Auto-size every column first
-        for (int i = 0; i <= columnHeadersRow.getPhysicalNumberOfCells(); i++) {
-            checklistSheet.autoSizeColumn(i);
+    private void autoSizeColumns(XSSFSheet checklistSheet) {
+        if (checklistSheet.getPhysicalNumberOfRows() > 0) {
+            org.apache.poi.ss.usermodel.Row headerRow = checklistSheet.getRow(0);
+            if (headerRow != null) {
+                for (int i = 0; i < headerRow.getPhysicalNumberOfCells(); i++) {
+                    checklistSheet.autoSizeColumn(i);
+                }
+            }
         }
-
-        // Then set a fixed column width of 100 characters (apparently the
-        // setColumnWidth method uses 1/256 of a character width as a measurement unit)
         checklistSheet.setColumnWidth(3, 25600);
         checklistSheet.setColumnWidth(4, 25600);
+    }
 
-        // Writes the workbook object into an actual excel file. File.separator is used
-        // to ensure cross OS compatibility
+    private void writeToFile(XSSFWorkbook checklistWorkbook, String absoluteFilePath) {
         try {
             FileOutputStream excelWriter = new FileOutputStream(
                     new File(absoluteFilePath + File.separator + "OWASP Checklist.xlsx"));
             checklistWorkbook.write(excelWriter);
             excelWriter.close();
             extender.issueAlert("Excel report generated!");
-            extender.extenderPanelUI.scanStatusLabel.setText("Excel report generated!");
+            extender.getExtenderPanelUI().getScanStatusLabel().setText("Excel report generated!");
         } catch (IOException e) {
             extender.issueAlert("Error, file not found");
         }
@@ -482,11 +495,11 @@ public class ChecklistLogic implements Serializable {
      * @return true if successful, false if skipped due to fetch failure
      */
     public boolean logNewChecklistEntry(String url) {
-        HashMap<String, String> tableElements = this.getTableElements(url);
-        HashMap<String, String> contentElements = this.getContentElements(url);
+        Map<String, String> tableElements = this.getTableElements(url);
+        Map<String, String> contentElements = this.getContentElements(url);
 
         // Skip-and-continue: return false if either fetch failed
-        if (tableElements == null || contentElements == null) {
+        if (tableElements == null || tableElements.isEmpty() || contentElements == null || contentElements.isEmpty()) {
             extender.logOutput("Skipping URL due to fetch failure: " + url);
             return false;
         }
@@ -494,8 +507,8 @@ public class ChecklistLogic implements Serializable {
         int row = this.extender.checklistLog.size();
         ChecklistEntry checklistEntry = new ChecklistEntry(tableElements, contentElements, url);
         checklistEntry.cleanEntry();
-        extender.checklistTableModel.addValueAt(checklistEntry, row, row);
-        extender.checkListHashMap.put(checklistEntry.refNumber, checklistEntry);
+        extender.getChecklistTableModel().addValueAt(checklistEntry, row, row);
+        extender.checkListHashMap.put(checklistEntry.getRefNumber(), checklistEntry);
         return true;
     }
 
@@ -503,24 +516,20 @@ public class ChecklistLogic implements Serializable {
     // checklistLog using the setValueAt() method
     public void loadNewChecklistEntry(ChecklistEntry entry) {
         int row = this.extender.checklistLog.size();
-        extender.checklistTableModel.addValueAt(entry, row, row);
+        extender.getChecklistTableModel().addValueAt(entry, row, row);
     }
 
     // Logic to calculate file hash
     public String toHash(File chosenFile) throws NoSuchAlgorithmException {
-        MessageDigest md;
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
         String result = "";
-        int readCount;
-        FileInputStream fis = null;
-        try {
-            md = MessageDigest.getInstance("SHA-256");
-            fis = new FileInputStream(chosenFile);
-            byte[] dataBytes = new byte[1024];
 
+        try (FileInputStream fis = new FileInputStream(chosenFile)) {
+            byte[] dataBytes = new byte[1024];
+            int readCount;
             while ((readCount = fis.read(dataBytes)) != -1) {
                 md.update(dataBytes, 0, readCount);
             }
-            safeClose(fis);
             byte[] mdbytes = md.digest();
 
             // convert the byte to hex format method
@@ -531,8 +540,6 @@ public class ChecklistLogic implements Serializable {
             result = sb.toString();
         } catch (IOException ioe) {
             extender.logError("Error exception at toHash");
-        } finally {
-            safeClose(fis);
         }
 
         return result;
@@ -549,14 +556,4 @@ public class ChecklistLogic implements Serializable {
         }
     }
 
-    private void safeClose(FileInputStream fis) {
-        if (fis != null) {
-            try {
-                fis.close();
-            } catch (IOException e) {
-                extender.logOutput("FileInputStream cannot perform safeClose");
-            }
-
-        }
-    }
 }

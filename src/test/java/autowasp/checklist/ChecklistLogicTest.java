@@ -23,13 +23,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for ChecklistLogic.
- * 
+ *
  * Tests now mock Burp's HTTP API (api.http().sendRequest()) instead of
  * Jsoup.connect()
  * following the refactoring for BApp Store Criteria #7 compliance.
@@ -71,11 +72,15 @@ class ChecklistLogicTest {
     @BeforeEach
     void setUp() {
         // Setup Extender mocks
-        mockExtender.extenderPanelUI = mockPanelUI;
-        mockPanelUI.scanStatusLabel = mockStatusLabel;
-
+        lenient().when(mockExtender.getExtenderPanelUI()).thenReturn(mockPanelUI);
+        // Stub getter methods for encapsulated fields
+        lenient().when(mockPanelUI.getScanStatusLabel()).thenReturn(mockStatusLabel);
+        lenient().when(mockPanelUI.getSummaryTextPane()).thenReturn(new JTextPane());
+        lenient().when(mockPanelUI.getHowToTestTextPane()).thenReturn(new JEditorPane());
+        lenient().when(mockPanelUI.getReferencesTextPane()).thenReturn(new JTextPane());
+        lenient().when(mockPanelUI.getCancelFetchButton()).thenReturn(new JButton());
         // Setup checklist fields using reflection because they are final in Autowasp
-        setField(mockExtender, "checklistTableModel", mockChecklistTableModel);
+        lenient().when(mockExtender.getChecklistTableModel()).thenReturn(mockChecklistTableModel);
         setField(mockExtender, "checklistLog", new ArrayList<ChecklistEntry>());
         setField(mockExtender, "checkListHashMap", new HashMap<String, ChecklistEntry>());
         setField(mockExtender, "loggerList", new ArrayList<>());
@@ -132,7 +137,7 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testScrapePageURLs_Success() {
+    void testScrapePageURLsSuccess() {
         String testUrl = "http://example.com";
         String html = "<html><article><a href='http://link1.com'>Link 1</a><a href='http://link2.com'>Link 2</a></article></html>";
 
@@ -145,7 +150,7 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testScrapePageURLs_EmptyResponse() {
+    void testScrapePageURLsEmptyResponse() {
         String testUrl = "http://bad.com";
 
         setupMockHttpFailure(testUrl);
@@ -160,7 +165,7 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testGetTableElements_Valid() {
+    void testGetTableElementsValid() {
         String testUrl = "http://example.com/table";
         String html = "<html><body>" +
                 "<table><tr><td>WSTG-TEST-01</td></tr></table>" +
@@ -174,7 +179,7 @@ class ChecklistLogicTest {
 
         setupMockHttpResponse(testUrl, html, (short) 200);
 
-        HashMap<String, String> result = checklistLogic.getTableElements(testUrl);
+        Map<String, String> result = checklistLogic.getTableElements(testUrl);
 
         assertNotNull(result);
         assertEquals("WSTG-TEST-01", result.get("Reference Number"));
@@ -183,7 +188,7 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testGetContentElements_Valid() {
+    void testGetContentElementsValid() {
         String testUrl = "http://example.com/content";
         String html = "<html><article>" +
                 "<h1>Title</h1>" +
@@ -195,7 +200,7 @@ class ChecklistLogicTest {
 
         setupMockHttpResponse(testUrl, html, (short) 200);
 
-        HashMap<String, String> result = checklistLogic.getContentElements(testUrl);
+        Map<String, String> result = checklistLogic.getContentElements(testUrl);
 
         assertNotNull(result);
         assertTrue(result.containsKey("summary"));
@@ -203,7 +208,7 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testLogNewChecklistEntry_Success() {
+    void testLogNewChecklistEntrySuccess() {
         String testUrl = "http://example.com/entry";
         String html = "<html><body>" +
                 "<table><tr><td>WSTG-TEST-02</td></tr></table>" +
@@ -228,7 +233,7 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testLogNewChecklistEntry_Failure() {
+    void testLogNewChecklistEntryFailure() {
         String testUrl = "http://fail.com";
 
         setupMockHttpFailure(testUrl);
@@ -262,7 +267,7 @@ class ChecklistLogicTest {
 
         // Setup mock data
         ChecklistEntry entry1 = new ChecklistEntry(new HashMap<>(), new HashMap<>(), "url1");
-        entry1.refNumber = "REF1";
+        entry1.setRefNumber("REF1");
         mockExtender.checklistLog.add(entry1);
 
         checklistLogic.saveLocalCopy(destPath);
@@ -278,7 +283,7 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testSaveToExcelFile_NoContent(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tempDir) {
+    void testSaveToExcelFileNoContent(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tempDir) {
         String destPath = tempDir.toAbsolutePath().toString();
 
         // No entries in checklistLog
@@ -292,7 +297,7 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testFetchWithRetry_NonOKStatusCode() {
+    void testFetchWithRetryNonOKStatusCode() {
         String testUrl = "http://notfound.com";
 
         // Setup mock to return 404

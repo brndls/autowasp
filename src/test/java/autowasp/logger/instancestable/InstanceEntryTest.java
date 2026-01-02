@@ -1,4 +1,4 @@
-package autowasp.logger.instancesTable;
+package autowasp.logger.instancestable;
 
 import autowasp.http.HTTPRequestResponse;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ class InstanceEntryTest {
         assertEquals("Certain", entry.getConfidence());
         assertEquals("High", entry.getSeverity());
         assertEquals(mockWrapper, entry.getRequestResponse());
-        assertFalse(entry.isRequestResponseNull());
+        assertNotNull(entry.getRequestResponse());
     }
 
     @Test
@@ -36,7 +36,7 @@ class InstanceEntryTest {
                 (burp.api.montoya.http.message.HttpRequestResponse) null);
 
         assertEquals("https://example.com", entry.getUrl());
-        assertTrue(entry.isRequestResponseNull());
+        assertNull(entry.getRequestResponse());
     }
 
     @Test

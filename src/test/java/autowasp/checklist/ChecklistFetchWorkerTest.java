@@ -1,7 +1,7 @@
 package autowasp.checklist;
 
 import autowasp.Autowasp;
-import autowasp.logger.entryTable.LoggerTable;
+import autowasp.logger.entrytable.LoggerTable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,15 +54,16 @@ class ChecklistFetchWorkerTest {
         checklistLog = new ArrayList<>();
 
         // Mock Autowasp dependencies
-        mockExtender.checklistLogic = mockChecklistLogic;
-        mockExtender.loggerTable = mockLoggerTable;
+        // Mock Autowasp dependencies
+        lenient().when(mockExtender.getChecklistLogic()).thenReturn(mockChecklistLogic);
+        lenient().when(mockExtender.getLoggerTable()).thenReturn(mockLoggerTable);
 
         // Use reflection to set final field checklistLog
         Field checklistLogField = Autowasp.class.getField("checklistLog");
         checklistLogField.setAccessible(true);
         checklistLogField.set(mockExtender, checklistLog);
 
-        worker = new ChecklistFetchWorker(
+        worker = new ChecklistFetchWorker(new ChecklistFetchWorker.ChecklistFetchConfig(
                 mockExtender,
                 mockStatusLabel,
                 mockProgressBar,
@@ -72,11 +73,11 @@ class ChecklistFetchWorkerTest {
                 mockExcelButton,
                 mockSaveButton,
                 running,
-                mockOnComplete);
+                mockOnComplete));
     }
 
     @Test
-    void testDoInBackground_Success() throws Exception {
+    void testDoInBackground_Success() {
         // ARRANGE
         List<String> mockUrls = Arrays.asList("http://example.com/1", "http://example.com/2");
         when(mockChecklistLogic.scrapeArticleURLs()).thenReturn(mockUrls);
@@ -91,7 +92,7 @@ class ChecklistFetchWorkerTest {
     }
 
     @Test
-    void testDoInBackground_Cancelled() throws Exception {
+    void testDoInBackground_Cancelled() {
         // ARRANGE
         List<String> mockUrls = Arrays.asList("http://example.com/1", "http://example.com/2");
         when(mockChecklistLogic.scrapeArticleURLs()).thenReturn(mockUrls);

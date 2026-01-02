@@ -19,8 +19,8 @@ package autowasp.logger;
 import autowasp.Autowasp;
 import autowasp.http.HTTPRequestResponse;
 import autowasp.http.HTTPService;
-import autowasp.logger.entryTable.LoggerEntry;
-import autowasp.logger.instancesTable.InstanceEntry;
+import autowasp.logger.entrytable.LoggerEntry;
+import autowasp.logger.instancestable.InstanceEntry;
 
 // Montoya API imports
 import burp.api.montoya.http.message.HttpHeader;
@@ -86,10 +86,10 @@ public class TrafficLogic {
     private List<HttpHeader> requestHeaders = new ArrayList<>();
     private List<HttpHeader> responseHeaders = new ArrayList<>();
 
-    public final ArrayList<String> cgiUrlList;
-    public String burpCollaboratorHost;
+    public final List<String> cgiUrlList;
+    private String burpCollaboratorHost;
 
-    final ArrayList<String> httpVerbList = new ArrayList<>();
+    final List<String> httpVerbList = new ArrayList<>();
 
     public TrafficLogic(Autowasp extender) {
         this.extender = extender;
@@ -160,7 +160,7 @@ public class TrafficLogic {
     private void verifyXContentHeaders() {
         boolean xcontentFlag = false;
         this.trafficMsg = "";
-        this.evidence = "";
+        StringBuilder evidenceBuilder = new StringBuilder();
 
         for (HttpHeader header : responseHeaders) {
             String name = header.name().toLowerCase();
@@ -168,25 +168,26 @@ public class TrafficLogic {
 
             if (name.contains("x-content-type-options")) {
                 this.trafficMsg = "[+] X-Content-Type-Options header implemented\n";
-                this.evidence += header.name() + ": " + value + "\n";
+                evidenceBuilder.append(header.name()).append(": ").append(value).append("\n");
                 xcontentFlag = true;
             }
             if (name.contains("x-frame-options")) {
                 this.trafficMsg = "[+] X-Frame-Options implemented\n";
-                this.evidence += header.name() + ": " + value + "\n";
+                evidenceBuilder.append(header.name()).append(": ").append(value).append("\n");
                 xcontentFlag = true;
             }
             if (name.contains("x-xss-protection")) {
                 this.trafficMsg = "[+] X-XSS-Protection implemented\n";
-                this.evidence += header.name() + ": " + value + "\n";
+                evidenceBuilder.append(header.name()).append(": ").append(value).append("\n");
                 xcontentFlag = true;
             }
             if (name.contains("content-type")) {
                 this.trafficMsg = "[+] Content-Type implemented\n";
-                this.evidence += header.name() + ": " + value + "\n";
+                evidenceBuilder.append(header.name()).append(": ").append(value).append("\n");
                 xcontentFlag = true;
             }
         }
+        this.evidence = evidenceBuilder.toString();
 
         if (xcontentFlag) {
             this.secHeaderFlag = true;
@@ -203,7 +204,7 @@ public class TrafficLogic {
             String[] lines = requestString.split("\n");
 
             if (lines[0].contains("POST")) {
-                this.evidence = "";
+                StringBuilder evidenceBuilder = new StringBuilder();
 
                 for (String method : httpVerbList) {
                     String newRequestString = requestString.replace("POST", method);
@@ -220,10 +221,11 @@ public class TrafficLogic {
                     int newStatusCode = newResponse.statusCode();
 
                     if (newStatusCode < 400) {
-                        this.evidence += "Ran method: " + method +
-                                "  and response status code returns " + newStatusCode + "\n";
+                        evidenceBuilder.append("Ran method: ").append(method)
+                                .append("  and response status code returns ").append(newStatusCode).append("\n");
                     }
                 }
+                this.evidence = evidenceBuilder.toString();
 
                 if (!this.evidence.isEmpty()) {
                     this.trafficMsg = "[+] Possible dangerous HTTP method could be used on this site";
@@ -257,46 +259,52 @@ public class TrafficLogic {
 
     // Method to inspect for URL manipulation
     private void verifyUrlManipulation() {
-        if (!requestHeaders.isEmpty()) {
-            try {
-                // Get path from first line
-                String firstLine = currentRequest.toString().split("\n")[0];
-                String directory = firstLine.split(" ")[1];
+        if (requestHeaders.isEmpty()) {
+            return;
+        }
+        try {
+            // Get path from first line
+            String firstLine = currentRequest.toString().split("\n")[0];
+            String directory = firstLine.split(" ")[1];
 
-                if (!directory.endsWith("/") && !directory.contains(".")) {
-                    this.urlManipulationFlag = true;
-                    String urlString = "https://" + burpCollaboratorHost + directory;
+            if (!directory.endsWith("/") && !directory.contains(".")) {
+                this.urlManipulationFlag = true;
+                String urlString = "https://" + burpCollaboratorHost + directory;
 
-                    // Create request to collaborator
-                    HttpRequest maliciousRequest = HttpRequest.httpRequestFromUrl(urlString);
-                    HttpResponse newResponse = extender.getApi().http()
-                            .sendRequest(maliciousRequest).response();
+                // Create request to collaborator
+                HttpRequest maliciousRequest = HttpRequest.httpRequestFromUrl(urlString);
+                HttpResponse newResponse = extender.getApi().http()
+                        .sendRequest(maliciousRequest).response();
 
-                    if (newResponse.statusCode() == 302) {
-                        for (HttpHeader header : newResponse.headers()) {
-                            String location = "location: " + urlString;
-                            if ((header.name() + ": " + header.value())
-                                    .toLowerCase().contains(location.toLowerCase())) {
-                                this.trafficMsg = "[+] Manipulation of URL to redirect victim IS possible on this site";
-                            } else {
-                                this.trafficMsg = "[+] Manipulation of URL to redirect victim IS NOT possible on this site";
-                            }
-                        }
-                    } else {
-                        this.trafficMsg = "[+] Manipulation of URL to redirect victim IS NOT possible on this site";
-                    }
+                boolean isPossible = checkRedirection(newResponse, urlString);
+                this.trafficMsg = isPossible ? "[+] Manipulation of URL to redirect victim IS possible on this site"
+                        : "[+] Manipulation of URL to redirect victim IS NOT possible on this site";
 
-                    this.evidence = "MANIPULATED REQUEST\n" + maliciousRequest.toString();
-                    this.evidence += "\n\nRESPONSE\n" + newResponse.toString();
+                StringBuilder evidenceBuilder = new StringBuilder();
+                evidenceBuilder.append("MANIPULATED REQUEST\n").append(maliciousRequest.toString())
+                        .append("\n\nRESPONSE\n").append(newResponse.toString());
+                this.evidence = evidenceBuilder.toString();
 
-                    this.urlManipulationFlag = true;
-                    this.flag = "URL Manipulation";
-                    storeTrafficFinding();
-                }
-            } catch (Exception e) {
-                extender.logOutput("MalformedURLException at verifyUrlManipulation()");
+                this.flag = "URL Manipulation";
+                storeTrafficFinding();
+            }
+        } catch (Exception e) {
+            extender.logOutput("Exception in verifyUrlManipulation: " + e.getMessage());
+        }
+    }
+
+    private boolean checkRedirection(HttpResponse response, String urlString) {
+        if (response.statusCode() != 302) {
+            return false;
+        }
+        String locationLower = ("location: " + urlString).toLowerCase();
+        for (HttpHeader header : response.headers()) {
+            String headerString = (header.name() + ": " + header.value()).toLowerCase();
+            if (headerString.contains(locationLower)) {
+                return true;
             }
         }
+        return false;
     }
 
     // Method to identify the use of basic authentication headers
@@ -311,9 +319,11 @@ public class TrafficLogic {
 
                 this.basicAuthenticationFlag = true;
                 this.flag = "Base64 weak authentication request";
-                this.trafficMsg = "[+] Basic Authentication request is being used\n";
-                this.trafficMsg += "Encoded found: " + encode + "\n";
-                this.trafficMsg += "Decoded found: " + decode + "\n";
+                StringBuilder msgBuilder = new StringBuilder();
+                msgBuilder.append("[+] Basic Authentication request is being used\n")
+                        .append("Encoded found: ").append(encode).append("\n")
+                        .append("Decoded found: ").append(decode).append("\n");
+                this.trafficMsg = msgBuilder.toString();
                 this.evidence = headerString + "\n";
                 this.affectedInstancesList.setBase64();
                 storeTrafficFinding();
@@ -381,18 +391,20 @@ public class TrafficLogic {
     // Method to inspect for non-secure network traffic
     private void verifyHTTPRequest() {
         this.httpRequestFlag = true;
-        trafficMsg = "[+] A proxy intercepted a request on : " + httpService.getHost();
+        StringBuilder sb = new StringBuilder();
+        sb.append("[+] A proxy intercepted a request on : ").append(httpService.getHost());
         flag = "Communication over unencrypted channel";
         affectedInstancesList.setUnencrypted();
 
         int statusCode = httpResponse.statusCode();
         if (statusCode == 200) {
-            trafficMsg += "\n[+] Server response with " + statusCode;
-            trafficMsg += "\n[+] Potential sensitive information being transmitted over non-SSL connections";
+            sb.append("\n[+] Server response with ").append(statusCode);
+            sb.append("\n[+] Potential sensitive information being transmitted over non-SSL connections");
         } else if (statusCode == 302 || statusCode == 301 || statusCode == 304) {
-            trafficMsg += "\n[+] Server response return " + statusCode;
-            trafficMsg += "\nRedirection Message from a HTTP Request detected";
+            sb.append("\n[+] Server response return ").append(statusCode);
+            sb.append("\nRedirection Message from a HTTP Request detected");
         }
+        trafficMsg = sb.toString();
 
         // Build evidence from response headers
         StringBuilder evidenceBuilder = new StringBuilder();
@@ -476,7 +488,7 @@ public class TrafficLogic {
             findingEntry.addInstance(instanceEntry);
             findingEntry.setPenTesterComments(comments + "\n" + trafficMsg);
 
-            extender.loggerTableModel.addAllLoggerEntry(findingEntry);
+            extender.getLoggerTableModel().addAllLoggerEntry(findingEntry);
         } catch (Exception e) {
             extender.logError("MalformedURLException at storeTrafficFinding: " + e.getMessage());
         }

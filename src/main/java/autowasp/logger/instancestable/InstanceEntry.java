@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package autowasp.logger.instancesTable;
+package autowasp.logger.instancestable;
 
 import autowasp.http.HTTPRequestResponse;
 
@@ -39,12 +39,12 @@ import java.net.URL;
  * which is more portable for serialization
  */
 public class InstanceEntry implements Serializable {
-    public int id = 0;
-    public final URL url;
-    public String confidence;
-    public String severity;
-    public final HTTPRequestResponse requestResponse;
-    final boolean falsePositive;
+    private static final long serialVersionUID = 1L;
+    private int id = 0;
+    private final URL url;
+    private String confidence;
+    private String severity;
+    private final HTTPRequestResponse requestResponse;
 
     /**
      * Constructor from HTTPRequestResponse wrapper (for backward compatibility)
@@ -55,7 +55,6 @@ public class InstanceEntry implements Serializable {
         this.confidence = confidence;
         this.severity = severity;
         this.requestResponse = requestResponse;
-        this.falsePositive = false;
     }
 
     /**
@@ -68,7 +67,6 @@ public class InstanceEntry implements Serializable {
         this.severity = severity;
         // Konversi ke HTTPRequestResponse wrapper
         this.requestResponse = montoyaRequestResponse != null ? new HTTPRequestResponse(montoyaRequestResponse) : null;
-        this.falsePositive = false;
     }
 
     public void setConfidence(String confidence) {
@@ -95,21 +93,15 @@ public class InstanceEntry implements Serializable {
         return this.requestResponse;
     }
 
-    /**
-     * Old getter for backward compatibility
-     *
-     * @deprecated Use getRequestResponse() for Montoya API
-     */
-    @Deprecated
-    public HTTPRequestResponse getResReq() {
-        return this.requestResponse;
-    }
-
-    public boolean isRequestResponseNull() {
-        return this.requestResponse == null;
-    }
-
     public String getUrl() {
         return url != null ? url.toString() : "";
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public URL getUrlObject() {
+        return url;
     }
 }

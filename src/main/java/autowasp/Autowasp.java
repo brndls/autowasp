@@ -28,17 +28,18 @@ import autowasp.http.*;
 import autowasp.logger.ScannerLogic;
 import autowasp.logger.TrafficEntry;
 import autowasp.logger.TrafficLogic;
-import autowasp.logger.entryTable.LoggerEntry;
-import autowasp.logger.entryTable.LoggerTable;
-import autowasp.logger.entryTable.LoggerTableModel;
-import autowasp.logger.instancesTable.InstanceEntry;
-import autowasp.logger.instancesTable.InstanceTable;
-import autowasp.logger.instancesTable.InstancesTableModel;
+import autowasp.logger.entrytable.LoggerEntry;
+import autowasp.logger.entrytable.LoggerTable;
+import autowasp.logger.entrytable.LoggerTableModel;
+import autowasp.logger.instancestable.InstanceEntry;
+import autowasp.logger.instancestable.InstanceTable;
+import autowasp.logger.instancestable.InstancesTableModel;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Autowasp - Burp Suite Extension for OWASP WSTG integration
@@ -75,43 +76,54 @@ public class Autowasp implements BurpExtension {
     // =====================================================================================
     // UI COMPONENTS
     // =====================================================================================
-    public ExtenderPanelUI extenderPanelUI;
-    public JSplitPane gtScannerSplitPane;
+    // =====================================================================================
+    // UI COMPONENTS
+    // =====================================================================================
+    private ExtenderPanelUI extenderPanelUI;
+    private JSplitPane gtScannerSplitPane;
 
     // =====================================================================================
     // CHECKLIST COMPONENTS
     // =====================================================================================
-    public ChecklistLogic checklistLogic;
-    public ChecklistTableModel checklistTableModel;
-    public ChecklistTable checklistTable;
+    private ChecklistLogic checklistLogic;
+    private ChecklistTableModel checklistTableModel;
+    private ChecklistTable checklistTable;
     public final List<ChecklistEntry> checklistLog = new ArrayList<>();
-    public final HashMap<String, ChecklistEntry> checkListHashMap = new HashMap<>();
+    public final Map<String, ChecklistEntry> checkListHashMap = new HashMap<>();
 
     // =====================================================================================
     // LOGGER COMPONENTS
     // =====================================================================================
-    public TrafficLogic trafficLogic;
+    private TrafficLogic trafficLogic;
     public final List<TrafficEntry> trafficLog = new ArrayList<>();
-    public LoggerTableModel loggerTableModel;
-    public InstancesTableModel instancesTableModel;
-    public LoggerTable loggerTable;
-    public InstanceTable instanceTable;
+    private LoggerTableModel loggerTableModel;
+    private InstancesTableModel instancesTableModel;
+    private LoggerTable loggerTable;
+    private InstanceTable instanceTable;
     public final List<LoggerEntry> loggerList = new ArrayList<>();
     public final List<InstanceEntry> instanceLog = new ArrayList<>();
-    public ScannerLogic scannerLogic;
+    private ScannerLogic scannerLogic;
 
     // =====================================================================================
     // PROJECT WORKSPACE
     // =====================================================================================
-    public ProjectWorkspaceFactory projectWorkspace;
+    private ProjectWorkspaceFactory projectWorkspace;
 
     // =====================================================================================
     // UI HELPER COMPONENTS
     // =====================================================================================
-    public JComboBox<String> comboBox;
-    public JComboBox<String> comboBox2;
-    public JComboBox<String> comboBox3;
-    public int currentEntryRow;
+    private JComboBox<String> comboBox;
+    private JComboBox<String> comboBox2;
+    private JComboBox<String> comboBox3;
+    private int currentEntryRow;
+
+    public void setCurrentEntryRow(int currentEntryRow) {
+        this.currentEntryRow = currentEntryRow;
+    }
+
+    public int getCurrentEntryRow() {
+        return currentEntryRow;
+    }
 
     // =====================================================================================
     // MONTOYA API ENTRY POINT
@@ -189,11 +201,9 @@ public class Autowasp implements BurpExtension {
         });
 
         // Register unload handler for clean unload (GUIDELINES.md §6)
-        api.extension().registerUnloadingHandler(() -> {
-            logging.logToOutput("Autowasp extension unloading...");
-            // Terminate any background threads if needed
-            // Release resources
-        });
+        // Terminate any background threads if needed
+        // Release resources
+        api.extension().registerUnloadingHandler(() -> logging.logToOutput("Autowasp extension unloading..."));
     }
 
     // =====================================================================================
@@ -212,6 +222,70 @@ public class Autowasp implements BurpExtension {
      */
     public Logging getLogging() {
         return logging;
+    }
+
+    public ExtenderPanelUI getExtenderPanelUI() {
+        return extenderPanelUI;
+    }
+
+    public JSplitPane getGtScannerSplitPane() {
+        return gtScannerSplitPane;
+    }
+
+    public void setGtScannerSplitPane(JSplitPane gtScannerSplitPane) {
+        this.gtScannerSplitPane = gtScannerSplitPane;
+    }
+
+    public ChecklistLogic getChecklistLogic() {
+        return checklistLogic;
+    }
+
+    public ChecklistTableModel getChecklistTableModel() {
+        return checklistTableModel;
+    }
+
+    public ChecklistTable getChecklistTable() {
+        return checklistTable;
+    }
+
+    public TrafficLogic getTrafficLogic() {
+        return trafficLogic;
+    }
+
+    public LoggerTableModel getLoggerTableModel() {
+        return loggerTableModel;
+    }
+
+    public InstancesTableModel getInstancesTableModel() {
+        return instancesTableModel;
+    }
+
+    public LoggerTable getLoggerTable() {
+        return loggerTable;
+    }
+
+    public InstanceTable getInstanceTable() {
+        return instanceTable;
+    }
+
+    public ScannerLogic getScannerLogic() {
+        return scannerLogic;
+    }
+
+    public ProjectWorkspaceFactory getProjectWorkspace() {
+        return projectWorkspace;
+    }
+
+    public JComboBox<String> getComboBox() {
+        return comboBox;
+    }
+
+    public JComboBox<String> getComboBox2() {
+        return comboBox2;
+    }
+
+    public JComboBox<String> getComboBox3() {
+        return comboBox3;
     }
 
     /**

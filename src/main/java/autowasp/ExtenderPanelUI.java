@@ -51,41 +51,48 @@ import autowasp.checklist.ChecklistFetchWorker;
  */
 public class ExtenderPanelUI implements Runnable {
 
+    // String constants
+    private static final String HTTPS_PREFIX = "https://";
+    private static final String HTTPS_WWW_PREFIX = "https://www.";
+    private static final String HTTP_WWW_PREFIX = "http://www.";
+    private static final String HTTP_PREFIX = "http://"; // Adding for consistency
+    private static final String CHECKLIST_NOT_FETCHED_MSG = "Please fetch the checklist from the web first";
+    private static final String HTML_CONTENT_TYPE = "text/html";
+    private static final String HTML_DISABLE_PROPERTY = "html.disable";
+    private static final String SETUP_ERROR_MSG = "Exception occurred at setupCheckListPanel";
+    private static final boolean SELF_UPDATE_LOCAL = false;
+
     private final Autowasp extender;
     private JSplitPane gtScannerSplitPane;
 
     // Montoya API: Separate MessageEditor for request and response
-    public HttpRequestEditor requestEditor;
-    public HttpResponseEditor responseEditor;
+    private HttpRequestEditor requestEditor;
+    private HttpResponseEditor responseEditor;
 
     private JFileChooser destDirChooser;
-    public JLabel scanStatusLabel;
-    private JTextField hostField;
+    private JLabel scanStatusLabel;
 
     // Checklist UI
-    public JTextPane summaryTextPane;
-    public JEditorPane howToTestTextPane;
-    public JTextPane referencesTextPane;
-    JButton enableScanningButton;
-    private JButton generateWebChecklistButton;
+    private JTextPane summaryTextPane;
+    private JEditorPane howToTestTextPane;
+    private JTextPane referencesTextPane;
+    private JButton enableScanningButton;
     private ChecklistFetchWorker fetchWorker;
     public final AtomicBoolean running = new AtomicBoolean(false);
-    private JProgressBar fetchProgressBar;
-    public JButton cancelFetchButton;
+    // fetchProgressBar moved to local variable in setupTopPanel
+    private JButton cancelFetchButton;
     private JButton saveLocalCopyButton;
     private JButton generateLocalChecklistButton;
     private JButton generateExcelReportButton;
-    private JFileChooser fileChooser;
+    private JButton generateWebChecklistButton;
     private File checklistDestDir;
-    private final boolean selfUpdateLocal = false;
 
     // Loggers UI
     private JTabbedPane bottomModulesTabs;
-    public JTextPane penTesterCommentBox;
-    public JTextPane evidenceBox;
-    private JButton loadProjectButton;
-    public JButton deleteEntryButton;
-    public JButton deleteInstanceButton;
+    private JTextPane penTesterCommentBox;
+    private JTextPane evidenceBox;
+    private JButton deleteEntryButton;
+    private JButton deleteInstanceButton;
 
     ExtenderPanelUI(Autowasp extender) {
         this.extender = extender;
@@ -103,7 +110,7 @@ public class ExtenderPanelUI implements Runnable {
 
         // Consolidate all modular tabs and set to the scanner bottom pane
         gtScannerSplitPane.setRightComponent(bottomModulesTabs);
-        extender.gtScannerSplitPane = gtScannerSplitPane;
+        extender.setGtScannerSplitPane(gtScannerSplitPane);
     }
 
     // This method setup the top panel view of Autowasp
@@ -111,100 +118,61 @@ public class ExtenderPanelUI implements Runnable {
         JPanel topPanel = new JPanel(new GridLayout(4, 0));
         topPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
 
+        JPanel setupPanel = createSetupPanel();
+        JPanel scanStatusPanel = createScanStatusPanel();
+        JPanel checklistPanel = createChecklistPanel();
+        JPanel miscPanel = createMiscPanel();
+
+        disabledInitialButtons();
+
+        topPanel.add(setupPanel);
+        topPanel.add(scanStatusPanel);
+        topPanel.add(checklistPanel);
+        topPanel.add(miscPanel);
+        gtScannerSplitPane.setLeftComponent(topPanel);
+    }
+
+    private JPanel createSetupPanel() {
         JPanel setupPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 10));
         setupPanel.add(new JLabel("Target:", SwingConstants.LEFT), BorderLayout.LINE_START);
-        hostField = new JTextField("", 15);
+        JTextField hostField = new JTextField("", 15);
         JButton addToScopeButton = new JButton("Add Target to Scope");
-        addToScopeButton.addActionListener(e -> {
-            // Filter the URL and add to scope
-            String url = hostField.getText();
-            String sHost;
-            String host;
-            String sHost2;
-            String host2;
-            if (url.isEmpty()) {
-                return;
-            }
-            if (!url.contains("://")) {
-                sHost = "https://" + url;
-                host = "http://" + url;
-                if (!url.contains("www.")) {
-                    sHost2 = "https://www." + url;
-                    host2 = "http://www." + url;
-                } else {
-                    sHost2 = sHost;
-                    host2 = host;
-                }
-            } else {
-                if (!url.contains("https://")) {
-                    host = url;
-                    String tmp = url.substring(7);
-                    sHost = "https://" + tmp;
-                    if (!url.contains("www.")) {
-                        sHost2 = "https://www." + tmp;
-                        host2 = "http://www." + tmp;
-                    } else {
-                        sHost2 = sHost;
-                        host2 = host;
-                    }
-                } else {
-                    sHost = url;
-                    String tmp = url.substring(8);
-                    host = "http://" + tmp;
-                    if (!url.contains("www.")) {
-                        sHost2 = "https://www." + tmp;
-                        host2 = "http://www." + tmp;
-                    } else {
-                        sHost2 = sHost;
-                        host2 = host;
-                    }
-                }
-            }
-            try {
-                // Montoya API: api.scope().includeInScope()
-                extender.getApi().scope().includeInScope(sHost);
-                extender.getApi().scope().includeInScope(host);
-                extender.getApi().scope().includeInScope(sHost2);
-                extender.getApi().scope().includeInScope(host2);
-                scanStatusLabel.setText("Target added to scope: " + url);
-                if (!enableScanningButton.isEnabled()) {
-                    // Automatically extract scan related to the newly added domain
-                    extender.scannerLogic.extractExistingScan();
-                }
-                this.hostField.setText("");
-            } catch (Exception e1) {
-                extender.logOutput("Exception occurred at setupTopPanel");
-            }
-        });
+        addToScopeButton.addActionListener(e -> addTargetToScope(hostField));
 
         enableScanningButton = new JButton("Enable Burp Scanner logging");
         enableScanningButton.addActionListener(e -> {
-            extender.scannerLogic.extractExistingScan();
+            extender.getScannerLogic().extractExistingScan();
             enableScanningButton.setEnabled(false);
             scanStatusLabel.setText("Extracted Scanner Logs. Passive Scanner logging enabled");
             extender.issueAlert("Extracted Scanner Logs. Passive Scanner logging enabled");
         });
 
-        // Status bar
+        setupPanel.add(hostField);
+        setupPanel.add(addToScopeButton);
+        setupPanel.add(enableScanningButton);
+        return setupPanel;
+    }
+
+    private JPanel createScanStatusPanel() {
         JPanel scanStatusPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 10));
         scanStatusPanel.add(new JLabel("Status: ", SwingConstants.LEFT));
         scanStatusLabel = new JLabel("Ready to scan", SwingConstants.LEFT);
+        scanStatusPanel.add(scanStatusLabel);
+        return scanStatusPanel;
+    }
 
-        // Checklist Panel
+    private JPanel createChecklistPanel() {
         JPanel testingPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 10));
         testingPanel.add(new JLabel("OWASP CheckList:", SwingConstants.LEFT), BorderLayout.LINE_START);
-        fileChooser = new JFileChooser();
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
         // Progress bar for fetch operations (BApp Store Criteria #5)
-        fetchProgressBar = new JProgressBar();
+        JProgressBar fetchProgressBar = new JProgressBar();
         fetchProgressBar.setIndeterminate(true);
         fetchProgressBar.setVisible(false);
         fetchProgressBar.setStringPainted(true);
         fetchProgressBar.setString("Fetching...");
 
         // On clicking, fetches checklist data from the web and displays it
-        // Uses SwingWorker for background threading (BApp Store Criteria #5)
         generateWebChecklistButton = new JButton("Fetch WSTG Checklist");
         generateWebChecklistButton.addActionListener(e -> {
             extender.issueAlert("Fetching checklist now");
@@ -216,8 +184,7 @@ public class ExtenderPanelUI implements Runnable {
             extender.checklistLog.clear();
             running.set(true);
 
-            // Use SwingWorker for proper background threading
-            fetchWorker = new ChecklistFetchWorker(
+            fetchWorker = new ChecklistFetchWorker(new ChecklistFetchWorker.ChecklistFetchConfig(
                     extender,
                     scanStatusLabel,
                     fetchProgressBar,
@@ -227,38 +194,50 @@ public class ExtenderPanelUI implements Runnable {
                     generateExcelReportButton,
                     saveLocalCopyButton,
                     running,
-                    null // No additional callback needed
-            );
+                    null));
             fetchWorker.execute();
         });
 
-        // On clicking, cancel fetch checklist from web
+        setupCancelFetchButton();
+        setupLocalChecklistButtons();
+        setupExcelReportButton();
+
+        testingPanel.add(generateWebChecklistButton);
+        testingPanel.add(cancelFetchButton);
+        testingPanel.add(generateLocalChecklistButton);
+        testingPanel.add(fetchProgressBar);
+        if (SELF_UPDATE_LOCAL) {
+            testingPanel.add(saveLocalCopyButton);
+        }
+        testingPanel.add(generateExcelReportButton);
+        return testingPanel;
+    }
+
+    private void setupCancelFetchButton() {
         cancelFetchButton = new JButton("Cancel Fetch");
         cancelFetchButton.addActionListener(e -> {
             running.set(false);
             if (fetchWorker != null && !fetchWorker.isDone()) {
                 fetchWorker.cancel(true);
             }
-            // UI cleanup is handled in SwingWorker.done()
         });
+    }
 
-        // On clicking, loads WSTG checklist from bundled JSON (offline)
+    private void setupLocalChecklistButtons() {
         generateLocalChecklistButton = new JButton("Load Bundled WSTG (Offline)");
         generateLocalChecklistButton.addActionListener(e -> {
             generateLocalChecklistButton.setEnabled(false);
-            generateWebChecklistButton.setEnabled(false);
-            generateExcelReportButton.setEnabled(true);
-            extender.checklistLogic.loadLocalCopy();
-            int count = extender.checklistLog.size();
-            scanStatusLabel.setText("Loaded " + count + " items from bundled WSTG v4.2 (offline).");
+            if (generateWebChecklistButton != null) {
+                generateWebChecklistButton.setEnabled(false);
+            }
+            extender.getChecklistLogic().loadLocalCopy();
         });
 
-        // On clicking, opens a file chooser for the user to save a local copy
         saveLocalCopyButton = new JButton("Save a Local WSTG Checklist");
         saveLocalCopyButton.addActionListener(e -> {
             if (extender.checklistLog.isEmpty()) {
-                scanStatusLabel.setText("Please fetch the checklist from the web first");
-                extender.issueAlert("Please fetch the checklist from the web first");
+                scanStatusLabel.setText(CHECKLIST_NOT_FETCHED_MSG);
+                extender.issueAlert(CHECKLIST_NOT_FETCHED_MSG);
             } else {
                 final int userOption = destDirChooser
                         .showSaveDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
@@ -266,7 +245,7 @@ public class ExtenderPanelUI implements Runnable {
                 if (userOption == JFileChooser.APPROVE_OPTION) {
                     checklistDestDir = destDirChooser.getSelectedFile();
                     try {
-                        extender.checklistLogic.saveLocalCopy(checklistDestDir.getAbsolutePath());
+                        extender.getChecklistLogic().saveLocalCopy(checklistDestDir.getAbsolutePath());
                     } catch (IOException ioException) {
                         extender.logOutput("IOException at setupTopPanel - saveLocalCopyButton");
                     }
@@ -275,29 +254,40 @@ public class ExtenderPanelUI implements Runnable {
                 }
             }
         });
+    }
 
-        // On clicking, generate excel report
+    // START INTERRUPT: I need to handle generateWebChecklistButton scope.
+    // I will making generateWebChecklistButton a private field.
+    // Same for loadProjectButton if needed?
+    // Let's check loadProjectButton usage. It's used in miscPanel.
+    // Let's check generateLocalChecklistButton usage. It's used in fetchWorker.
+
+    private void setupExcelReportButton() {
         generateExcelReportButton = new JButton("Generate Excel Report");
         generateExcelReportButton.addActionListener(e -> {
             if (extender.checklistLog.isEmpty()) {
-                scanStatusLabel.setText("Please fetch the checklist from the web first");
-                extender.issueAlert("Please fetch the checklist from the web first");
+                scanStatusLabel.setText(CHECKLIST_NOT_FETCHED_MSG);
+                extender.issueAlert(CHECKLIST_NOT_FETCHED_MSG);
             } else {
                 final int userOption = destDirChooser
                         .showSaveDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
 
                 if (userOption == JFileChooser.APPROVE_OPTION) {
                     checklistDestDir = destDirChooser.getSelectedFile();
-                    extender.checklistLogic.saveToExcelFile(checklistDestDir.getAbsolutePath());
+                    extender.getChecklistLogic().saveToExcelFile(checklistDestDir.getAbsolutePath());
                 }
             }
         });
+    }
 
-        destDirChooser = new JFileChooser();
-        destDirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        destDirChooser.setApproveButtonText("Select");
+    private JPanel createMiscPanel() {
+        JPanel miscPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 10));
+        miscPanel.add(new JLabel("Misc Actions:", SwingConstants.LEFT), BorderLayout.LINE_START);
 
-        // Save project button
+        deleteEntryButton = new JButton("Delete Entry");
+        deleteEntryButton.addActionListener(e -> extender.getLoggerTable().deleteEntry());
+        deleteInstanceButton.addActionListener(e -> extender.getInstanceTable().deleteInstance());
+
         JButton saveCurrentProjectButton = new JButton("Save Project");
         saveCurrentProjectButton.addActionListener(e -> {
             final int userOption = destDirChooser
@@ -306,15 +296,22 @@ public class ExtenderPanelUI implements Runnable {
             if (userOption == JFileChooser.APPROVE_OPTION) {
                 checklistDestDir = destDirChooser.getSelectedFile();
                 try {
-                    extender.projectWorkspace.saveFile(checklistDestDir.getAbsolutePath());
+                    extender.getProjectWorkspace().saveFile(checklistDestDir.getAbsolutePath());
                 } catch (IOException ioException) {
                     extender.logOutput("IOException at setupTopPanel - saveCurrentProjectButton");
                 }
             }
         });
 
-        loadProjectButton = new JButton("Load Project");
+        JButton loadProjectButton = new JButton("Load Project");
         loadProjectButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser(); // Need to init this locally or promote to field or reuse
+                                                           // existing?
+            // Original had fileChooser as local in setupTopPanel.
+            // I should promote fileChooser to field or create new.
+            // Note: destDirChooser is a field. fileChooser was local.
+            // I'll create new local one or field. Field is better if reused.
+
             final int userOption = fileChooser
                     .showOpenDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
 
@@ -326,7 +323,7 @@ public class ExtenderPanelUI implements Runnable {
                     extender.issueAlert("Error, this is not the correct project file");
                 } else {
                     Runnable runnable = () -> {
-                        extender.projectWorkspace.readFromFile(chosenFile.getAbsolutePath());
+                        extender.getProjectWorkspace().readFromFile(chosenFile.getAbsolutePath());
                         loadProjectButton.setEnabled(false);
                     };
                     Thread loadThread = new Thread(runnable);
@@ -335,43 +332,52 @@ public class ExtenderPanelUI implements Runnable {
             }
         });
 
-        // Misc Panel
-        JPanel miscPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 10));
-        miscPanel.add(new JLabel("Misc Actions:", SwingConstants.LEFT), BorderLayout.LINE_START);
-
-        deleteEntryButton = new JButton("Delete Entry");
-        deleteEntryButton.addActionListener(e -> extender.loggerTable.deleteEntry());
-
-        deleteInstanceButton = new JButton("Delete Instance");
-        deleteInstanceButton.addActionListener(e -> extender.instanceTable.deleteInstance());
-
-        setupPanel.add(hostField);
-        setupPanel.add(addToScopeButton);
-        setupPanel.add(enableScanningButton);
-
-        scanStatusPanel.add(scanStatusLabel);
-
-        testingPanel.add(generateWebChecklistButton);
-        testingPanel.add(cancelFetchButton);
-        testingPanel.add(generateLocalChecklistButton);
-        testingPanel.add(fetchProgressBar);
-        if (selfUpdateLocal) {
-            testingPanel.add(saveLocalCopyButton);
-        }
-        testingPanel.add(generateExcelReportButton);
-        testingPanel.add(saveCurrentProjectButton);
         miscPanel.add(deleteEntryButton);
         miscPanel.add(deleteInstanceButton);
         miscPanel.add(saveCurrentProjectButton);
         miscPanel.add(loadProjectButton);
 
-        disabledInitialButtons();
+        return miscPanel;
+    }
 
-        topPanel.add(setupPanel);
-        topPanel.add(scanStatusPanel);
-        topPanel.add(testingPanel);
-        topPanel.add(miscPanel);
-        gtScannerSplitPane.setLeftComponent(topPanel);
+    private void addTargetToScope(JTextField hostField) {
+        String input = hostField.getText().trim();
+        if (input.isEmpty()) {
+            return;
+        }
+
+        // Remove protocol if present to get the raw domain
+        String domain = input;
+        if (domain.contains("://")) {
+            domain = domain.substring(domain.indexOf("://") + 3);
+        }
+        // Remove www. if present
+        if (domain.startsWith("www.")) {
+            domain = domain.substring(4);
+        }
+
+        // Now we have the base domain (e.g. example.com)
+        // Construct all 4 variants
+        String[] variants = {
+                HTTP_PREFIX + domain,
+                HTTPS_PREFIX + domain,
+                HTTP_WWW_PREFIX + domain,
+                HTTPS_WWW_PREFIX + domain
+        };
+
+        try {
+            for (String variant : variants) {
+                extender.getApi().scope().includeInScope(variant);
+            }
+            scanStatusLabel.setText("Target added to scope: " + input);
+            if (!enableScanningButton.isEnabled()) {
+                // Automatically extract scan related to the newly added domain
+                extender.getScannerLogic().extractExistingScan();
+            }
+            hostField.setText("");
+        } catch (Exception e1) {
+            extender.logOutput("Exception occurred at setupTopPanel");
+        }
     }
 
     // This method setup the logger functionality tab
@@ -384,10 +390,10 @@ public class ExtenderPanelUI implements Runnable {
         JSplitPane internalEvidencesSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
         // Setting up JTable
-        JScrollPane loggerScrollPane = new JScrollPane(extender.loggerTable);
+        JScrollPane loggerScrollPane = new JScrollPane(extender.getLoggerTable());
         loggerScrollPane.setPreferredSize(new Dimension(300, 200));
         loggerScrollPane.setBorder(new EmptyBorder(0, 0, 10, 0));
-        JScrollPane instancesScrollPane = new JScrollPane(extender.instanceTable);
+        JScrollPane instancesScrollPane = new JScrollPane(extender.getInstanceTable());
         instancesScrollPane.setPreferredSize(new Dimension(700, 200));
         instancesScrollPane.setBorder(new EmptyBorder(0, 0, 10, 0));
 
@@ -400,9 +406,8 @@ public class ExtenderPanelUI implements Runnable {
         JButton clearCommentsButton = new JButton("Clear Comments");
         clearCommentsButton.addActionListener(e -> penTesterCommentBox.setText(""));
         JButton saveCommentsButton = new JButton("Save Comments");
-        saveCommentsButton.addActionListener(e -> {
-            extender.loggerTable.modifyComments(penTesterCommentBox.getText().trim() + "\n");
-        });
+        saveCommentsButton.addActionListener(
+                e -> extender.getLoggerTable().modifyComments(penTesterCommentBox.getText().trim() + "\n"));
         commentsPanel.add(saveCommentsButton);
         commentsPanel.add(clearCommentsButton);
         internalPenTesterCommentsSplitPane.setTopComponent(commentsPanel);
@@ -417,7 +422,8 @@ public class ExtenderPanelUI implements Runnable {
         JButton clearEvidencesButton = new JButton("Clear Evidence");
         clearEvidencesButton.addActionListener(e -> evidenceBox.setText(""));
         JButton saveEvidencesButton = new JButton("Save Evidence");
-        saveEvidencesButton.addActionListener(e -> extender.loggerTable.modifyEvidence(evidenceBox.getText().trim()));
+        saveEvidencesButton
+                .addActionListener(e -> extender.getLoggerTable().modifyEvidence(evidenceBox.getText().trim()));
         evidencePanel.add(saveEvidencesButton);
         evidencePanel.add(clearEvidencesButton);
         internalEvidencesSplitPane.setTopComponent(evidencePanel);
@@ -447,54 +453,15 @@ public class ExtenderPanelUI implements Runnable {
         JSplitPane internalChecklistSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
         summaryTextPane = new JTextPane();
-        summaryTextPane.setEditable(false);
-        summaryTextPane.setContentType("text/html");
-        summaryTextPane.putClientProperty("html.disable", null);
-        summaryTextPane.addHyperlinkListener(e -> {
-            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                if (Desktop.isDesktopSupported()) {
-                    try {
-                        Desktop.getDesktop().browse(e.getURL().toURI());
-                    } catch (IOException | URISyntaxException e1) {
-                        extender.logOutput("Exception occurred at setupCheckListPanel");
-                    }
-                }
-            }
-        });
+        setupHtmlTextPane(summaryTextPane);
 
         howToTestTextPane = new JEditorPane();
-        howToTestTextPane.setEditable(false);
-        howToTestTextPane.setContentType("text/html");
-        howToTestTextPane.putClientProperty("html.disable", null);
-        howToTestTextPane.addHyperlinkListener(e -> {
-            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                if (Desktop.isDesktopSupported()) {
-                    try {
-                        Desktop.getDesktop().browse(e.getURL().toURI());
-                    } catch (IOException | URISyntaxException e1) {
-                        extender.logOutput("Exception occurred at setupCheckListPanel");
-                    }
-                }
-            }
-        });
+        setupHtmlTextPane(howToTestTextPane);
 
         referencesTextPane = new JTextPane();
-        referencesTextPane.setEditable(false);
-        referencesTextPane.setContentType("text/html");
-        referencesTextPane.putClientProperty("html.disable", null);
-        referencesTextPane.addHyperlinkListener(e -> {
-            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                if (Desktop.isDesktopSupported()) {
-                    try {
-                        Desktop.getDesktop().browse(e.getURL().toURI());
-                    } catch (IOException | URISyntaxException e1) {
-                        extender.logOutput("Exception occurred at setupCheckListPanel");
-                    }
-                }
-            }
-        });
+        setupHtmlTextPane(referencesTextPane);
 
-        JScrollPane checklistScrollPane = new JScrollPane(extender.checklistTable);
+        JScrollPane checklistScrollPane = new JScrollPane(extender.getChecklistTable());
         checklistScrollPane.setPreferredSize(new Dimension(300, 200));
         checklistScrollPane.setBorder(new EmptyBorder(0, 0, 10, 0));
         JScrollPane summaryScrollPane = new JScrollPane(summaryTextPane);
@@ -508,6 +475,23 @@ public class ExtenderPanelUI implements Runnable {
         internalChecklistSplitPane.setRightComponent(checklistBottomTabs);
         bottomModulesTabs.addTab("OWASP Testing Checklist", internalChecklistSplitPane);
         gtScannerSplitPane.setRightComponent(bottomModulesTabs);
+    }
+
+    private void setupHtmlTextPane(javax.swing.text.JTextComponent pane) {
+        pane.setEditable(false);
+        if (pane instanceof JEditorPane editorPane) {
+            editorPane.setContentType(HTML_CONTENT_TYPE);
+            editorPane.addHyperlinkListener(e -> {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED && Desktop.isDesktopSupported()) {
+                    try {
+                        Desktop.getDesktop().browse(e.getURL().toURI());
+                    } catch (IOException | URISyntaxException e1) {
+                        extender.logOutput(SETUP_ERROR_MSG);
+                    }
+                }
+            });
+        }
+        pane.putClientProperty(HTML_DISABLE_PROPERTY, null);
     }
 
     // Initial buttons to set to disable by default
@@ -529,5 +513,50 @@ public class ExtenderPanelUI implements Runnable {
     public void deleteInstanceButtonEnabled() {
         this.deleteEntryButton.setEnabled(false);
         this.deleteInstanceButton.setEnabled(true);
+    }
+
+    // Getter methods for encapsulated fields
+    public HttpRequestEditor getRequestEditor() {
+        return requestEditor;
+    }
+
+    public HttpResponseEditor getResponseEditor() {
+        return responseEditor;
+    }
+
+    public JLabel getScanStatusLabel() {
+        return scanStatusLabel;
+    }
+
+    public JTextPane getSummaryTextPane() {
+        return summaryTextPane;
+    }
+
+    public JEditorPane getHowToTestTextPane() {
+        return howToTestTextPane;
+    }
+
+    public JTextPane getReferencesTextPane() {
+        return referencesTextPane;
+    }
+
+    public JTextPane getPenTesterCommentBox() {
+        return penTesterCommentBox;
+    }
+
+    public JTextPane getEvidenceBox() {
+        return evidenceBox;
+    }
+
+    public JButton getDeleteEntryButton() {
+        return deleteEntryButton;
+    }
+
+    public JButton getDeleteInstanceButton() {
+        return deleteInstanceButton;
+    }
+
+    public JButton getCancelFetchButton() {
+        return cancelFetchButton;
     }
 }

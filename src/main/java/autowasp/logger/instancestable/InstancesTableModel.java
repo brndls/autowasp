@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package autowasp.logger.entryTable;
+
+package autowasp.logger.instancestable;
+
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
-@SuppressWarnings("serial")
-public class LoggerTableModel extends AbstractTableModel{
-    private final List<LoggerEntry> listFindingEntry;
-    private final String[] columnNames = { "#", "Host", "Action", "Vuln Type", "Mapped to OWASP WSTG" };
+public class InstancesTableModel extends AbstractTableModel {
 
-    public LoggerTableModel(List<LoggerEntry> listFindingEntry) {
-        this.listFindingEntry = listFindingEntry;
+    private static final long serialVersionUID = 1L;
+    private final List<InstanceEntry> listInstanceEntry;
+    private final String[] columnNames = { "ID", "Instance URL Path", "Confidence", "Severity" };
+
+    public InstancesTableModel(List<InstanceEntry> listInstanceEntry) {
+        this.listInstanceEntry = listInstanceEntry;
     }
 
     // Method to get column count
@@ -35,10 +38,11 @@ public class LoggerTableModel extends AbstractTableModel{
     // Method to get row count
     @Override
     public int getRowCount() {
-        return listFindingEntry.size();
+        return listInstanceEntry.size();
     }
 
     // Method to get column name
+    @Override
     public String getColumnName(int columnIndex) {
         return columnNames[columnIndex];
     }
@@ -47,54 +51,54 @@ public class LoggerTableModel extends AbstractTableModel{
     @Override
     public String getValueAt(int rowIndex, int columnIndex) {
         String returnValue = "";
-        LoggerEntry loggerEntry = listFindingEntry.get(rowIndex);
+        InstanceEntry instanceEntry = listInstanceEntry.get(rowIndex);
         switch (columnIndex) {
             case 0:
                 returnValue = rowIndex + 1 + "";
                 break;
             case 1:
-                returnValue = loggerEntry.host;
+                returnValue = instanceEntry.getUrl();
                 break;
             case 2:
-                returnValue = loggerEntry.action;
+                returnValue = instanceEntry.getConfidence();
                 break;
             case 3:
-                returnValue = loggerEntry.vulnType;
+                returnValue = instanceEntry.getSeverity();
                 break;
-            case 4:
-                returnValue = loggerEntry.checklistIssue;
+            default:
                 break;
         }
+
         return returnValue;
     }
 
     // Method to set value at selected row and column
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        LoggerEntry loggerEntry = listFindingEntry.get(rowIndex);
-        if (columnIndex == 4) {
-            loggerEntry.setChecklistIssue((String) aValue);
+        InstanceEntry instanceEntry = listInstanceEntry.get(rowIndex);
+        if (columnIndex == 2) {
+            instanceEntry.setConfidence((String) aValue);
+        }
+        if (columnIndex == 3) {
+            instanceEntry.setSeverity((String) aValue);
         }
     }
 
+    // Method to re-add all instances from existing list to table view
+    public void addAllInstanceEntry(List<InstanceEntry> listInstanceEntry) {
+        this.listInstanceEntry.addAll(listInstanceEntry);
+        this.fireTableDataChanged();
+    }
+
     // Method to clear instance entry from table view
-    public void clearLoggerList() {
-        this.listFindingEntry.clear();
-    }
-
-    // Method to re-add all entry from existing list to table view
-    public void addAllLoggerEntry(LoggerEntry loggerEntry) {
-        this.listFindingEntry.add(loggerEntry);
-        this.fireTableDataChanged();
-    }
-
-    // Method to update entry in table view
-    public void updateLoggerEntryTable() {
-        this.fireTableDataChanged();
+    public void clearInstanceEntryList() {
+        this.listInstanceEntry.clear();
     }
 
     // Method to restrict editable cell to those with dropdown combo.
+    @Override
     public boolean isCellEditable(int row, int col) {
-        return col == 4;
+        return col == 2 || col == 3;
     }
+
 }

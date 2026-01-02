@@ -13,25 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package autowasp.logger.entryTable;
+package autowasp.logger.entrytable;
 
-import autowasp.logger.instancesTable.InstanceEntry;
+import autowasp.logger.instancestable.InstanceEntry;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 public class LoggerEntry implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    public final String host;
-    public final String action;
-    public final String vulnType;
-    public String checklistIssue;
-    public final ArrayList<InstanceEntry> instancesList;
-    public String penTesterComments;
-    public String evidences;
-    public final Integer issueNumber; //Points to the test case in the OWASP checklist that the user maps this particular finding to
+    private final String host;
+    private final String action;
+    private final String vulnType;
+    private String checklistIssue;
+    private final List<InstanceEntry> instancesList;
+    private String penTesterComments;
+    private String evidences;
+    private final Integer issueNumber; // Points to the test case in the OWASP checklist that the user maps this
+                                       // particular finding to
 
-    public LoggerEntry(String host, String action, String vulnType, String checklistIssue){
+    public LoggerEntry(String host, String action, String vulnType, String checklistIssue) {
         this.host = host;
         this.action = action;
         this.vulnType = vulnType;
@@ -42,7 +45,7 @@ public class LoggerEntry implements Serializable {
         evidences = "nil";
     }
 
-    public LoggerEntry(String host, String action, String vulnType, String checklistIssue, String comments){
+    public LoggerEntry(String host, String action, String vulnType, String checklistIssue, String comments) {
         this.host = host;
         this.action = action;
         this.vulnType = vulnType;
@@ -53,7 +56,9 @@ public class LoggerEntry implements Serializable {
         evidences = "Please insert evidences";
     }
 
-    public String getHost(){ return this.host;}
+    public String getHost() {
+        return this.host;
+    }
 
     public String getChecklistIssue() {
         return this.checklistIssue;
@@ -79,15 +84,23 @@ public class LoggerEntry implements Serializable {
         return this.evidences;
     }
 
-    public ArrayList<InstanceEntry> getInstanceList() {
+    public List<InstanceEntry> getInstanceList() {
         return this.instancesList;
+    }
+
+    public void clearInstances() {
+        this.instancesList.clear();
+    }
+
+    public String getAction() {
+        return action;
     }
 
     public void addInstance(InstanceEntry instance) {
         this.instancesList.add(instance);
     }
 
-    public int getIssueNumber() {
+    public Integer getIssueNumber() {
         return this.issueNumber;
     }
 
@@ -96,6 +109,6 @@ public class LoggerEntry implements Serializable {
     }
 
     public String toString() {
-        return "host: " + this.host +  ";action: " + this.action + ";issue: " + this.checklistIssue;
+        return "host: " + this.host + ";action: " + this.action + ";issue: " + this.checklistIssue;
     }
 }
