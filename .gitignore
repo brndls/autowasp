@@ -1,31 +1,5 @@
-# Build outputs
-build/
-target/
-out/
-bin/
-
-# Gradle
-.gradle/
-
-# IDE
-.idea/
-*.iml
-.vscode/
-.classpath
-.project
-.settings/
-
-# macOS
-.DS_Store
-
 # Legacy backup from migration (can be deleted after verification)
 .legacy-backup/
 
-# direnv (machine-specific, use .envrc.example as template)
-.envrc
-
 # IDE metadata
 src/main/java/META-INF/
-
-.gemini/
-.sonarlint/
