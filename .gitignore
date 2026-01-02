@@ -26,3 +26,6 @@ bin/
 
 # IDE metadata
 src/main/java/META-INF/
+
+.gemini/
+.sonarlint/

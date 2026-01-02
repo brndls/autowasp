@@ -316,11 +316,11 @@ src/main/java/
 │       ├── ScannerLogic.java            # Scanner issue handling
 │       ├── TrafficLogic.java            # Traffic classification
 │       ├── TrafficEntry.java
-│       ├── entryTable/
+│       ├── entrytable/
 │       │   ├── LoggerEntry.java
 │       │   ├── LoggerTable.java
 │       │   └── LoggerTableModel.java
-│       └── instancesTable/
+│       └── instancestable/
 │           ├── InstanceEntry.java
 │           ├── InstanceTable.java
 │           └── InstancesTableModel.java

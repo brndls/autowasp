@@ -53,6 +53,9 @@ public class ScanIssue {
     private final String background;
     private final String remediationBackground;
 
+    private static final String SEVERITY_INFORMATION = "Information";
+    private static final String CONFIDENCE_TENTATIVE = "Tentative";
+
     /**
      * Constructor from Montoya AuditIssue
      */
@@ -61,12 +64,10 @@ public class ScanIssue {
         this.detail = auditIssue.detail() != null ? auditIssue.detail() : "";
         this.severity = convertSeverity(auditIssue.severity());
         this.confidence = convertConfidence(auditIssue.confidence());
+        this.remediation = auditIssue.remediation() != null ? auditIssue.remediation() : "";
 
-        // In Montoya API, background and remediation background
-        // are retrieved from definition() if available
         if (auditIssue.definition() != null) {
-            this.background = auditIssue.definition().background() != null ? auditIssue.definition().background()
-                    : "";
+            this.background = auditIssue.definition().background() != null ? auditIssue.definition().background() : "";
             this.remediationBackground = auditIssue.definition().remediation() != null
                     ? auditIssue.definition().remediation()
                     : "";
@@ -75,38 +76,39 @@ public class ScanIssue {
             this.remediationBackground = "";
         }
 
-        this.remediation = auditIssue.remediation() != null ? auditIssue.remediation() : "";
+        this.url = parseUrl(auditIssue.baseUrl());
+        this.httpService = initHttpService(this.url);
+        this.httpMessages = convertHttpMessages(auditIssue.requestResponses());
+    }
 
-        // Parse URL
-        URL parsedUrl = null;
+    private URL parseUrl(String baseUrl) {
         try {
-            parsedUrl = java.net.URI.create(auditIssue.baseUrl()).toURL();
+            return java.net.URI.create(baseUrl).toURL();
         } catch (Exception e) {
-            // Log error, keep null
+            return null;
         }
-        this.url = parsedUrl;
+    }
 
-        // Create HTTPService from base URL
-        if (parsedUrl != null) {
-            boolean secure = "https".equalsIgnoreCase(parsedUrl.getProtocol());
-            int port = parsedUrl.getPort();
-            if (port == -1) {
-                port = secure ? 443 : 80;
-            }
-            this.httpService = new HTTPService(parsedUrl.getHost(), port, secure);
-        } else {
-            this.httpService = null;
+    private HTTPService initHttpService(URL parsedUrl) {
+        if (parsedUrl == null) {
+            return null;
         }
+        boolean secure = "https".equalsIgnoreCase(parsedUrl.getProtocol());
+        int port = parsedUrl.getPort();
+        if (port == -1) {
+            port = secure ? 443 : 80;
+        }
+        return new HTTPService(parsedUrl.getHost(), port, secure);
+    }
 
-        // Convert HttpRequestResponse list to HTTPRequestResponse array
-        List<HttpRequestResponse> requestResponses = auditIssue.requestResponses();
+    private HTTPRequestResponse[] convertHttpMessages(List<HttpRequestResponse> requestResponses) {
         List<HTTPRequestResponse> convertedList = new ArrayList<>();
         if (requestResponses != null) {
             for (HttpRequestResponse rr : requestResponses) {
                 convertedList.add(new HTTPRequestResponse(rr));
             }
         }
-        this.httpMessages = convertedList.toArray(new HTTPRequestResponse[0]);
+        return convertedList.toArray(new HTTPRequestResponse[0]);
     }
 
     /**
@@ -114,13 +116,13 @@ public class ScanIssue {
      */
     private String convertSeverity(AuditIssueSeverity severity) {
         if (severity == null)
-            return "Information";
+            return SEVERITY_INFORMATION;
         return switch (severity) {
             case HIGH -> "High";
             case MEDIUM -> "Medium";
             case LOW -> "Low";
-            case INFORMATION -> "Information";
-            default -> "Information";
+            case INFORMATION -> SEVERITY_INFORMATION;
+            default -> SEVERITY_INFORMATION;
         };
     }
 
@@ -129,12 +131,12 @@ public class ScanIssue {
      */
     private String convertConfidence(AuditIssueConfidence confidence) {
         if (confidence == null)
-            return "Tentative";
+            return CONFIDENCE_TENTATIVE;
         return switch (confidence) {
             case CERTAIN -> "Certain";
             case FIRM -> "Firm";
-            case TENTATIVE -> "Tentative";
-            default -> "Tentative";
+            case TENTATIVE -> CONFIDENCE_TENTATIVE;
+            default -> CONFIDENCE_TENTATIVE;
         };
     }
 
