@@ -25,6 +25,9 @@ This document tracks the ongoing development phases for Autowasp.
 | 10.2  | External Tool Integration     | 🔮 Future   | High      |
 | 11.1  | AI-Powered Analysis           | 🔮 Future   | Very High |
 | 11.2  | Scope-Aware Testing Tracker   | 🔮 Future   | High      |
+| 12.1  | Session Notes                 | ⏳ Pending  | Low       |
+| 12.2  | Payload Manager               | ⏳ Pending  | Medium    |
+| 12.3  | Target Scope Manager          | ⏳ Pending  | High      |
 
 ---
 
@@ -677,7 +680,11 @@ This phase implements advanced AI and tracking features.
 | Priority | Phase | Item                  | Rationale     |
 | :------- | :---- | :-------------------- | :------------ |
 | 🔴 High   | 6.3   | BApp Store Submission | Release goal  |
+| 🟡 Medium | 7.1   | Large Projects        | BApp #9       |
 | 🟡 Medium | 4.3   | Report Enhancements   | User value    |
+| 🟠 Next   | 12.1  | Session Notes         | User selected |
+| 🟠 Next   | 12.2  | Payload Manager       | User selected |
+| 🟠 Next   | 12.3  | Target Scope Manager  | User selected |
 | 🔵 Low    | 4.4   | UI Improvements       | Nice to have  |
 | 🔵 Low    | 5.2   | Integration Tests     | Complex setup |
 | 🔮 Future | 8-11  | Advanced Features     | Post-release  |
@@ -687,7 +694,118 @@ This phase implements advanced AI and tracking features.
 ## Recommended Next Steps
 
 1. **Phase 6.3**: BApp Store Submission (Focus on Criteria #3 & #9)
-2. **Phase 4.3**: Report Enhancements (Add summary sheet, charts)
+2. **Phase 7.1**: Handle Large Projects (Prerequisite for 4.3)
+3. **Phase 4.3**: Report Enhancements (Add summary sheet, Markdown export)
+4. **Phase 12**: User-Selected Features (Post-release)
+
+---
+
+## Phase 12: User-Selected Features
+
+### Priority: ⏳ Pending | Post-Release
+
+Additional features selected based on user needs.
+
+### 12.1 Session Notes / Finding Notebook
+
+**Objective:** Integrated notebook for capturing findings and observations.
+
+**Effort:** Low
+
+**Use Cases:**
+- Capture notes per request/endpoint
+- Link notes to WSTG test cases
+- Export notes with reports
+
+**Implementation:**
+
+| File                                | Description             |
+| ----------------------------------- | ----------------------- |
+| `autowasp/notes/NotebookPanel.java` | Main UI panel           |
+| `autowasp/notes/Note.java`          | Note data model         |
+| `autowasp/notes/NoteStore.java`     | Persistence via Montoya |
+
+**Tasks:**
+
+- [ ] Create `NotebookPanel` UI with text editor
+- [ ] Implement linking to WSTG test cases
+- [ ] Persist notes to Burp project file
+- [ ] Export notes to Markdown/Excel reports
+
+---
+
+### 12.2 Payload Manager
+
+**Objective:** Payload and wordlist management integrated with WSTG test cases.
+
+**Effort:** Medium
+
+**Use Cases:**
+- WSTG-aligned payload collections per category
+- Quick-insert payloads to Intruder/Repeater
+- Custom payload library management
+
+**Implementation:**
+
+| File                                   | Description              |
+| -------------------------------------- | ------------------------ |
+| `autowasp/payload/PayloadManager.java` | Core management logic    |
+| `autowasp/payload/PayloadSet.java`     | Payload collection model |
+| `autowasp/ui/PayloadPanel.java`        | UI panel                 |
+| `src/main/resources/payloads/`         | Bundled payload files    |
+
+**Bundled Payload Sets:**
+
+| WSTG ID      | Payload Set            |
+| ------------ | ---------------------- |
+| WSTG-INPV-01 | XSS payloads           |
+| WSTG-INPV-05 | SQL injection payloads |
+| WSTG-INPV-07 | XXE payloads           |
+| WSTG-INPV-12 | OS Command injection   |
+| WSTG-ATHZ-02 | IDOR test patterns     |
+
+**Tasks:**
+
+- [ ] Create bundled payload JSON files per WSTG category
+- [ ] Build PayloadManager for loading/managing payloads
+- [ ] Create UI panel with search and filter
+- [ ] Implement context menu "Insert Payload..."
+- [ ] Add ability to create custom payload sets
+
+---
+
+### 12.3 Target Scope Manager
+
+**Objective:** Track testing coverage per endpoint integrated with Burp scope.
+
+**Effort:** High
+
+**Montoya API Components:**
+
+- `api.scope()` - Access scope configuration
+- `api.siteMap()` - Access discovered endpoints
+
+**Use Cases:**
+- Visual map of endpoints vs WSTG test cases
+- Track tested endpoints
+- Export coverage reports
+
+**Implementation:**
+
+| File                                  | Description             |
+| ------------------------------------- | ----------------------- |
+| `autowasp/scope/ScopeManager.java`    | Core scope integration  |
+| `autowasp/scope/EndpointTracker.java` | Endpoint tracking logic |
+| `autowasp/scope/CoverageMatrix.java`  | WSTG x Endpoint matrix  |
+| `autowasp/ui/ScopePanel.java`         | Visual dashboard        |
+
+**Tasks:**
+
+- [ ] Integrate with `api.scope()` to get target scope
+- [ ] Build endpoint list from `api.siteMap()`
+- [ ] Create coverage matrix: endpoint x WSTG test case
+- [ ] Visual indicator (tested/not tested/in progress)
+- [ ] Export coverage to reports
 
 ---
 
