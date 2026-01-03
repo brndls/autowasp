@@ -288,6 +288,21 @@ public class ExtenderPanelUI implements Runnable {
         deleteEntryButton.addActionListener(e -> extender.getLoggerTable().deleteEntry());
         deleteInstanceButton.addActionListener(e -> extender.getInstanceTable().deleteInstance());
 
+        JButton saveCurrentProjectButton = createSaveProjectButton();
+        JButton loadProjectButton = createLoadProjectButton();
+
+        miscPanel.add(deleteEntryButton);
+        miscPanel.add(deleteInstanceButton);
+        miscPanel.add(saveCurrentProjectButton);
+        miscPanel.add(loadProjectButton);
+
+        return miscPanel;
+    }
+
+    /**
+     * Create save project button with action listener
+     */
+    private JButton createSaveProjectButton() {
         JButton saveCurrentProjectButton = new JButton("Save Project");
         saveCurrentProjectButton.addActionListener(e -> {
             final int userOption = destDirChooser
@@ -298,62 +313,167 @@ public class ExtenderPanelUI implements Runnable {
                 try {
                     extender.getProjectWorkspace().saveFile(checklistDestDir.getAbsolutePath());
                 } catch (IOException ioException) {
-                    extender.logOutput("IOException at setupTopPanel - saveCurrentProjectButton");
+                    extender.logOutput("IOException at createSaveProjectButton");
                 }
             }
         });
-
-        JButton loadProjectButton = new JButton("Load Project");
-        loadProjectButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser(); // Need to init this locally or promote to field or reuse
-                                                           // existing?
-            // Original had fileChooser as local in setupTopPanel.
-            // I should promote fileChooser to field or create new.
-            // Note: destDirChooser is a field. fileChooser was local.
-            // I'll create new local one or field. Field is better if reused.
-
-            final int userOption = fileChooser
-                    .showOpenDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
-
-            if (userOption == JFileChooser.APPROVE_OPTION) {
-                File chosenFile = fileChooser.getSelectedFile();
-
-                if (!chosenFile.getAbsolutePath().contains("autowasp_project.ser")) {
-                    scanStatusLabel.setText("Error, this is not the correct project file");
-                    extender.issueAlert("Error, this is not the correct project file");
-                } else {
-                    Runnable runnable = () -> {
-                        extender.getProjectWorkspace().readFromFile(chosenFile.getAbsolutePath());
-                        loadProjectButton.setEnabled(false);
-                    };
-                    Thread loadThread = new Thread(runnable);
-                    loadThread.start();
-                }
-            }
-        });
-
-        miscPanel.add(deleteEntryButton);
-        miscPanel.add(deleteInstanceButton);
-        miscPanel.add(saveCurrentProjectButton);
-        miscPanel.add(loadProjectButton);
-
-        return miscPanel;
+        return saveCurrentProjectButton;
     }
 
+    /**
+     * Create load project button with action listener and file validation
+     */
+    private JButton createLoadProjectButton() {
+        JButton loadProjectButton = new JButton("Load Project");
+        loadProjectButton.addActionListener(e -> handleLoadProject(loadProjectButton));
+        return loadProjectButton;
+    }
+
+    /**
+     * Handle load project action with file validation
+     */
+    private void handleLoadProject(JButton loadProjectButton) {
+        JFileChooser fileChooser = createProjectFileChooser();
+
+        final int userOption = fileChooser
+                .showOpenDialog(extender.getApi().userInterface().swingUtils().suiteFrame());
+
+        if (userOption == JFileChooser.APPROVE_OPTION) {
+            File chosenFile = fileChooser.getSelectedFile();
+            loadProjectFromFile(chosenFile, loadProjectButton);
+        }
+    }
+
+    /**
+     * Create file chooser with filter for project files
+     */
+    private JFileChooser createProjectFileChooser() {
+        JFileChooser fileChooser = new JFileChooser();
+
+        // Set file filter to only show .json and .ser files
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                if (f.isDirectory()) {
+                    return true;
+                }
+                String name = f.getName().toLowerCase();
+                return name.endsWith(".json") || name.endsWith(".ser");
+            }
+
+            @Override
+            public String getDescription() {
+                return "Autowasp Project Files (*.json, *.ser)";
+            }
+        });
+
+        return fileChooser;
+    }
+
+    /**
+     * Load project from file with validation
+     */
+    private void loadProjectFromFile(File chosenFile, JButton loadProjectButton) {
+        try {
+            // Get canonical path to prevent path traversal
+            String canonicalPath = chosenFile.getCanonicalPath();
+            String fileName = chosenFile.getName();
+
+            // Validate file extension (use endsWith instead of contains)
+            if (!isValidProjectFileName(fileName)) {
+                scanStatusLabel.setText("Error: Invalid project file name");
+                extender.issueAlert("Error: Please select a valid Autowasp project file " +
+                        "(autowasp_project.json or autowasp_project.ser)");
+                return;
+            }
+
+            // Verify file is readable and not a symlink
+            if (!chosenFile.isFile() || !chosenFile.canRead()) {
+                extender.issueAlert("Error: Cannot read project file");
+                return;
+            }
+
+            // Load project in background thread
+            loadProjectInBackground(canonicalPath, loadProjectButton);
+
+        } catch (IOException ioException) {
+            extender.logOutput("Error validating file path: " + ioException.getMessage());
+            extender.issueAlert("Error: Invalid file path");
+        }
+    }
+
+    /**
+     * Validate project file name
+     */
+    private boolean isValidProjectFileName(String fileName) {
+        return fileName.endsWith("autowasp_project.json") ||
+                fileName.endsWith("autowasp_project.ser");
+    }
+
+    /**
+     * Load project in background thread
+     */
+    private void loadProjectInBackground(String canonicalPath, JButton loadProjectButton) {
+        Runnable runnable = () -> {
+            extender.getProjectWorkspace().readFromFile(canonicalPath);
+            loadProjectButton.setEnabled(false);
+        };
+        Thread loadThread = new Thread(runnable);
+        loadThread.start();
+    }
+
+    /**
+     * Add target to Burp scope with security validation
+     *
+     * Security improvements:
+     * - Validates hostname format
+     * - Only allows HTTP/HTTPS protocols
+     * - Prevents injection attacks
+     */
     private void addTargetToScope(JTextField hostField) {
         String input = hostField.getText().trim();
         if (input.isEmpty()) {
             return;
         }
 
+        // Validate input format
+        if (!isValidHostnameInput(input)) {
+            scanStatusLabel.setText("Error: Invalid hostname format");
+            extender.issueAlert("Error: Invalid hostname format. Please enter a valid domain or URL.");
+            return;
+        }
+
         // Remove protocol if present to get the raw domain
         String domain = input;
         if (domain.contains("://")) {
+            String protocol = domain.substring(0, domain.indexOf("://"));
+            // Only allow http/https protocols
+            if (!protocol.equalsIgnoreCase("http") && !protocol.equalsIgnoreCase("https")) {
+                extender.issueAlert("Error: Only HTTP/HTTPS protocols are allowed");
+                return;
+            }
             domain = domain.substring(domain.indexOf("://") + 3);
         }
+
+        // Remove port if present
+        if (domain.contains(":")) {
+            domain = domain.substring(0, domain.indexOf(":"));
+        }
+
+        // Remove path if present
+        if (domain.contains("/")) {
+            domain = domain.substring(0, domain.indexOf("/"));
+        }
+
         // Remove www. if present
         if (domain.startsWith("www.")) {
             domain = domain.substring(4);
+        }
+
+        // Final validation
+        if (!isValidDomain(domain)) {
+            extender.issueAlert("Error: Invalid domain name");
+            return;
         }
 
         // Now we have the base domain (e.g. example.com)
@@ -376,8 +496,104 @@ public class ExtenderPanelUI implements Runnable {
             }
             hostField.setText("");
         } catch (Exception e1) {
-            extender.logOutput("Exception occurred at setupTopPanel");
+            extender.logOutput("Exception occurred at addTargetToScope: " + e1.getMessage());
+            extender.issueAlert("Error: Failed to add target to scope");
         }
+    }
+
+    /**
+     * Validate hostname input format
+     *
+     * @param input User input to validate
+     * @return true if input is valid
+     */
+    private boolean isValidHostnameInput(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return false;
+        }
+
+        // Remove protocol if present
+        String hostname = input;
+        if (hostname.contains("://")) {
+            hostname = hostname.substring(hostname.indexOf("://") + 3);
+        }
+
+        // Remove port if present
+        if (hostname.contains(":")) {
+            hostname = hostname.substring(0, hostname.indexOf(":"));
+        }
+
+        // Remove path if present
+        if (hostname.contains("/")) {
+            hostname = hostname.substring(0, hostname.indexOf("/"));
+        }
+
+        // Remove www. if present
+        if (hostname.startsWith("www.")) {
+            hostname = hostname.substring(4);
+        }
+
+        return isValidDomain(hostname);
+    }
+
+    /**
+     * Validate domain name format
+     *
+     * @param domain Domain to validate
+     * @return true if domain is valid
+     */
+    private boolean isValidDomain(String domain) {
+        if (domain == null || domain.trim().isEmpty()) {
+            return false;
+        }
+
+        // Prevent stack overflow by limiting domain length
+        if (domain.length() > 253) { // RFC 1035 max domain length
+            return false;
+        }
+
+        // Allow localhost
+        if (domain.equalsIgnoreCase("localhost")) {
+            return true;
+        }
+
+        // Allow IP addresses (simple check)
+        if (domain.matches("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$")) {
+            return true;
+        }
+
+        // Domain name validation - optimized to prevent stack overflow
+        // Split by dot and validate each label separately
+        String[] labels = domain.split("\\.");
+        if (labels.length < 2) {
+            return false; // Domain must have at least 2 parts
+        }
+
+        // Validate each label
+        for (String label : labels) {
+            if (!isValidDomainLabel(label)) {
+                return false;
+            }
+        }
+
+        // Last label (TLD) must be at least 2 characters and alphabetic
+        String tld = labels[labels.length - 1];
+        return tld.length() >= 2 && tld.matches("^[a-zA-Z]+$");
+    }
+
+    /**
+     * Validate individual domain label
+     *
+     * @param label Domain label to validate
+     * @return true if label is valid
+     */
+    private boolean isValidDomainLabel(String label) {
+        if (label == null || label.isEmpty() || label.length() > 63) {
+            return false; // RFC 1035 max label length
+        }
+
+        // Label must start and end with alphanumeric, can contain hyphens in middle
+        return label.matches("^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$");
     }
 
     // This method setup the logger functionality tab
