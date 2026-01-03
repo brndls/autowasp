@@ -42,7 +42,7 @@ spotless {
  * - version: Software version (SNAPSHOT = still in development)
  */
 group = "autowasp"
-version = "2.0.0"
+version = "2.1.0"
 
 // ════════════════════════════════════════════════════════════════════════════
 // JAVA CONFIGURATION

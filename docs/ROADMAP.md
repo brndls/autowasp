@@ -4,30 +4,31 @@ This document tracks the ongoing development phases for Autowasp.
 
 ## Phase Overview
 
-| Phase | Name                          | Status        | Effort    |
-| ----- | ----------------------------- | ------------- | --------- |
-| 4.1   | Modernization (Java 21)       | ✅ Complete    | -         |
-| 4.2   | Reliability (Fetch Logic)     | ✅ Complete    | Medium    |
-| 4.3   | Report Enhancements           | ⏳ Pending     | Medium    |
-| 4.4   | UI Improvements               | ⏳ Pending     | Medium    |
-| 5.1   | Unit Tests                    | ✅ Complete    | Medium    |
-| 5.2   | Integration Tests             | ⏳ Pending     | High      |
-| 6.1   | Local Checklist Import        | ✅ Complete    | Medium    |
-| 6.2   | GitHub Release & CI/CD        | ✅ Complete    | Medium    |
-| 6.3   | BApp Store Submission         | 🔄 In Progress | Low       |
-| 7.0   | Future Maintenance            | ⏳ Pending     | Low       |
-| 7.1   | Handle Large Projects         | ⏳ Pending     | Medium    |
-| 8.1   | Auto-Mapping WSTG             | 🔮 Future      | Medium    |
-| 8.2   | Evidence Collector            | 🔮 Future      | Medium    |
-| 9.1   | Smart Severity Calculator     | 🔮 Future      | Medium    |
-| 9.2   | Retest Tracking               | 🔮 Future      | High      |
-| 10.1  | Burp Collaborator Integration | 🔮 Future      | High      |
-| 10.2  | External Tool Integration     | 🔮 Future      | High      |
-| 11.1  | AI-Powered Analysis           | 🔮 Future      | Very High |
-| 11.2  | Scope-Aware Testing Tracker   | 🔮 Future      | High      |
-| 12.1  | Session Notes                 | ⏳ Pending     | Low       |
-| 12.2  | Payload Manager               | ⏳ Pending     | Medium    |
-| 12.3  | Target Scope Manager          | ⏳ Pending     | High      |
+| Phase | Name                          | Status       | Effort    |
+| ----- | ----------------------------- | ------------ | --------- |
+| 4.1   | Modernization (Java 21)       | ✅ Complete   | -         |
+| 4.2   | Reliability (Fetch Logic)     | ✅ Complete   | Medium    |
+| 4.3   | Report Enhancements           | ⏳ Pending    | Medium    |
+| 4.4   | UI Improvements               | ⏳ Pending    | Medium    |
+| 5.1   | Unit Tests                    | ✅ Complete   | Medium    |
+| 5.2   | Integration Tests             | ⏳ Pending    | High      |
+| 6.1   | Local Checklist Import        | ✅ Complete   | Medium    |
+| 6.2   | GitHub Release & CI/CD        | ✅ Complete   | Medium    |
+| 6.3   | BApp Store Submission         | 🔄 Finalizing | Low       |
+| 7.0   | Future Maintenance            | ⏳ Pending    | Low       |
+| 7.1   | Handle Large Projects         | ⏳ Pending    | Medium    |
+| 8.1   | Auto-Mapping WSTG             | 🔮 Future     | Medium    |
+| 8.2   | Evidence Collector            | 🔮 Future     | Medium    |
+| 9.1   | Smart Severity Calculator     | 🔮 Future     | Medium    |
+| 9.2   | Retest Tracking               | 🔮 Future     | High      |
+| 10.1  | Burp Collaborator Integration | 🔮 Future     | High      |
+| 10.2  | External Tool Integration     | 🔮 Future     | High      |
+| 11.1  | AI-Powered Analysis           | 🔮 Future     | Very High |
+| 11.2  | Scope-Aware Testing Tracker   | 🔮 Future     | High      |
+| 12.1  | Session Notes                 | ⏳ Pending    | Low       |
+| 12.2  | Payload Manager               | ⏳ Pending    | Medium    |
+| 12.3  | Target Scope Manager          | ⏳ Pending    | High      |
+| 13.1  | Context Menu Enhancement      | ⏳ Pending    | Low       |
 
 ---
 
@@ -429,15 +430,17 @@ Reference: [GUIDELINES.md](./GUIDELINES.md)
 - [x] Checked and fixed copyright headers in all Java files (2026)
 - [x] Verified all documentation links
 
-### 6.3.5 Final Testing 🔄
+### 6.3.5 Final Testing ✅
+**Status:** Complete  
+**Date:** 2026-01-03
 
-- [ ] Test in Burp Suite Professional (latest version)
-- [ ] Test in Burp Suite Community (if applicable)
-- [ ] Verify all features functioning
-- [ ] Test unload/reload extension
-- [ ] Test on different OS (macOS, Linux, Windows)
+- [x] Test in Burp Suite Professional (latest version)
+- [x] Test in Burp Suite Community (successfully verified)
+- [x] Verify all features functioning (Fetch Online stability fixed)
+- [x] Test unload/reload extension (Event Log visibility fixed)
+- [x] Test on different OS (verified on macOS)
 
-### 6.3.6 Submission ⏳
+### 6.3.6 Submission 🔄
 
 - [ ] Submit to PortSwigger BApp Store
 - [ ] Monitor submission status
@@ -453,7 +456,20 @@ Reference: [GUIDELINES.md](./GUIDELINES.md)
 
 ---
 
-## Phase 7.1 - Handle Large Projects & Project Persistence
+## Phase 7.1 - Handle Large Projects & Project Persistence 🔄
+
+**Status:** Planned (Next Priority)  
+**Goal:** Seamless integration with Burp project files and optimized performance for thousands of requests.
+
+- [ ] **Checklist State Persistence (BApp Criteria #4)**
+  - Implement Montoya `persistence()` API
+  - Save/Load checklist state automatically to `.burp` files
+- [ ] **Scalability Improvements**
+  - Implement table virtualization for large datasets
+  - Lazy-load traffic details in Logger
+- [ ] **Dynamic Memory Management**
+  - Percentage-based memory indicator (Dynamic threshold)
+  - Extraction of hardcoded limits into configurable constants
 
 **Goal:** Comply with BApp Store Criteria #9 and enable extension state persistence.
 
@@ -505,7 +521,25 @@ data.setHttpRequestResponseList("traffic", instanceList);
 - [ ] Handle temporary project mode gracefully (in-memory fallback)
 - [ ] Migrate data on extension version upgrade
 
-### 7.1.3 Integration with Report Generation
+### 7.1.3 Memory Indicator Enhancements 🆕
+
+**Status:** Pending  
+**Priority:** Low
+
+**Issues identified from manual testing:**
+- Hardcoded 400 MB threshold (magic number)
+- No dynamic adjustment based on JVM heap size
+- Single warning level (red only)
+
+**Improvements:**
+- [ ] Refactor to use percentage-based threshold (80% of max heap)
+- [ ] Add intermediate warning level (orange at 60%)
+- [ ] Display format: "used / max MB"
+- [ ] Extract constants for thresholds
+
+---
+
+### 7.1.4 Integration with Report Generation
 
 - [ ] Load persisted checklist state before report generation
 - [ ] Include all historical traffic from project file in report
@@ -876,6 +910,84 @@ Additional features selected based on user needs.
 - [ ] Create coverage matrix: endpoint x WSTG test case
 - [ ] Visual indicator (tested/not tested/in progress)
 - [ ] Export coverage to reports
+
+---
+
+## Phase 13: Workflow Enhancement Features
+
+### Priority: ⏳ Pending | Post-Release
+
+Additional workflow enhancements based on user feedback and testing.
+
+### 13.1 Context Menu Enhancement
+
+**Objective:** Extend "Send to Checklist" functionality across all Burp components.
+
+**Effort:** Low  
+**Priority:** Medium
+
+**Current Status:**
+
+| Component             | Status                          | Implementation                   | Issue                                                           |
+| --------------------- | ------------------------------- | -------------------------------- | --------------------------------------------------------------- |
+| Proxy History         | ✅ Complete                      | `ContextMenuFactory.java`        | Working correctly                                               |
+| Repeater              | ❌ Bug - Wrong API Usage         | `ContextMenuFactory.java:95-104` | Uses `InvocationType` instead of `event.messageEditorRequest()` |
+| Intruder              | ✅ Complete                      | `ContextMenuFactory.java`        | Working correctly                                               |
+| Logger (Custom Panel) | ❌ Not Possible via Context Menu | API Limitation                   | No `InvocationType` for extension panels                        |
+
+**Root Cause Analysis:**
+
+The current implementation incorrectly uses `InvocationType.MESSAGE_EDITOR_REQUEST` which is too generic and doesn't work for Repeater. The Montoya API requires using `ContextMenuEvent.messageEditorRequest().isPresent()` to detect message editor contexts.
+
+**Tasks:**
+
+#### 13.1.1 Fix Repeater Context Menu (Bug Fix) ✅
+
+**Priority:** High  
+**Effort:** Low
+
+- [x] Refactor `ContextMenuFactory.provideMenuItems()` to use `event.messageEditorRequestResponse().isPresent()`
+- [x] Add logic for handling message editor context
+- [x] Verify data correctly added to Logger table
+
+**Files to Modify:**
+- `autowasp/http/ContextMenuFactory.java` - Fix context detection logic
+
+#### 13.1.2 Logger "Send to Checklist" Alternative
+
+Since context menu is not possible for custom panels, implement alternative UI:
+
+**Option A: Toolbar Button**
+- [ ] Add "Send to Checklist" button in Logger panel toolbar
+- [ ] Button opens dialog to select WSTG test case
+- [ ] Selected entries added to Checklist with chosen category
+
+**Option B: Keyboard Shortcut**
+- [ ] Implement Ctrl+Shift+W shortcut in Logger table
+- [ ] Same dialog as Option A
+
+#### 13.1.3 Color Indicators for Logger Entries 🎨
+
+**Priority:** Low (Nice to have)
+**Effort:** Low
+
+- [ ] Add `highlightColor` field to `LoggerEntry`
+- [ ] Update `ContextMenuFactory` to assign colors based on source:
+  - Blue: Proxy History
+  - Orange: Repeater
+  - Red: Intruder
+- [ ] Implement visual display in Logger table based on `highlightColor`
+
+**New Files:**
+
+| File                                           | Description                           |
+| ---------------------------------------------- | ------------------------------------- |
+| `autowasp/ui/AddToChecklistDialog.java`        | Dialog for selecting WSTG category    |
+| `autowasp/checklist/ChecklistIntegration.java` | Helper for adding entries from Logger |
+
+**References:**
+- [Implementation Plan](file:///Users/brndls/.gemini/antigravity/brain/292136fe-d287-4ec4-b1cd-6dd6ebf8348d/implementation_plan.md)
+- [Montoya InvocationType API](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/ui/contextmenu/InvocationType.html)
 
 ---
 

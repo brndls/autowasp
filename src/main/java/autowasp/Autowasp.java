@@ -203,7 +203,8 @@ public class Autowasp implements BurpExtension {
         // Register unload handler for clean unload (GUIDELINES.md §6)
         // Terminate any background threads if needed
         // Release resources
-        api.extension().registerUnloadingHandler(() -> logging.logToOutput("Autowasp extension unloading..."));
+        api.extension().registerUnloadingHandler(
+                () -> logging.raiseInfoEvent("Autowasp extension unloading - All resources released."));
     }
 
     // =====================================================================================

@@ -182,16 +182,11 @@ class ChecklistLogicTest {
 
     @Test
     void testGetTableElementsValid() {
-        String testUrl = "http://example.com/table";
-        String html = "<html><body>" +
-                "<table><tr><td>WSTG-TEST-01</td></tr></table>" +
-                "<div id='blob-path'>" +
-                "<span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>" +
-                "<span>src-INFO_Map_Apps</span>" +
-                "<span>7</span>" +
-                "<span>test-Check_Something.md</span>" +
-                "</div>" +
-                "</body></html>";
+        String testUrl = "https://raw.githubusercontent.com/example/01-Category/test.md";
+        String html = """
+                # My Test Title
+                Reference ID: WSTG-TEST-01
+                Some other content""";
 
         setupMockHttpResponse(testUrl, html, (short) 200);
 
@@ -199,20 +194,19 @@ class ChecklistLogicTest {
 
         assertNotNull(result);
         assertEquals("WSTG-TEST-01", result.get("Reference Number"));
-        assertEquals("INFO Map Apps", result.get("Category"));
-        assertEquals("Check Something", result.get("Test Name"));
+        assertEquals("Category", result.get("Category"));
+        assertEquals("My Test Title", result.get("Test Name"));
     }
 
     @Test
     void testGetContentElementsValid() {
-        String testUrl = "http://example.com/content";
-        String html = "<html><article>" +
-                "<h1>Title</h1>" +
-                "<h2>Summary</h2>" +
-                "<p>This is the summary.</p>" +
-                "<h2>How To Test</h2>" +
-                "<p>Step 1.</p>" +
-                "</article></html>";
+        String testUrl = "https://raw.githubusercontent.com/example/content.md";
+        String html = """
+                # Title
+                ## Summary
+                This is the summary.
+                ## How to Test
+                Step 1.""";
 
         setupMockHttpResponse(testUrl, html, (short) 200);
 
@@ -225,17 +219,14 @@ class ChecklistLogicTest {
 
     @Test
     void testLogNewChecklistEntrySuccess() {
-        String testUrl = "http://example.com/entry";
-        String html = "<html><body>" +
-                "<table><tr><td>WSTG-TEST-02</td></tr></table>" +
-                "<div id='blob-path'>" +
-                "<span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>" +
-                "<span>src-Cat_One</span>" +
-                "<span>7</span>" +
-                "<span>test-Test_Two.md</span>" +
-                "</div>" +
-                "<article><h2>Summary</h2><p>Content</p></article>" +
-                "</body></html>";
+        String testUrl = "https://raw.githubusercontent.com/example/02-Cat_One/test-Test_Two.md";
+        String html = """
+                # Test Two
+                Refer: WSTG-TEST-02
+                ## Summary
+                Content
+                ## How to Test
+                Steps""";
 
         setupMockHttpResponse(testUrl, html, (short) 200);
 

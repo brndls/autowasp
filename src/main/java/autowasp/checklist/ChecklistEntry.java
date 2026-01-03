@@ -33,6 +33,12 @@ public class ChecklistEntry implements Serializable {
     private String howToTestHTML;
     private String referencesHTML;
     private final String url;
+    public static final String REF_NUMBER_KEY = "Reference Number";
+    public static final String CATEGORY_KEY = "Category";
+    public static final String TEST_NAME_KEY = "Test Name";
+    public static final String SUMMARY_KEY = "summary";
+    public static final String HOW_TO_TEST_KEY = "how to test";
+    public static final String REFERENCES_KEY = "references";
     // Pentester's comments and evidence are sent from the scanner findings to a
     // particular checklist entry when the user maps a finding to an entry
     private String pentesterComments;
@@ -42,12 +48,12 @@ public class ChecklistEntry implements Serializable {
     // This constructor is used to create new checklist entry objects when fetching
     // new checklist data from the web
     public ChecklistEntry(Map<String, String> tableElements, Map<String, String> contentElements, String url) {
-        this.refNumber = tableElements.get("Reference Number");
-        this.category = tableElements.get("Category");
-        this.testName = tableElements.get("Test Name");
-        this.summaryHTML = contentElements.get("summary");
-        this.howToTestHTML = contentElements.get("how to test");
-        this.referencesHTML = contentElements.get("references");
+        this.refNumber = tableElements.get(REF_NUMBER_KEY);
+        this.category = tableElements.get(CATEGORY_KEY);
+        this.testName = tableElements.get(TEST_NAME_KEY);
+        this.summaryHTML = contentElements.get(SUMMARY_KEY);
+        this.howToTestHTML = contentElements.get(HOW_TO_TEST_KEY);
+        this.referencesHTML = contentElements.get(REFERENCES_KEY);
         this.exclusion = false;
         this.testcaseCompleted = false;
         this.url = url; // URL is included for ease of creating the hyperlinks when writing to excel

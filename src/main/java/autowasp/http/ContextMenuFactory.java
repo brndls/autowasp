@@ -56,6 +56,8 @@ import java.util.List;
 public class ContextMenuFactory implements ContextMenuItemsProvider {
 
     private final Autowasp extender;
+    private static final String URL_PREFIX = "URL = ";
+    private static final String ERROR_PARSING_URL = "Error parsing URL: ";
 
     public ContextMenuFactory(Autowasp autowasp) {
         this.extender = autowasp;
@@ -68,50 +70,46 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
     @Override
     public List<Component> provideMenuItems(ContextMenuEvent event) {
         List<Component> menuItems = new ArrayList<>();
-
-        // Dapatkan invocation type (mengganti getInvocationContext())
-        InvocationType invocationType = event.invocationType();
-
-        // Dapatkan selected request/responses
-        List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
-
-        if (selectedItems.isEmpty()) {
-            return menuItems; // No item selected
-        }
-
         JMenuItem item;
 
         // Context menu for Proxy History
-        if (invocationType == InvocationType.PROXY_HISTORY) {
-            item = new JMenuItem("Send proxy finding to Autowasp", null);
-            item.addActionListener(e -> {
-                String action = "Sent from Proxy History";
-                String comments = getAnnotationsComment(selectedItems.get(0));
-                logToAutowasp(action, comments, selectedItems);
-            });
-            menuItems.add(item);
+        if (event.invocationType() == InvocationType.PROXY_HISTORY) {
+            List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
+            if (!selectedItems.isEmpty()) {
+                item = new JMenuItem("Send to Autowasp (Proxy)", null);
+                item.addActionListener(e -> {
+                    String action = "Sent from Proxy History";
+                    String comments = getAnnotationsComment(selectedItems.get(0));
+                    logToAutowasp(action, comments, selectedItems);
+                });
+                menuItems.add(item);
+            }
         }
-        // Context menu for Repeater - check MESSAGE_EDITOR in Repeater
-        else if (invocationType == InvocationType.MESSAGE_EDITOR_REQUEST ||
-                invocationType == InvocationType.MESSAGE_VIEWER_REQUEST) {
-            item = new JMenuItem("Send repeater finding to Autowasp", null);
+        // Context menu for Message Editor (Repeater, etc.)
+        // Use messageEditorRequestResponse() to detect message editor context
+        else if (event.messageEditorRequestResponse().isPresent()) {
+            item = new JMenuItem("Send to Autowasp", null);
             item.addActionListener(e -> {
-                String action = "Sent from Repeater";
-                String comments = getAnnotationsComment(selectedItems.get(0));
-                logToAutowasp(action, comments, selectedItems);
+                String action = "Sent from Message Editor";
+                burp.api.montoya.ui.contextmenu.MessageEditorHttpRequestResponse editorReqResp = event
+                        .messageEditorRequestResponse().get();
+                logEditorRequestToAutowasp(action, editorReqResp);
             });
             menuItems.add(item);
         }
         // Context menu for Intruder
-        else if (invocationType == InvocationType.INTRUDER_PAYLOAD_POSITIONS ||
-                invocationType == InvocationType.INTRUDER_ATTACK_RESULTS) {
-            item = new JMenuItem("Send intruder finding to Autowasp", null);
-            item.addActionListener(e -> {
-                String action = "Sent from Intruder";
-                String comments = getAnnotationsComment(selectedItems.get(0));
-                logToAutowasp(action, comments, selectedItems);
-            });
-            menuItems.add(item);
+        else if (event.invocationType() == InvocationType.INTRUDER_PAYLOAD_POSITIONS ||
+                event.invocationType() == InvocationType.INTRUDER_ATTACK_RESULTS) {
+            List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
+            if (!selectedItems.isEmpty()) {
+                item = new JMenuItem("Send to Autowasp (Intruder)", null);
+                item.addActionListener(e -> {
+                    String action = "Sent from Intruder";
+                    String comments = getAnnotationsComment(selectedItems.get(0));
+                    logToAutowasp(action, comments, selectedItems);
+                });
+                menuItems.add(item);
+            }
         }
 
         return menuItems;
@@ -147,7 +145,7 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
             try {
                 // Create URL from request
                 URL url = java.net.URI.create(httpRequestResponse.request().url()).toURL();
-                extender.issueAlert("URL = " + url.toString());
+                extender.issueAlert(URL_PREFIX + url.toString());
 
                 // Create instance entry with data from Montoya API
                 InstanceEntry instanceEntry = new InstanceEntry(
@@ -157,8 +155,42 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
                         httpRequestResponse);
                 findingEntry.addInstance(instanceEntry);
             } catch (Exception e) {
-                extender.logError("Error parsing URL: " + e.getMessage());
+                extender.logError(ERROR_PARSING_URL + e.getMessage());
             }
+        }
+
+        extender.getLoggerTableModel().addAllLoggerEntry(findingEntry);
+    }
+
+    /**
+     * Log request/response from message editor (Repeater, etc.) to Autowasp logger
+     */
+    private void logEditorRequestToAutowasp(String action,
+            burp.api.montoya.ui.contextmenu.MessageEditorHttpRequestResponse editorReqResp) {
+        // Get the request from the editor
+        burp.api.montoya.http.message.requests.HttpRequest request = editorReqResp.requestResponse().request();
+        String host = request.httpService().host();
+        String vulnType = "~";
+        String issue = "";
+        LoggerEntry findingEntry = new LoggerEntry(host, action, vulnType, issue, "");
+        String confidence = "";
+        String severity = "~";
+
+        try {
+            URL url = java.net.URI.create(request.url()).toURL();
+            extender.issueAlert(URL_PREFIX + url.toString());
+
+            // Use the full HttpRequestResponse from the editor
+            HttpRequestResponse requestResponse = editorReqResp.requestResponse();
+
+            InstanceEntry instanceEntry = new InstanceEntry(
+                    url,
+                    confidence,
+                    severity,
+                    requestResponse);
+            findingEntry.addInstance(instanceEntry);
+        } catch (Exception e) {
+            extender.logError(ERROR_PARSING_URL + e.getMessage());
         }
 
         extender.getLoggerTableModel().addAllLoggerEntry(findingEntry);

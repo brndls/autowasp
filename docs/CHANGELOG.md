@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-01-03
+
+### Added
+
+- **Security Audit & Fixes**: Resolved critical deserialization vulnerability, path traversal, and URL injection (BApp Criteria #3).
+- **Memory Management Audit**: Implemented Logger table pagination and hard limits to handle large projects (BApp Criteria #9).
+- **Memory Monitor**: Real-time memory usage indicator with visual warnings.
+- **Submission Assets**: New extension icon, refined BApp description, and screenshots.
+- **Project Reliability**: Replaced insecure Java serialization with safe JSON-based persistence.
+
+### Changed
+
+- **UI Refinement**: Optimized Logger UI for better responsiveness.
+- **Documentation**: Updated README with installation guide and fixed copyright headers.
+- **Code Quality**: Reduced cognitive complexity in UI components and fixed SonarQube issues.
+
 ## [2.0.1] - 2026-01-02
 
 ### Added

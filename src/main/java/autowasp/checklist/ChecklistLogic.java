@@ -28,8 +28,6 @@ import burp.api.montoya.http.message.responses.HttpResponse;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 
 import java.io.*;
@@ -57,8 +55,15 @@ import org.apache.poi.common.usermodel.HyperlinkType;
 public class ChecklistLogic implements Serializable {
 
     private final transient Autowasp extender;
-    private transient Document anyPage;
-    public static final String GITHUB_REPO_URL = "https://github.com/GovTech-CSG/wstg/blob/master/document/4-Web_Application_Security_Testing/README.md";
+    public static final String GITHUB_URL_BASE = "https://github.com/OWASP/www-project-web-security-testing-guide/blob/master/v42/4-Web_Application_Security_Testing/";
+    public static final String GITHUB_RAW_BASE_URL = GITHUB_URL_BASE
+            .replace("github.com", "raw.githubusercontent.com")
+            .replace("/blob/", "/");
+    public static final String GITHUB_REPO_URL = GITHUB_RAW_BASE_URL + "README.md";
+    private static final String NEWLINE_REGEX = "\\r?\\n";
+    private static final String DOUBLE_NEWLINE_REGEX = "\\r?\\n\\r?\\n";
+    private static final String HTML_START = "<html><body>";
+    private static final String HTML_END = "</body></html>";
 
     // Retry configuration
     private static final int MAX_RETRY_ATTEMPTS = 3;
@@ -153,147 +158,340 @@ public class ChecklistLogic implements Serializable {
     // Returns a list containing the URLs of all the test articles in order of
     // reference number
     public List<String> scrapeArticleURLs() {
-        // Get the URLs located within the main content page, which link to each
-        // individual section's content pages
-        List<String> sectionContentPageURLs = scrapePageURLs(GITHUB_REPO_URL);
-        sectionContentPageURLs.remove(0); // Removes the link to the introduction page
+        // Get the URLs located within the main content page (README.md)
+        List<String> sectionContentPageURLs = scrapeRawMarkdownURLs(GITHUB_REPO_URL);
 
-        // Get the URLs for every individual article within each individual section's
-        // content page
+        // Remove introduction if it exists (usually the first one)
+        if (!sectionContentPageURLs.isEmpty() && sectionContentPageURLs.get(0).contains("00-Introduction")) {
+            sectionContentPageURLs.remove(0);
+        }
+
         List<String> articleURLs = new ArrayList<>();
         for (String url : sectionContentPageURLs) {
-            List<String> sectionArticleURLs = scrapePageURLs(url);
+            // Each section is also a README.md in a subdirectory
+            List<String> sectionArticleURLs = scrapeRawMarkdownURLs(url);
             articleURLs.addAll(sectionArticleURLs);
         }
 
-        // Cleans the list of URLs to exclude external links and links to headers within
-        // the pages
+        // Filter valid test case files (excluding non-test markdown files)
         articleURLs.removeIf(url -> {
-            // do another check to remove "sub" article of a test cases
-            String[] array = url.split("/");
-            int subArticleIndex = array[array.length - 1].indexOf(".");
-            // Condition 1 filters out external URLs,
-            // while condition 2 filters out anchor URLs that link to headers within the
-            // article,
-            // condition 3 filters out README.md and
-            // condition 4 filters out sub-articles
-            return !url.contains("https://github.com") || url.contains("#")
-                    || url.contains("README.md") || url.contains("00")
-                    || subArticleIndex == 2;
+            boolean isMarkdown = url.toLowerCase().endsWith(".md");
+            boolean isReadme = url.toLowerCase().endsWith("readme.md");
+            boolean isIntroduction = url.contains("00-Introduction");
+
+            return !isMarkdown || isReadme || isIntroduction;
         });
+
         return articleURLs;
     }
 
-    // A general method to scrape all the URLs that exist on a page and return a
-    // list containing them. Returns empty list on failure (skip-and-continue).
+    /**
+     * Helper to scrape URLs from raw markdown content using regex.
+     *
+     * @param rawUrl The raw URL of the markdown file
+     * @return List of absolute URLs found in the markdown
+     */
+    private List<String> scrapeRawMarkdownURLs(String rawUrl) {
+        List<String> urls = new ArrayList<>();
+        HttpRequest request = HttpRequest.httpRequestFromUrl(rawUrl);
+        HttpRequestResponse response = extender.getApi().http().sendRequest(request);
+        HttpResponse httpResponse = response.response();
+
+        if (httpResponse == null || httpResponse.statusCode() != 200) {
+            return urls;
+        }
+
+        String content = httpResponse.bodyToString();
+        // Regex to find markdown links: [label](path/to/file.md)
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\[.*?\\]\\((.*?\\.md)\\)");
+        java.util.regex.Matcher matcher = pattern.matcher(content);
+
+        String baseUrl = rawUrl.substring(0, rawUrl.lastIndexOf('/') + 1);
+
+        while (matcher.find()) {
+            String link = matcher.group(1);
+            if (!link.startsWith("http")) {
+                // Resolve relative path
+                link = baseUrl + link;
+            }
+            urls.add(link);
+        }
+        return urls;
+    }
+
     public List<String> scrapePageURLs(String anyURL) {
-        anyPage = fetchWithRetry(anyURL);
+        // This method preserved for backward compatibility if needed,
+        // but scrapeRawMarkdownURLs is preferred for raw content.
+        if (anyURL.contains("raw.githubusercontent.com")) {
+            return scrapeRawMarkdownURLs(anyURL);
+        }
+
+        Document anyPage = fetchWithRetry(anyURL);
         if (anyPage == null) {
             extender.getExtenderPanelUI().getScanStatusLabel().setText("Failed to fetch: " + anyURL);
             return new ArrayList<>();
         }
 
         try {
-            Elements pageElements = anyPage.getElementsByTag("Article").get(0).children();
-            return pageElements.select("a[href]").eachAttr("abs:href");
+            // Fallback for HTML pages (old behavior)
+            Elements articles = anyPage.getElementsByTag("Article");
+            if (articles.isEmpty()) {
+                // If no <Article> tag (GitHub blob view change), try parsing links directly
+                return anyPage.select("a[href]").eachAttr("abs:href");
+            }
+            return articles.get(0).select("a[href]").eachAttr("abs:href");
         } catch (Exception e) {
             extender.logError("Error parsing page structure: " + anyURL);
             return new ArrayList<>();
         }
     }
 
-    // Gets the Reference Number, Category, and Title of the article saved in a hash
-    // map. Returns null on failure (skip-and-continue).
+    // Gets the Reference Number, Category, and Title of the article from raw
+    // markdown.
     public Map<String, String> getTableElements(String anyURL) {
-        anyPage = fetchWithRetry(anyURL);
-        if (anyPage == null) {
+        HttpRequest request = HttpRequest.httpRequestFromUrl(anyURL);
+        HttpRequestResponse response = extender.getApi().http().sendRequest(request);
+        HttpResponse httpResponse = response.response();
+
+        if (httpResponse == null || httpResponse.statusCode() != 200) {
             return Collections.emptyMap();
         }
 
-        try {
-            Elements filePathElements = anyPage.getElementById("blob-path").children();
-            Elements filePathElements2 = anyPage.getElementsByTag("td");
+        String content = httpResponse.bodyToString();
+        Map<String, String> tableElements = new HashMap<>();
 
-            String refNumber = filePathElements2.first().text();
-            String category = filePathElements.get(6).text().split("-", 2)[1].replace("_", " ");
-            String testName = filePathElements.get(8).text().split("-", 2)[1].replace("_", " ");
-            testName = testName.split("[.]", 2)[0];
+        String refNumber = deriveRefNumber(anyURL, content);
+        tableElements.put(ChecklistEntry.REF_NUMBER_KEY, refNumber);
 
-            Map<String, String> tableElements = new HashMap<>();
-            tableElements.put("Reference Number", refNumber);
-            tableElements.put("Category", category);
-            tableElements.put("Test Name", testName);
-            return tableElements;
-        } catch (Exception e) {
-            extender.logError("Error parsing table elements for: " + anyURL + " - " + e.getMessage());
-            return Collections.emptyMap();
+        // Extract Title (usually first # heading)
+        java.util.regex.Pattern titlePattern = java.util.regex.Pattern.compile("^#\\s+(.*)$",
+                java.util.regex.Pattern.MULTILINE);
+        java.util.regex.Matcher titleMatcher = titlePattern.matcher(content);
+        String testName = titleMatcher.find() ? titleMatcher.group(1).trim() : "Unknown Test";
+
+        // Category from URL path
+        String category = "Unknown Category";
+        String[] pathParts = anyURL.split("/");
+        for (String part : pathParts) {
+            if (part.matches("\\d+-.*")) {
+                category = part.split("-", 2)[1].replace("_", " ");
+                break;
+            }
         }
+
+        tableElements.put(ChecklistEntry.CATEGORY_KEY, category);
+        tableElements.put(ChecklistEntry.TEST_NAME_KEY, testName);
+        return tableElements;
     }
 
     /*
      * Gets the "Summary", "How To Test", and "References" sections of the article
-     * saved in a hash map, with HTML format preserved to be rendered
-     * within the Burp UI elements. Returns null on failure (skip-and-continue).
+     * from raw markdown.
      */
     public Map<String, String> getContentElements(String anyURL) {
-        anyPage = fetchWithRetry(anyURL);
-        if (anyPage == null) {
+        HttpRequest request = HttpRequest.httpRequestFromUrl(anyURL);
+        HttpRequestResponse response = extender.getApi().http().sendRequest(request);
+        HttpResponse httpResponse = response.response();
+
+        if (httpResponse == null || httpResponse.statusCode() != 200) {
             return Collections.emptyMap();
         }
 
-        try {
-            Element article = anyPage.getElementsByTag("Article").get(0);
-            article.append("<h2>Ending marker</h2>");
-            Elements articleElements = article.children();
+        String content = httpResponse.bodyToString();
+        Map<String, String> contentElements = new HashMap<>();
 
-            // Replace img tags to href as extender does not pull images
-            Elements img = article.getElementsByTag("img");
-            for (Element e : img) {
-                String absoluteUrl = e.absUrl("src");
-                Element newElement = new Element(Tag.valueOf("a"), "");
-                newElement.attr("href", absoluteUrl);
-                newElement.append("Refer to image here");
-                e.replaceWith(newElement);
+        // Get Reference Number (from content or URL)
+        String refNumber = deriveRefNumber(anyURL, content);
+
+        // Derive official OWASP URL from raw URL
+        String officialUrl = anyURL
+                .replace("raw.githubusercontent.com/OWASP/wstg/stable/document/",
+                        "owasp.org/www-project-web-security-testing-guide/stable/")
+                .replace("raw.githubusercontent.com/OWASP/www-project-web-security-testing-guide/master/v42/",
+                        "owasp.org/www-project-web-security-testing-guide/v42/")
+                .replace(".md", "");
+
+        // Initialize references with at least the official link (ensures it's never
+        // empty)
+        String refLink = "<p><b>Official WSTG Reference:</b><br/>" +
+                "<a href=\"" + officialUrl + "\">" + refNumber + "</a></p><hr/>";
+        contentElements.put(ChecklistEntry.REFERENCES_KEY, HTML_START + refLink + HTML_END);
+
+        // Basic Markdown section splitter
+        String[] sections = content.split("(?m)^##\\s+");
+        for (String section : sections) {
+            String[] lines = section.split(NEWLINE_REGEX, 2);
+            if (lines.length < 2)
+                continue;
+
+            String header = lines[0].trim().toLowerCase();
+            String body = lines[1].trim();
+            String htmlBody = markdownToHtml(body);
+
+            if (header.contains(ChecklistEntry.SUMMARY_KEY)) {
+                contentElements.put(ChecklistEntry.SUMMARY_KEY, HTML_START + htmlBody + HTML_END);
+            } else if (header.contains(ChecklistEntry.HOW_TO_TEST_KEY)) {
+                contentElements.put(ChecklistEntry.HOW_TO_TEST_KEY, HTML_START + htmlBody + HTML_END);
+            } else if (header.contains(ChecklistEntry.REFERENCES_KEY)) {
+                // Append section content to the official link
+                contentElements.put(ChecklistEntry.REFERENCES_KEY, HTML_START + refLink + htmlBody + HTML_END);
             }
-
-            // State machine to extract content sections
-            int index = 0;
-            int state = 0;
-            String currentHeader = "";
-            StringBuilder currentParagraphs = new StringBuilder();
-            Map<String, String> contentElements = new HashMap<>();
-
-            while (index < articleElements.size()) {
-                switch (state) {
-                    case 0:
-                        currentHeader = articleElements.get(index).text().toLowerCase();
-                        state = 1;
-                        index++;
-                        break;
-                    case 1:
-                        if (articleElements.get(index).tagName().equals("h2")) {
-                            state = 2;
-                        } else {
-                            currentParagraphs.append(articleElements.get(index).toString());
-                            index++;
-                        }
-                        break;
-                    case 2:
-                        contentElements.put(currentHeader, currentParagraphs.toString());
-                        currentHeader = "";
-                        currentParagraphs = new StringBuilder();
-                        state = 0;
-                        break;
-                    default:
-                        // Ignore other states or unknown elements
-                        break;
-                }
-            }
-            return contentElements;
-        } catch (Exception e) {
-            extender.logError("Error parsing content for: " + anyURL + " - " + e.getMessage());
-            return Collections.emptyMap();
         }
+
+        return contentElements;
+    }
+
+    /**
+     * Minimal Markdown to HTML converter for Burp's JEditorPane.
+     * Handles basic bold, lists, code, and paragraphs.
+     */
+    private String markdownToHtml(String markdown) {
+        if (markdown == null || markdown.isEmpty())
+            return "";
+
+        // Process blocks
+        StringBuilder result = new StringBuilder();
+        // Split by code blocks first
+        String[] blocks = markdown.split("(?m)^```");
+        boolean isCode = false;
+
+        for (String block : blocks) {
+            if (isCode) {
+                result.append(processCodeBlock(block));
+            } else {
+                result.append(processRegularBlocks(block));
+            }
+            isCode = !isCode;
+        }
+
+        return result.toString();
+    }
+
+    private String processCodeBlock(String block) {
+        String[] parts = block.split(NEWLINE_REGEX, 2);
+        String code = parts.length > 1 ? parts[1].trim() : "";
+        // Escape entities for code blocks
+        String escapedCode = code.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        return "<pre style='background-color:#f4f4f4;padding:5px;'><code>" + escapedCode + "</code></pre>";
+    }
+
+    private String processRegularBlocks(String block) {
+        StringBuilder result = new StringBuilder();
+        String[] subBlocks = block.split(DOUBLE_NEWLINE_REGEX);
+        for (String sub : subBlocks) {
+            String trimmed = sub.trim();
+            if (trimmed.isEmpty())
+                continue;
+
+            if (trimmed.startsWith("###")) {
+                result.append(processHeader(trimmed, 3));
+            } else if (trimmed.startsWith("####")) {
+                result.append(processHeader(trimmed, 4));
+            } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+                result.append(processList(trimmed));
+            } else {
+                result.append("<p>").append(applyInlineFormatting(trimmed)).append("</p>");
+            }
+        }
+        return result.toString();
+    }
+
+    private String processHeader(String header, int level) {
+        String content = header.substring(level).trim();
+        return "<h" + level + ">" + applyInlineFormatting(content) + "</h" + level + ">";
+    }
+
+    private String processList(String listBlock) {
+        StringBuilder result = new StringBuilder("<ul>");
+        for (String item : listBlock.split(NEWLINE_REGEX)) {
+            String trimmedItem = item.trim();
+            if (trimmedItem.startsWith("- ") || trimmedItem.startsWith("* ")) {
+                String content = trimmedItem.substring(2).trim();
+                result.append("<li>").append(applyInlineFormatting(content)).append("</li>");
+            }
+        }
+        result.append("</ul>");
+        return result.toString();
+    }
+
+    private String applyInlineFormatting(String text) {
+        if (text == null || text.isEmpty())
+            return "";
+
+        // Escape entities
+        String formatted = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+
+        // Bold (** or __)
+        formatted = formatted.replaceAll("(\\*\\*|__)(.*?)\\1", "<b>$2</b>");
+
+        // Italic (* or _)
+        formatted = formatted.replaceAll("(\\*|_)(.*?)\\1", "<i>$2</i>");
+
+        // Inline Code (`)
+        formatted = formatted.replaceAll("`(.*?)`", "<code>$1</code>");
+
+        // Links [text](url)
+        formatted = formatted.replaceAll("\\[(.*?)\\]\\((.*?)\\)", "<a href=\"$2\">$1</a>");
+
+        // Convert internal newlines to spaces for paragraph flow
+        return formatted.replace("\n", " ");
+    }
+
+    private String deriveRefNumber(String url, String content) {
+        // 1. Try to find WSTG ID pattern in content (e.g., WSTG-INFO-01)
+        java.util.regex.Pattern idPattern = java.util.regex.Pattern.compile("WSTG-[A-Z]+-\\d+");
+        java.util.regex.Matcher idMatcher = idPattern.matcher(content);
+        if (idMatcher.find()) {
+            return idMatcher.group();
+        }
+
+        // 2. Derive from URL and Filename (useful for sub-checklists like 05.1)
+        String categoryCode = getCategoryCode(url);
+        String filename = url.substring(url.lastIndexOf('/') + 1);
+        // Match numbers at start of filename (e.g., 05 or 05.1)
+        java.util.regex.Pattern filePattern = java.util.regex.Pattern.compile("^(\\d+(\\.\\d+)?)-");
+        java.util.regex.Matcher fileMatcher = filePattern.matcher(filename);
+
+        if (fileMatcher.find()) {
+            return "WSTG-" + categoryCode + "-" + fileMatcher.group(1);
+        }
+
+        return "WSTG-UNKNOWN";
+    }
+
+    private String getCategoryCode(String url) {
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("/(\\d{2})-.*?/");
+        java.util.regex.Matcher matcher = pattern.matcher(url);
+        if (matcher.find()) {
+            String num = matcher.group(1);
+            switch (num) {
+                case "01":
+                    return "INFO";
+                case "02":
+                    return "CONF";
+                case "03":
+                    return "IDNT";
+                case "04":
+                    return "ATHN";
+                case "05":
+                    return "ATHZ";
+                case "06":
+                    return "SESS";
+                case "07":
+                    return "INPV";
+                case "08":
+                    return "ERRH";
+                case "09":
+                    return "CRYP";
+                case "10":
+                    return "BUSL";
+                case "11":
+                    return "CLNT";
+                default:
+                    return "GENR";
+            }
+        }
+        return "GENR";
     }
 
     // Saves a local copy of the checklist in a file called OWASPChecklistData.txt
@@ -411,7 +609,9 @@ public class ChecklistLogic implements Serializable {
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
         XSSFRow columnHeadersRow = checklistSheet.createRow(0);
-        String[] headerArray = new String[] { "Reference Number", "Category", "Test Name", "Pentester Comments",
+        String[] headerArray = new String[] { ChecklistEntry.REF_NUMBER_KEY, ChecklistEntry.CATEGORY_KEY,
+                ChecklistEntry.TEST_NAME_KEY,
+                "Pentester Comments",
                 "Evidence", "URL" };
         for (int i = 0; i < 6; i++) {
             XSSFCell cell = columnHeadersRow.createCell(i);

@@ -55,8 +55,7 @@ public class ChecklistTable extends JTable {
         // 0 makes sure that the user starts reading from the top
         extender.getExtenderPanelUI().getSummaryTextPane().setText(checklistEntry.getSummaryHTML());
         extender.getExtenderPanelUI().getSummaryTextPane().setCaretPosition(0);
-        extender.getExtenderPanelUI().getHowToTestTextPane()
-                .setText(checklistEntry.getHowToTestHTML().replace("\n", "").replace("\r", ""));
+        extender.getExtenderPanelUI().getHowToTestTextPane().setText(checklistEntry.getHowToTestHTML());
         extender.getExtenderPanelUI().getHowToTestTextPane().setCaretPosition(0);
         extender.getExtenderPanelUI().getReferencesTextPane().setText(checklistEntry.getReferencesHTML());
         extender.getExtenderPanelUI().getReferencesTextPane().setCaretPosition(0);
