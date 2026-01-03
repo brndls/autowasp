@@ -25,6 +25,7 @@ import burp.api.montoya.scanner.audit.issues.AuditIssueSeverity;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import autowasp.utils.AutowaspConstants;
 
 /**
  * Scan Issue Wrapper - Montoya API
@@ -52,9 +53,6 @@ public class ScanIssue {
     private final String remediation;
     private final String background;
     private final String remediationBackground;
-
-    private static final String SEVERITY_INFORMATION = "Information";
-    private static final String CONFIDENCE_TENTATIVE = "Tentative";
 
     /**
      * Constructor from Montoya AuditIssue
@@ -116,13 +114,13 @@ public class ScanIssue {
      */
     private String convertSeverity(AuditIssueSeverity severity) {
         if (severity == null)
-            return SEVERITY_INFORMATION;
+            return AutowaspConstants.SEVERITY_INFO;
         return switch (severity) {
-            case HIGH -> "High";
-            case MEDIUM -> "Medium";
-            case LOW -> "Low";
-            case INFORMATION -> SEVERITY_INFORMATION;
-            default -> SEVERITY_INFORMATION;
+            case HIGH -> AutowaspConstants.SEVERITY_HIGH;
+            case MEDIUM -> AutowaspConstants.SEVERITY_MEDIUM;
+            case LOW -> AutowaspConstants.SEVERITY_LOW;
+            case INFORMATION -> AutowaspConstants.SEVERITY_INFO;
+            default -> AutowaspConstants.SEVERITY_INFO;
         };
     }
 
@@ -131,12 +129,12 @@ public class ScanIssue {
      */
     private String convertConfidence(AuditIssueConfidence confidence) {
         if (confidence == null)
-            return CONFIDENCE_TENTATIVE;
+            return AutowaspConstants.CONFIDENCE_TENTATIVE;
         return switch (confidence) {
-            case CERTAIN -> "Certain";
-            case FIRM -> "Firm";
-            case TENTATIVE -> CONFIDENCE_TENTATIVE;
-            default -> CONFIDENCE_TENTATIVE;
+            case CERTAIN -> AutowaspConstants.CONFIDENCE_CERTAIN;
+            case FIRM -> AutowaspConstants.CONFIDENCE_FIRM;
+            case TENTATIVE -> AutowaspConstants.CONFIDENCE_TENTATIVE;
+            default -> AutowaspConstants.CONFIDENCE_TENTATIVE;
         };
     }
 

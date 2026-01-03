@@ -97,8 +97,12 @@ public class LoggerEntry implements Serializable {
         return action;
     }
 
+    private static final int MAX_INSTANCES_PER_ENTRY = 1000;
+
     public void addInstance(InstanceEntry instance) {
-        this.instancesList.add(instance);
+        if (this.instancesList.size() < MAX_INSTANCES_PER_ENTRY) {
+            this.instancesList.add(instance);
+        }
     }
 
     public Integer getIssueNumber() {

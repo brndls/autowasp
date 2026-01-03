@@ -671,16 +671,49 @@ public class ExtenderPanelUI implements Runnable {
 
     // This method setup the logger functionality tab
     private void setupLoggerPanel() {
+        JSplitPane internalLoggerSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         JTabbedPane loggerTab = new JTabbedPane();
         JTabbedPane instanceLogTab = new JTabbedPane();
-        JSplitPane internalLoggerSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        JSplitPane instancesLogsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         JSplitPane internalPenTesterCommentsSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         JSplitPane internalEvidencesSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        JSplitPane instancesLogsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+
+        // Logger Table Search
+        JPanel loggerSearchPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 5, 2));
+        loggerSearchPanel.add(new JLabel("Search Logger: "));
+        JTextField loggerSearchField = new JTextField(20);
+        loggerSearchPanel.add(loggerSearchField);
+
+        TableRowSorter<TableModel> loggerSorter = new TableRowSorter<>(extender.getLoggerTable().getModel());
+        extender.getLoggerTable().setRowSorter(loggerSorter);
+
+        loggerSearchField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                updateFilter();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                updateFilter();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                updateFilter();
+            }
+
+            private void updateFilter() {
+                String text = loggerSearchField.getText();
+                if (text.trim().isEmpty()) {
+                    loggerSorter.setRowFilter(null);
+                } else {
+                    loggerSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+        });
 
         // Setting up JTable
         JScrollPane loggerScrollPane = new JScrollPane(extender.getLoggerTable());
-        loggerScrollPane.setPreferredSize(new Dimension(300, 200));
+        loggerScrollPane.setPreferredSize(new Dimension(800, 400));
+
         loggerScrollPane.setBorder(new EmptyBorder(0, 0, 10, 0));
         JScrollPane instancesScrollPane = new JScrollPane(extender.getInstanceTable());
         instancesScrollPane.setPreferredSize(new Dimension(700, 200));
@@ -734,6 +767,7 @@ public class ExtenderPanelUI implements Runnable {
 
         // Logger Container with Pagination
         JPanel loggerContainer = new JPanel(new BorderLayout());
+        loggerContainer.add(loggerSearchPanel, BorderLayout.NORTH);
         loggerContainer.add(loggerScrollPane, BorderLayout.CENTER);
         loggerContainer.add(createLoggerPaginationPanel(), BorderLayout.SOUTH);
 

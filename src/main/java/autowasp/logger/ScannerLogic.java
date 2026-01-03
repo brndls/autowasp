@@ -22,6 +22,7 @@ import autowasp.http.HTTPRequestResponse;
 import autowasp.http.ScanIssue;
 import autowasp.logger.entrytable.LoggerEntry;
 import autowasp.logger.instancestable.InstanceEntry;
+import autowasp.utils.AutowaspConstants;
 
 // Montoya API imports
 import burp.api.montoya.scanner.audit.issues.AuditIssue;
@@ -130,7 +131,8 @@ public class ScannerLogic {
     public void logNewScan(ScanIssue issue) {
         // Form scan issue information
         String host = issue.getHttpService() != null ? issue.getHttpService().getHost() : "";
-        String action = "Burp Scanner";
+        String action = AutowaspConstants.ACTION_BURP_SCANNER;
+
         String issueName = "";
         String vulnType = issue.getIssueName();
         String defaultComments = "Burp Scanner detected the following issue type: " + issue.getIssueName();
