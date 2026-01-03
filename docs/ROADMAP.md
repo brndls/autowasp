@@ -4,30 +4,30 @@ This document tracks the ongoing development phases for Autowasp.
 
 ## Phase Overview
 
-| Phase | Name                          | Status     | Effort    |
-| ----- | ----------------------------- | ---------- | --------- |
-| 4.1   | Modernization (Java 21)       | ✅ Complete | -         |
-| 4.2   | Reliability (Fetch Logic)     | ✅ Complete | Medium    |
-| 4.3   | Report Enhancements           | ⏳ Pending  | Medium    |
-| 4.4   | UI Improvements               | ⏳ Pending  | Medium    |
-| 5.1   | Unit Tests                    | ✅ Complete | Medium    |
-| 5.2   | Integration Tests             | ⏳ Pending  | High      |
-| 6.1   | Local Checklist Import        | ✅ Complete | Medium    |
-| 6.2   | GitHub Release & CI/CD        | ✅ Complete | Medium    |
-| 6.3   | BApp Store Submission         | ⏳ Pending  | Low       |
-| 7.0   | Future Maintenance            | ⏳ Pending  | Low       |
-| 7.1   | Handle Large Projects         | ⏳ Pending  | Medium    |
-| 8.1   | Auto-Mapping WSTG             | 🔮 Future   | Medium    |
-| 8.2   | Evidence Collector            | 🔮 Future   | Medium    |
-| 9.1   | Smart Severity Calculator     | 🔮 Future   | Medium    |
-| 9.2   | Retest Tracking               | 🔮 Future   | High      |
-| 10.1  | Burp Collaborator Integration | 🔮 Future   | High      |
-| 10.2  | External Tool Integration     | 🔮 Future   | High      |
-| 11.1  | AI-Powered Analysis           | 🔮 Future   | Very High |
-| 11.2  | Scope-Aware Testing Tracker   | 🔮 Future   | High      |
-| 12.1  | Session Notes                 | ⏳ Pending  | Low       |
-| 12.2  | Payload Manager               | ⏳ Pending  | Medium    |
-| 12.3  | Target Scope Manager          | ⏳ Pending  | High      |
+| Phase | Name                          | Status        | Effort    |
+| ----- | ----------------------------- | ------------- | --------- |
+| 4.1   | Modernization (Java 21)       | ✅ Complete    | -         |
+| 4.2   | Reliability (Fetch Logic)     | ✅ Complete    | Medium    |
+| 4.3   | Report Enhancements           | ⏳ Pending     | Medium    |
+| 4.4   | UI Improvements               | ⏳ Pending     | Medium    |
+| 5.1   | Unit Tests                    | ✅ Complete    | Medium    |
+| 5.2   | Integration Tests             | ⏳ Pending     | High      |
+| 6.1   | Local Checklist Import        | ✅ Complete    | Medium    |
+| 6.2   | GitHub Release & CI/CD        | ✅ Complete    | Medium    |
+| 6.3   | BApp Store Submission         | 🔄 In Progress | Low       |
+| 7.0   | Future Maintenance            | ⏳ Pending     | Low       |
+| 7.1   | Handle Large Projects         | ⏳ Pending     | Medium    |
+| 8.1   | Auto-Mapping WSTG             | 🔮 Future      | Medium    |
+| 8.2   | Evidence Collector            | 🔮 Future      | Medium    |
+| 9.1   | Smart Severity Calculator     | 🔮 Future      | Medium    |
+| 9.2   | Retest Tracking               | 🔮 Future      | High      |
+| 10.1  | Burp Collaborator Integration | 🔮 Future      | High      |
+| 10.2  | External Tool Integration     | 🔮 Future      | High      |
+| 11.1  | AI-Powered Analysis           | 🔮 Future      | Very High |
+| 11.2  | Scope-Aware Testing Tracker   | 🔮 Future      | High      |
+| 12.1  | Session Notes                 | ⏳ Pending     | Low       |
+| 12.2  | Payload Manager               | ⏳ Pending     | Medium    |
+| 12.3  | Target Scope Manager          | ⏳ Pending     | High      |
 
 ---
 
@@ -345,6 +345,40 @@ public class LocalChecklistLoader {
 
 **Goal:** Submit to PortSwigger BApp Store.
 
+### 6.3.1 Security Audit & Fixes ✅
+
+**Status:** Complete  
+**Date:** 2026-01-03
+
+Fixed all critical security vulnerabilities for BApp Store compliance:
+
+**Security Fixes:**
+- [x] Fix #1 (CRITICAL): Deserialization vulnerability
+  - Replaced Java serialization with secure JSON format
+  - Created `ProjectSerializer.java` for safe persistence
+  - Added backward compatibility for legacy .ser files
+- [x] Fix #2 (HIGH): Path traversal in file loading
+  - Fixed file validation using `endsWith()` instead of `contains()`
+  - Added canonical path validation
+  - Added file filter for .json and .ser files
+- [x] Fix #3 (MEDIUM): URL injection vulnerability
+  - Added hostname format validation
+  - Only allow HTTP/HTTPS protocols
+  - Prevent injection attacks
+- [x] Fix #4 (MEDIUM): File path injection
+  - Implemented path validation in ProjectSerializer
+  - Use canonical paths to prevent traversal
+
+**Code Quality (SonarQube):**
+- [x] Remove unused imports and fields
+- [x] Add proper @deprecated Javadoc tags
+- [x] Refactor createMiscPanel() to reduce cognitive complexity (22→15)
+- [x] Fix regex stack overflow vulnerability (ReDoS prevention)
+
+**Branch:** `feature/security-fixes-phase-6.3`  
+**Files Changed:** 3 files (1 new, 2 modified)  
+**Tests:** All passing ✅
+
 ### BApp Store Criteria Checklist
 
 Reference: [GUIDELINES.md](./GUIDELINES.md)
@@ -353,25 +387,55 @@ Reference: [GUIDELINES.md](./GUIDELINES.md)
 | --- | ------------------------ | ------ | ------------------------------------------ |
 | 1   | Unique Function          | ✅      | OWASP WSTG checklist integration           |
 | 2   | Clear, Descriptive Name  | ✅      | "Autowasp"                                 |
-| 3   | Secure Operation         | ⏳      | Verify untrusted input handling            |
+| 3   | Secure Operation         | ✅      | Phase 6.3.1 - All vulnerabilities fixed    |
 | 4   | Include All Dependencies | ✅      | Fat JAR via Shadow plugin                  |
 | 5   | Use Background Threads   | ✅      | Phase 4.2.3 SwingWorker                    |
 | 6   | Clean Unload             | ✅      | `registerUnloadingHandler()` implemented   |
 | 7   | Use Burp Networking      | ✅      | Phase 4.2.4 - Refactored `Jsoup.connect()` |
 | 8   | Support Offline Working  | ✅      | Phase 6.1 Local Import                     |
-| 9   | Handle Large Projects    | ⏳      | Audit object references                    |
+| 9   | Handle Large Projects    | ⏳      | Phase 6.3.2 - Memory audit needed          |
 | 10  | Parent GUI Elements      | ✅      | Phase 4.2.2 `suiteFrame()`                 |
 | 11  | Use Montoya API Artifact | ✅      | Gradle dependency configured               |
 | 12  | AI Features (if any)     | N/A    | Not applicable                             |
 
-### Submission Tasks
+### 6.3.2 Memory Management Audit ⏳
 
-- [ ] Verify all 12 BApp Store criteria above
-- [ ] Ensure offline working (bundled WSTG via Phase 6.1)
-- [ ] Create extension icon
-- [ ] Write BApp Store description (one-line summary + full description)
-- [ ] Create demo GIFs/screenshots
-- [ ] Submit to PortSwigger
+**Status:** Pending (Next Phase)  
+**Priority:** Medium
+
+- [ ] Audit `ContextMenuFactory` for memory leaks
+- [ ] Test with 1000+ HTTP requests in traffic table
+- [ ] Monitor memory usage with large datasets
+- [ ] Implement pagination if needed
+
+### 6.3.3 Submission Assets ⏳
+
+- [ ] Create extension icon (PNG, 256x256)
+- [ ] Write one-line summary (max 80 chars)
+- [ ] Write full description (highlight features)
+- [ ] Create demo screenshots (3-5 images)
+- [ ] Create demo GIF/video
+
+### 6.3.4 Documentation Review ⏳
+
+- [ ] Review `BappDescription.html` for accuracy
+- [ ] Review `BappManifest.bmf` for completeness
+- [ ] Update `README.md` with installation instructions
+- [ ] Ensure `LICENSE` is clear
+
+### 6.3.5 Final Testing ⏳
+
+- [ ] Test in Burp Suite Professional (latest version)
+- [ ] Test in Burp Suite Community (if applicable)
+- [ ] Verify all features functioning
+- [ ] Test unload/reload extension
+- [ ] Test on different OS (macOS, Linux, Windows)
+
+### 6.3.6 Submission ⏳
+
+- [ ] Submit to PortSwigger BApp Store
+- [ ] Monitor submission status
+- [ ] Respond to feedback if any
 
 ---
 
