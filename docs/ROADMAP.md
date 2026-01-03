@@ -418,7 +418,7 @@ Reference: [GUIDELINES.md](./GUIDELINES.md)
 - [x] Create demo screenshots (3-5 images)
 - [x] Create demo GIF/video
 
-### 6.3.4 Documentation Review ⏳
+### 6.3.4 Documentation Review 🛠️
 
 - [ ] Review `BappDescription.html` for accuracy
 - [ ] Review `BappManifest.bmf` for completeness
