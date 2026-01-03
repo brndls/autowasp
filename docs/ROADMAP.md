@@ -29,6 +29,8 @@ This document tracks the ongoing development phases for Autowasp.
 | 12.2  | Payload Manager               | ⏳ Pending  | Medium    |
 | 12.3  | Target Scope Manager          | ⏳ Pending  | High      |
 | 13.1  | Context Menu Enhancement      | ⏳ Pending  | Low       |
+| 14.1  | ConfigManager (Future)        | 🔮 Future   | Medium    |
+| 14.2  | EventManager (Future)         | 🔮 Future   | Medium    |
 
 ---
 
@@ -997,6 +999,138 @@ Since context menu is not possible for custom panels, implement alternative UI:
 **References:**
 - [Implementation Plan](file:///Users/brndls/.gemini/antigravity/brain/292136fe-d287-4ec4-b1cd-6dd6ebf8348d/implementation_plan.md)
 - [Montoya InvocationType API](https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/ui/contextmenu/InvocationType.html)
+
+---
+
+## Phase 14: Architecture Enhancements (Future)
+
+### Priority: 🔮 Future | Complexity: Medium
+
+**Context:** During Phase 6.3 "Monster Class" refactoring (2026-01-04), we identified potential manager classes that would violate YAGNI if implemented now. This phase documents them for future consideration when actual needs arise.
+
+### 14.1 ConfigManager (YAGNI - Not Needed Yet)
+
+**Current Status:** ❌ Not implemented (violates YAGNI)
+
+**Why YAGNI Violation:**
+- No centralized configuration system exists currently
+- Configuration is scattered in UI components (comboboxes, preferences)
+- No user-facing settings panel
+- No validation requirements for config values
+
+**When to Implement:**
+Add ConfigManager when ANY of these needs arise:
+- User preferences persistence (theme, default values, etc.)
+- Extension settings management (API keys, timeouts, etc.)
+- Configuration validation and migration
+- Multi-environment configuration (dev/staging/prod)
+
+**Proposed Architecture:**
+
+```java
+public class ConfigManager {
+    private final Autowasp autowasp;
+    private final Map<String, Object> config = new HashMap<>();
+    
+    // Configuration categories
+    public UIConfig getUIConfig();
+    public NetworkConfig getNetworkConfig();
+    public ReportConfig getReportConfig();
+    
+    // Persistence
+    public void loadConfig();
+    public void saveConfig();
+    public void resetToDefaults();
+}
+```
+
+**Implementation Effort:** Low (2-3 hours)
+
+**Files to Create:**
+- `autowasp/managers/ConfigManager.java`
+- `autowasp/config/UIConfig.java`
+- `autowasp/config/NetworkConfig.java`
+- `autowasp/config/ReportConfig.java`
+
+---
+
+### 14.2 EventManager (YAGNI - Not Needed Yet)
+
+**Current Status:** ❌ Not implemented (violates YAGNI)
+
+**Why YAGNI Violation:**
+- Component communication works fine with direct method calls
+- No need for pub/sub pattern currently
+- No async event handling requirements
+- No plugin system or extensibility needs
+
+**When to Implement:**
+Add EventManager when ANY of these needs arise:
+- Decoupled event broadcasting across managers
+- Plugin system for third-party extensions
+- Async event handling for background tasks
+- Event replay/audit trail requirements
+- Complex event chains (event A triggers B triggers C)
+
+**Proposed Architecture:**
+
+```java
+public class EventManager {
+    private final Map<Class<?>, List<EventListener>> listeners = new HashMap<>();
+    
+    // Event registration
+    public <T> void subscribe(Class<T> eventType, EventListener<T> listener);
+    public <T> void unsubscribe(Class<T> eventType, EventListener<T> listener);
+    
+    // Event publishing
+    public <T> void publish(T event);
+    public <T> void publishAsync(T event);
+    
+    // Event types
+    public interface ChecklistUpdatedEvent { }
+    public interface LoggerEntryAddedEvent { }
+    public interface ProjectSavedEvent { }
+}
+```
+
+**Implementation Effort:** Medium (4-6 hours)
+
+**Files to Create:**
+- `autowasp/managers/EventManager.java`
+- `autowasp/events/EventListener.java`
+- `autowasp/events/ChecklistEvent.java`
+- `autowasp/events/LoggerEvent.java`
+- `autowasp/events/PersistenceEvent.java`
+
+---
+
+### 14.3 Decision Log: Why We Didn't Add These Now
+
+**Date:** 2026-01-04  
+**Context:** Phase 6.3 - Monster Class Refactoring  
+**Decision:** Implement only 4 managers (Checklist, Logger, UI, Persistence)
+
+**Rationale:**
+1. **YAGNI Principle**: Don't implement features until they're actually needed
+2. **Minimal Necessary Refactoring**: 4 managers solve the immediate problem (21 → 6 dependencies)
+3. **No Current Use Cases**: No concrete requirements for config or event management
+4. **Avoid Over-Engineering**: Keep architecture simple and maintainable
+
+**What We Built Instead:**
+- ✅ ChecklistManager - Clear need (5 checklist components)
+- ✅ LoggerManager - Clear need (9 logging components)
+- ✅ UIManager - Clear need (5 UI components + setup logic)
+- ✅ PersistenceManager - Clear need (coordinator for save/restore)
+
+**Future Trigger Points:**
+- **ConfigManager**: Implement when user requests settings panel (Phase 12+)
+- **EventManager**: Implement when plugin system is needed (Phase 10+)
+
+**References:**
+- [Phase 1 Review](file:///Users/brndls/repos/github/brndls/autowasp/.gemini/antigravity/brain/2026-01-04_03-08-00/phase1_review.md)
+- [Implementation Plan](file:///Users/brndls/repos/github/brndls/autowasp/.gemini/antigravity/brain/2026-01-04_03-08-00/implementation_plan.md)
+
+
 
 ---
 
