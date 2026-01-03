@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2021 Government Technology Agency
+ * Copyright (c) 2024-2026 Autowasp Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +29,8 @@ public class TrafficEntry {
     public final String evidence;
     public final String trafficMsg;
 
-    TrafficEntry(String flag, HTTPRequestResponse requestResponse, URL url, TrafficInstance affectedInstancesList, String evidence, String trafficMsg){
+    TrafficEntry(String flag, HTTPRequestResponse requestResponse, URL url, TrafficInstance affectedInstancesList,
+            String evidence, String trafficMsg) {
         this.flag = flag;
         this.requestResponse = requestResponse;
         this.url = url;

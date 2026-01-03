@@ -280,15 +280,15 @@ public void initialize(MontoyaApi api) {
 
 ## Dependencies
 
-| Library                    | Version | Purpose                   |
-| -------------------------- | ------- | ------------------------- |
-| Montoya API                | 2025.12 | Burp Suite integration    |
-| Apache Commons Collections | 4.4     | Collection utilities      |
-| Apache Commons Compress    | 1.27    | Compression support       |
-| GSON                       | 2.11.0  | JSON parsing              |
-| Jsoup                      | 1.18.3  | HTML parsing (fetch WSTG) |
-| Apache POI                 | 5.3.0   | Excel report generation   |
-| XMLBeans                   | 5.2.2   | XML support for POI       |
+| Library                    | Version  | Purpose                   |
+| -------------------------- | -------- | ------------------------- |
+| Montoya API                | 2025.12  | Burp Suite integration    |
+| Apache Commons Collections | 4.5.0-M3 | Collection utilities      |
+| Apache Commons Compress    | 1.28.0   | Compression support       |
+| GSON                       | 2.13.2   | JSON parsing              |
+| Jsoup                      | 1.21.2   | HTML parsing (fetch WSTG) |
+| Apache POI                 | 5.5.1    | Excel report generation   |
+| XMLBeans                   | 5.2.2    | XML support for POI       |
 
 ---
 

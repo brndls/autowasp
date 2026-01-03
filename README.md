@@ -63,7 +63,7 @@ Autowasp is optimized for performance and stability during long-term engagements
 
 ### 2. Building from Source
 
-For advanced users who want to build the project manually (e.g. using Gradle, Docker, or Nix), please refer to the [Development Guide](DEVELOPMENT.md) for detailed instructions.
+For advanced users who want to build the project manually (e.g. using Gradle, Docker, or Nix), please refer to the [Development Guide](docs/DEVELOPMENT.md) for detailed instructions.
 
 ## Usage
 

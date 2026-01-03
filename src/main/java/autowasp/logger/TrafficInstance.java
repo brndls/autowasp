@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2021 Government Technology Agency
+ * Copyright (c) 2024-2026 Autowasp Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +30,7 @@ public class TrafficInstance {
     public boolean isCGI;
     public boolean isHTTPVerb;
 
-    public TrafficInstance(){
+    public TrafficInstance() {
         this.isUnencrypted = false;
         this.isBase64 = false;
         this.isXContent = false;
