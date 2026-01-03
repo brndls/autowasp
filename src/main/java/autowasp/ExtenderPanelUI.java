@@ -284,7 +284,7 @@ public class ExtenderPanelUI implements Runnable {
             if (generateWebChecklistButton != null) {
                 generateWebChecklistButton.setEnabled(false);
             }
-            extender.getChecklistLogic().loadLocalCopy();
+            extender.getChecklistManager().getChecklistLogic().loadLocalCopy();
         });
 
         saveLocalCopyButton = new JButton("Save a Local WSTG Checklist");
@@ -299,7 +299,8 @@ public class ExtenderPanelUI implements Runnable {
                 if (userOption == JFileChooser.APPROVE_OPTION) {
                     checklistDestDir = destDirChooser.getSelectedFile();
                     try {
-                        extender.getChecklistLogic().saveLocalCopy(checklistDestDir.getAbsolutePath());
+                        extender.getChecklistManager().getChecklistLogic()
+                                .saveLocalCopy(checklistDestDir.getAbsolutePath());
                     } catch (IOException ioException) {
                         extender.logOutput("IOException at setupTopPanel - saveLocalCopyButton");
                     }
@@ -328,7 +329,8 @@ public class ExtenderPanelUI implements Runnable {
 
                 if (userOption == JFileChooser.APPROVE_OPTION) {
                     checklistDestDir = destDirChooser.getSelectedFile();
-                    extender.getChecklistLogic().saveToExcelFile(checklistDestDir.getAbsolutePath());
+                    extender.getChecklistManager().getChecklistLogic()
+                            .saveToExcelFile(checklistDestDir.getAbsolutePath());
                 }
             }
         });

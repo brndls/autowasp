@@ -94,7 +94,6 @@ public class Autowasp implements BurpExtension {
     // =====================================================================================
     // LEGACY FIELDS (Temporary - for backward compatibility)
     // =====================================================================================
-    // TODO Phase 3: Remove these and update all callers to use managers
     private JComboBox<String> comboBox;
     private JComboBox<String> comboBox2;
     private JComboBox<String> comboBox3;
@@ -232,7 +231,6 @@ public class Autowasp implements BurpExtension {
     // =====================================================================================
     // LEGACY API - Component Accessors (Backward Compatibility)
     // =====================================================================================
-    // TODO Phase 3: Update all callers to use managers directly, then remove these
 
     public ExtenderPanelUI getExtenderPanelUI() {
         return uiManager.getExtenderPanelUI();
@@ -303,15 +301,16 @@ public class Autowasp implements BurpExtension {
     }
 
     // =====================================================================================
-    // PUBLIC API - Data Accessors (for backward compatibility)
+    // LEGACY API - Data Accessors (for backward compatibility)
     // =====================================================================================
-    // TODO Phase 3: Update callers to use managers directly
+    // Public fields maintained for backward compatibility
+    // Phase 4 will migrate these to proper encapsulation
 
-    public List<autowasp.checklist.ChecklistEntry> checklistLog = new ArrayList<>();
-    public Map<String, autowasp.checklist.ChecklistEntry> checkListHashMap = new HashMap<>();
-    public List<autowasp.logger.TrafficEntry> trafficLog = new ArrayList<>();
-    public List<autowasp.logger.entrytable.LoggerEntry> loggerList = new ArrayList<>();
-    public List<autowasp.logger.instancestable.InstanceEntry> instanceLog = new ArrayList<>();
+    public final List<autowasp.checklist.ChecklistEntry> checklistLog = new ArrayList<>();
+    public final Map<String, autowasp.checklist.ChecklistEntry> checkListHashMap = new HashMap<>();
+    public final List<autowasp.logger.TrafficEntry> trafficLog = new ArrayList<>();
+    public final List<autowasp.logger.entrytable.LoggerEntry> loggerList = new ArrayList<>();
+    public final List<autowasp.logger.instancestable.InstanceEntry> instanceLog = new ArrayList<>();
 
     // =====================================================================================
     // UTILITY METHODS

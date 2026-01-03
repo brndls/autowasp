@@ -75,7 +75,7 @@ public class ChecklistFetchWorker extends SwingWorker<Void, String> {
 
     @Override
     protected Void doInBackground() {
-        List<String> articleURLs = config.extender().getChecklistLogic().scrapeArticleURLs();
+        List<String> articleURLs = config.extender().getChecklistManager().getChecklistLogic().scrapeArticleURLs();
 
         if (articleURLs.isEmpty()) {
             publish("Failed to fetch article URLs. Check network connection.");
@@ -93,7 +93,8 @@ public class ChecklistFetchWorker extends SwingWorker<Void, String> {
 
             try {
                 Thread.sleep(500);
-                boolean success = config.extender().getChecklistLogic().logNewChecklistEntry(urlStr);
+                boolean success = config.extender().getChecklistManager().getChecklistLogic()
+                        .logNewChecklistEntry(urlStr);
                 if (success) {
                     successCount++;
                 } else {
