@@ -22,7 +22,7 @@ import java.util.List;
 public class LoggerTableModel extends AbstractTableModel {
 
     private static final long serialVersionUID = 1L;
-    private final autowasp.Autowasp extender;
+    private final transient autowasp.Autowasp extender;
     private final List<LoggerEntry> listFindingEntry;
     private final String[] columnNames = { "#", "Host", "Action", "Vuln Type", "Mapped to OWASP WSTG" };
     private int pageSize = 100;
