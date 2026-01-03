@@ -27,6 +27,10 @@ import java.util.zip.GZIPOutputStream;
  */
 public class CompressionUtils {
 
+    private CompressionUtils() {
+        // Utility class
+    }
+
     /**
      * Compresses a byte array using GZIP.
      *

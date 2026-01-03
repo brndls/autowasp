@@ -78,7 +78,6 @@ public class ExtenderPanelUI implements Runnable {
     private JLabel scanStatusLabel;
     private JLabel memoryUsageLabel;
     private JProgressBar memoryProgressBar;
-    private JButton gcButton;
 
     // Checklist UI
     private JTextPane summaryTextPane;
@@ -177,12 +176,9 @@ public class ExtenderPanelUI implements Runnable {
         memoryProgressBar.setStringPainted(true);
         scanStatusPanel.add(memoryProgressBar);
 
-        gcButton = new JButton("Free Memory");
-        gcButton.setToolTipText("Run Garbage Collector (hint to JVM)");
-        gcButton.addActionListener(e -> {
-            System.gc();
-            updateMemoryUsage();
-        });
+        JButton gcButton = new JButton("Update Memory Usage");
+        gcButton.setToolTipText("Manually update memory usage indicator");
+        gcButton.addActionListener(e -> updateMemoryUsage());
         scanStatusPanel.add(gcButton);
 
         // Timer to update memory usage every 3 seconds
