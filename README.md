@@ -2,9 +2,9 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-![Autowasp Logo](./images/Autowasp1.png)
+![Autowasp Logo](./images/icon.png)
 
-Welcome to Autowasp, a Burp Suite extension that integrates Burp issues logging with the OWASP Web Security Testing Guide (WSTG), to provide a streamlined web security testing flow for the modern-day penetration tester! This tool will guide new penetration testers to understand the best practices of web application security and automate OWASP WSTG checks. This README will provide an introduction to the key features of Autowasp, the steps to download and use the tool, and end off by sharing how security researchers and developers can make this tool better!
+Welcome to Autowasp, a Burp Suite extension that integrates OWASP Web Security Testing Guide (WSTG) directly into your testing workflow. It provides a structured environment for penetration testers to track progress, log traffic, and generate comprehensive reports aligned with industry standards.
 
 ## Existing Features
 
@@ -27,30 +27,39 @@ Autowasp Logger tab gives penetration testers the ability to extract and consoli
 ![Logger Tool](./images/Logger%20Tool.PNG)
 ![Traffic Logging](./images/trafficLogging.gif)
 
+### 3. Memory & Performance - Handle Large Scales
+
+Autowasp is optimized for performance and stability during long-term engagements. Key improvements include:
+
+- **Pagination:** Smoothly navigate through thousands of log entries without UI lag.
+- **Data Limits:** Automatic cleanup and hard limits on list growth to prevent memory exhaustion.
+- **Memory Monitor:** Real-time visibility into the extension's memory usage with visual warnings.
+
+![Memory Monitoring](./images/screenshot_memory.png)
+
 ## Prerequisites
 
-- Burp Suite Professional (2022.1 or later)
+- Burp Suite Professional or Community (2024.1 or later)
 - Java 21 or later
 
 ## Dependencies
 
-- Montoya API 2025.12 (Burp Suite Extension API)
-- Apache Commons Collections 4.4
-- Apache Commons Compress 1.27
-- GSON 2.11.0
-- Jsoup 1.18.3
-- Apache POI 5.3.0
-- XMLBeans 5.2.2
+- **Montoya API 2025.12** (Burp Suite Extension API)
+- **Apache Commons Collections 4.5.0-M3**
+- **Apache Commons Compress 1.28.0**
+- **GSON 2.13.2**
+- **Jsoup 1.21.2**
+- **Apache POI 5.5.1** (Excel Report Generation)
 
 ## Installation
 
 ### 1. Using Pre-compiled JAR (Recommended)
 
-1. Download the release build [from Releases](https://github.com/govtech-csg/Autowasp/releases).
-2. Open Burp Suite Professional.
+1. Download the latest release build [from Releases](https://github.com/govtech-csg/Autowasp/releases).
+2. Open Burp Suite.
 3. Go to **Extensions** tab -> **Installed** -> **Add**.
 4. Select **Java** as extension type, click **Select file** and select the `autowasp-2.0.0-jar-with-dependencies.jar` file.
-5. You should see no output or errors and a new tab labelled Autowasp on the top row.
+5. You should see no output or errors and a new tab labelled **Autowasp** on the top row.
 
 ### 2. Building from Source
 
@@ -170,5 +179,7 @@ Autowasp is an open-source software so bear in mind that the open-source communi
 👤 **[@kaiyu92](https://github.com/kaiyu92)**
 
 👤 **[@aloy-wee-sious](https://github.com/aloy-wee-sious)**
+
+👤 **[@matthewng1996](https://github.com/matthewng1996)**
 
 👤 **[@matthewng1996](https://github.com/matthewng1996)**
