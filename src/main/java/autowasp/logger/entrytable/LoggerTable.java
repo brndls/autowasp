@@ -49,17 +49,21 @@ public class LoggerTable extends JTable {
     // Method for table view change selection
     @Override
     public void changeSelection(int row, int col, boolean toggle, boolean extend) {
-        // show the log entry for the selected row
-        LoggerEntry loggerEntry = extender.loggerList.get(row);
-        currentRow = row;
-        extender.setCurrentEntryRow(row);
-        extender.getExtenderPanelUI().getPenTesterCommentBox().setText(loggerEntry.getPenTesterComments());
-        extender.getExtenderPanelUI().getEvidenceBox().setText(loggerEntry.getEvidence());
-        extender.getInstancesTableModel().clearInstanceEntryList();
-        extender.getInstancesTableModel().addAllInstanceEntry(loggerEntry.getInstanceList());
+        // Get the model and the actual entry
+        LoggerTableModel model = (LoggerTableModel) getModel();
+        LoggerEntry loggerEntry = model.getLoggerEntryAt(row);
 
-        super.changeSelection(row, col, toggle, extend);
-        extender.getExtenderPanelUI().deleteEntryButtonEnabled();
+        if (loggerEntry != null) {
+            currentRow = model.getActualIndex(row);
+            extender.setCurrentEntryRow(currentRow);
+            extender.getExtenderPanelUI().getPenTesterCommentBox().setText(loggerEntry.getPenTesterComments());
+            extender.getExtenderPanelUI().getEvidenceBox().setText(loggerEntry.getEvidence());
+            extender.getInstancesTableModel().clearInstanceEntryList();
+            extender.getInstancesTableModel().addAllInstanceEntry(loggerEntry.getInstanceList());
+
+            super.changeSelection(row, col, toggle, extend);
+            extender.getExtenderPanelUI().deleteEntryButtonEnabled();
+        }
     }
 
     // Method to modify pentester's comments text field
@@ -120,13 +124,25 @@ public class LoggerTable extends JTable {
 
     // Method to delete logger entry
     public void deleteEntry() {
+        if (currentRow >= 0 && currentRow < extender.loggerList.size()) {
+            extender.getExtenderPanelUI().getDeleteEntryButton().setEnabled(false);
+            extender.loggerList.remove(currentRow);
+            // update UI
+            // Inform user about entry deletion
+            extender.getExtenderPanelUI().getScanStatusLabel().setText("Entry deleted");
+            extender.issueAlert("Entry deleted");
+            // Repaint logger entries table
+            extender.getLoggerTableModel().updateLoggerEntryTable();
+            // Clear instance table
+            extender.getInstancesTableModel().clearInstanceEntryList();
+        }
+    }
+
+    // Method to clear all entries
+    public void clearAllEntries() {
+        extender.getLoggerTableModel().clearLoggerList();
+        extender.getInstancesTableModel().clearInstanceEntryList();
+        extender.getExtenderPanelUI().getScanStatusLabel().setText("All entries cleared");
         extender.getExtenderPanelUI().getDeleteEntryButton().setEnabled(false);
-        extender.loggerList.remove(currentRow);
-        // update UI
-        // Inform user about entry deletion
-        extender.getExtenderPanelUI().getScanStatusLabel().setText("Entry deleted");
-        extender.issueAlert("Entry deleted");
-        // Repaint logger entries table
-        extender.getLoggerTableModel().updateLoggerEntryTable();
     }
 }

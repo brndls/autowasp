@@ -153,7 +153,7 @@ public class Autowasp implements BurpExtension {
         this.instancesTableModel = new InstancesTableModel(instanceLog);
         this.instanceTable = new InstanceTable(instancesTableModel, this);
 
-        this.loggerTableModel = new LoggerTableModel(loggerList);
+        this.loggerTableModel = new LoggerTableModel(loggerList, this);
         this.loggerTable = new LoggerTable(loggerTableModel, this);
 
         this.scannerLogic = new ScannerLogic(this);

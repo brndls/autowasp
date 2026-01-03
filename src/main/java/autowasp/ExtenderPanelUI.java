@@ -71,6 +71,7 @@ public class ExtenderPanelUI implements Runnable {
 
     private JFileChooser destDirChooser;
     private JLabel scanStatusLabel;
+    private JLabel memoryUsageLabel;
 
     // Checklist UI
     private JTextPane summaryTextPane;
@@ -79,13 +80,13 @@ public class ExtenderPanelUI implements Runnable {
     private JButton enableScanningButton;
     private ChecklistFetchWorker fetchWorker;
     public final AtomicBoolean running = new AtomicBoolean(false);
-    // fetchProgressBar moved to local variable in setupTopPanel
     private JButton cancelFetchButton;
     private JButton saveLocalCopyButton;
     private JButton generateLocalChecklistButton;
     private JButton generateExcelReportButton;
     private JButton generateWebChecklistButton;
     private File checklistDestDir;
+    private JLabel loggerPageLabel;
 
     // Loggers UI
     private JTabbedPane bottomModulesTabs;
@@ -158,7 +159,28 @@ public class ExtenderPanelUI implements Runnable {
         scanStatusPanel.add(new JLabel("Status: ", SwingConstants.LEFT));
         scanStatusLabel = new JLabel("Ready to scan", SwingConstants.LEFT);
         scanStatusPanel.add(scanStatusLabel);
+
+        scanStatusPanel.add(Box.createHorizontalStrut(50));
+        scanStatusPanel.add(new JLabel("Memory: ", SwingConstants.LEFT));
+        memoryUsageLabel = new JLabel("0 MB", SwingConstants.LEFT);
+        scanStatusPanel.add(memoryUsageLabel);
+
+        // Timer to update memory usage every 5 seconds
+        Timer timer = new Timer(5000, e -> updateMemoryUsage());
+        timer.start();
+
         return scanStatusPanel;
+    }
+
+    private void updateMemoryUsage() {
+        Runtime runtime = Runtime.getRuntime();
+        long usedMemory = (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024;
+        memoryUsageLabel.setText(usedMemory + " MB");
+        if (usedMemory > 400) { // Warning threshold
+            memoryUsageLabel.setForeground(Color.RED);
+        } else {
+            memoryUsageLabel.setForeground(null);
+        }
     }
 
     private JPanel createChecklistPanel() {
@@ -286,13 +308,28 @@ public class ExtenderPanelUI implements Runnable {
 
         deleteEntryButton = new JButton("Delete Entry");
         deleteEntryButton.addActionListener(e -> extender.getLoggerTable().deleteEntry());
+
+        deleteInstanceButton = new JButton("Delete Instance");
         deleteInstanceButton.addActionListener(e -> extender.getInstanceTable().deleteInstance());
+
+        JButton clearAllButton = new JButton("Clear All Logs");
+        clearAllButton.addActionListener(e -> {
+            int result = JOptionPane.showConfirmDialog(
+                    extender.getApi().userInterface().swingUtils().suiteFrame(),
+                    "Are you sure you want to clear all logger entries?",
+                    "Confirm Clear All",
+                    JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.YES_OPTION) {
+                extender.getLoggerTable().clearAllEntries();
+            }
+        });
 
         JButton saveCurrentProjectButton = createSaveProjectButton();
         JButton loadProjectButton = createLoadProjectButton();
 
         miscPanel.add(deleteEntryButton);
         miscPanel.add(deleteInstanceButton);
+        miscPanel.add(clearAllButton);
         miscPanel.add(saveCurrentProjectButton);
         miscPanel.add(loadProjectButton);
 
@@ -659,9 +696,45 @@ public class ExtenderPanelUI implements Runnable {
         loggerTab.addTab("Pen Tester Comments", internalPenTesterCommentsSplitPane);
         loggerTab.addTab("Evidence", internalEvidencesSplitPane);
 
-        internalLoggerSplitPane.setTopComponent(loggerScrollPane);
+        // Logger Container with Pagination
+        JPanel loggerContainer = new JPanel(new BorderLayout());
+        loggerContainer.add(loggerScrollPane, BorderLayout.CENTER);
+        loggerContainer.add(createLoggerPaginationPanel(), BorderLayout.SOUTH);
+
+        internalLoggerSplitPane.setTopComponent(loggerContainer);
         internalLoggerSplitPane.setBottomComponent(loggerTab);
         bottomModulesTabs.add("Logger", internalLoggerSplitPane);
+    }
+
+    private JPanel createLoggerPaginationPanel() {
+        JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        JButton prevButton = new JButton("< Prev");
+        JButton nextButton = new JButton("Next >");
+        loggerPageLabel = new JLabel("Page 1 of 1");
+
+        prevButton.addActionListener(e -> {
+            extender.getLoggerTableModel().previousPage();
+            updateLoggerPageLabel();
+        });
+
+        nextButton.addActionListener(e -> {
+            extender.getLoggerTableModel().nextPage();
+            updateLoggerPageLabel();
+        });
+
+        paginationPanel.add(prevButton);
+        paginationPanel.add(loggerPageLabel);
+        paginationPanel.add(nextButton);
+
+        return paginationPanel;
+    }
+
+    public void updateLoggerPageLabel() {
+        if (loggerPageLabel != null) {
+            int current = extender.getLoggerTableModel().getCurrentPage() + 1;
+            int total = extender.getLoggerTableModel().getTotalPages();
+            loggerPageLabel.setText("Page " + current + " of " + total);
+        }
     }
 
     // This method setup the OWASP checklist functionality tab

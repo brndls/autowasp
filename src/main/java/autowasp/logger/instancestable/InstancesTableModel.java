@@ -84,15 +84,26 @@ public class InstancesTableModel extends AbstractTableModel {
         }
     }
 
+    private static final int INSTANCE_LIMIT = 1000;
+
     // Method to re-add all instances from existing list to table view
     public void addAllInstanceEntry(List<InstanceEntry> listInstanceEntry) {
-        this.listInstanceEntry.addAll(listInstanceEntry);
+        if (listInstanceEntry != null) {
+            for (InstanceEntry entry : listInstanceEntry) {
+                if (this.listInstanceEntry.size() < INSTANCE_LIMIT) {
+                    this.listInstanceEntry.add(entry);
+                } else {
+                    break;
+                }
+            }
+        }
         this.fireTableDataChanged();
     }
 
     // Method to clear instance entry from table view
     public void clearInstanceEntryList() {
         this.listInstanceEntry.clear();
+        this.fireTableDataChanged();
     }
 
     // Method to restrict editable cell to those with dropdown combo.
