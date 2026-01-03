@@ -77,6 +77,7 @@ public class LoggerTable extends JTable {
             int issueNumber = extender.loggerList.get(currentRow).getIssueNumber();
             String finalComments = comments + "\n";
             extender.checklistLog.get(issueNumber).setPenTesterComments(finalComments);
+            extender.getChecklistTableModel().triggerAutoSave();
         }
     }
 
@@ -90,6 +91,7 @@ public class LoggerTable extends JTable {
             int issueNumber = extender.loggerList.get(currentRow).getIssueNumber();
             String finalEvidence = evidences + "\n";
             extender.checklistLog.get(issueNumber).setEvidence(finalEvidence);
+            extender.getChecklistTableModel().triggerAutoSave();
         }
     }
 

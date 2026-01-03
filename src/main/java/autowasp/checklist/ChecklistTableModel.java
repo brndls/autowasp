@@ -18,6 +18,7 @@
 package autowasp.checklist;
 
 import autowasp.*;
+import javax.swing.Timer;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -28,9 +29,28 @@ public class ChecklistTableModel extends AbstractTableModel {
     private final transient Autowasp extender;
     private final String[] columnNames = { "Reference Number", "Category", "Test Name", "Test Case Completed",
             "To Exclude" };
+    private Timer autoSaveTimer;
 
     public ChecklistTableModel(Autowasp extender) {
         this.extender = extender;
+        setupAutoSaveTimer();
+    }
+
+    private void setupAutoSaveTimer() {
+        // Debounce timer: wait 2 seconds after last change before saving
+        autoSaveTimer = new Timer(2000, e -> {
+            if (extender.getPersistence() != null) {
+                extender.getPersistence().saveChecklistState(extender.checklistLog);
+                extender.logOutput("Auto-saved checklist state to project file.");
+            }
+        });
+        autoSaveTimer.setRepeats(false);
+    }
+
+    public void triggerAutoSave() {
+        if (autoSaveTimer != null) {
+            autoSaveTimer.restart();
+        }
     }
 
     @Override
@@ -80,10 +100,12 @@ public class ChecklistTableModel extends AbstractTableModel {
         ChecklistEntry checklistEntry = extender.checklistLog.get(rowIndex);
         if (columnIndex == 3) {
             checklistEntry.setTestCaseCompleted((Boolean) aValue);
+            triggerAutoSave();
         } else if (columnIndex == 4) {
             checklistEntry.setExclusion((Boolean) aValue);
             // Refresh Mapping list for logger tab
             extender.getLoggerTable().resetList();
+            triggerAutoSave();
         }
     }
 
