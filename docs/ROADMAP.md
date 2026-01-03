@@ -429,7 +429,7 @@ Reference: [GUIDELINES.md](./GUIDELINES.md)
 - [x] Checked and fixed copyright headers in all Java files (2026)
 - [x] Verified all documentation links
 
-### 6.3.5 Final Testing ⏳
+### 6.3.5 Final Testing 🔄
 
 - [ ] Test in Burp Suite Professional (latest version)
 - [ ] Test in Burp Suite Community (if applicable)
