@@ -182,4 +182,8 @@ Autowasp is an open-source software so bear in mind that the open-source communi
 
 👤 **[@matthewng1996](https://github.com/matthewng1996)**
 
-👤 **[@matthewng1996](https://github.com/matthewng1996)**
+---
+## License
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+

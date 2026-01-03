@@ -5,9 +5,9 @@ RepoName: autowasp
 ScreenVersion: 2.0.0
 SerialVersion: 6
 MinPlatformVersion: 0
-ProOnly: True
+ProOnly: False
 Author: GovTech (Thomas Lim)
 ShortDescription: Streamline web security testing with OWASP WSTG integration and automated logging.
 EntryPoint: build/libs/autowasp-2.0.0-jar-with-dependencies.jar
 BuildCommand: ./gradlew shadowJar
-SupportedProducts: Pro
+SupportedProducts: Pro, Community

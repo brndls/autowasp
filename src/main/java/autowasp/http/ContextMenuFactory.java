@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2021 Government Technology Agency
- * Copyright (c) 2024 Autowasp Contributors
+ * Copyright (c) 2024-2026 Autowasp Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
