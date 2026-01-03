@@ -49,11 +49,13 @@ public class ChecklistTable extends JTable {
 
     @Override
     public void changeSelection(int row, int col, boolean toggle, boolean extend) {
-        ChecklistEntry checklistEntry = extender.checklistLog.get(row);
+        int modelRow = convertRowIndexToModel(row);
+        ChecklistEntry checklistEntry = extender.checklistLog.get(modelRow);
 
         // Sets the text for each of the bottom tab panes. Setting the caret position to
         // 0 makes sure that the user starts reading from the top
         extender.getExtenderPanelUI().getSummaryTextPane().setText(checklistEntry.getSummaryHTML());
+
         extender.getExtenderPanelUI().getSummaryTextPane().setCaretPosition(0);
         extender.getExtenderPanelUI().getHowToTestTextPane().setText(checklistEntry.getHowToTestHTML());
         extender.getExtenderPanelUI().getHowToTestTextPane().setCaretPosition(0);

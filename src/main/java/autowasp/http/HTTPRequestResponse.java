@@ -22,6 +22,7 @@ import burp.api.montoya.http.message.requests.HttpRequest;
 import burp.api.montoya.http.message.responses.HttpResponse;
 
 import java.io.Serializable;
+import autowasp.utils.CompressionUtils;
 
 /**
  * HTTP Request/Response Wrapper - Montoya API
@@ -47,7 +48,7 @@ public class HTTPRequestResponse implements Serializable {
         // Extract request bytes
         HttpRequest request = requestResponse.request();
         if (request != null) {
-            this.requestBytes = request.toByteArray().getBytes();
+            this.requestBytes = CompressionUtils.compress(request.toByteArray().getBytes());
             this.httpService = new HTTPService(request.httpService());
         } else {
             this.requestBytes = new byte[] {};
@@ -57,7 +58,7 @@ public class HTTPRequestResponse implements Serializable {
         // Extract response bytes
         HttpResponse response = requestResponse.response();
         if (response != null) {
-            this.responseBytes = response.toByteArray().getBytes();
+            this.responseBytes = CompressionUtils.compress(response.toByteArray().getBytes());
         } else {
             this.responseBytes = new byte[] {};
         }
@@ -78,19 +79,19 @@ public class HTTPRequestResponse implements Serializable {
      * Constructor from raw bytes (for backward compatibility)
      */
     public HTTPRequestResponse(byte[] request, byte[] response, HTTPService httpService) {
-        this.requestBytes = request != null ? request : new byte[] {};
-        this.responseBytes = response != null ? response : new byte[] {};
+        this.requestBytes = request != null ? CompressionUtils.compress(request) : new byte[] {};
+        this.responseBytes = response != null ? CompressionUtils.compress(response) : new byte[] {};
         this.httpService = httpService;
         this.comment = "";
         this.highlight = "";
     }
 
     public byte[] getRequest() {
-        return requestBytes != null ? requestBytes : new byte[] {};
+        return requestBytes != null ? CompressionUtils.decompress(requestBytes) : new byte[] {};
     }
 
     public byte[] getResponse() {
-        return responseBytes != null ? responseBytes : new byte[] {};
+        return responseBytes != null ? CompressionUtils.decompress(responseBytes) : new byte[] {};
     }
 
     public String getComment() {
@@ -103,5 +104,38 @@ public class HTTPRequestResponse implements Serializable {
 
     public HTTPService getHttpService() {
         return httpService;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        HTTPRequestResponse that = (HTTPRequestResponse) o;
+        return java.util.Arrays.equals(requestBytes, that.requestBytes) &&
+                java.util.Arrays.equals(responseBytes, that.responseBytes) &&
+                java.util.Objects.equals(comment, that.comment) &&
+                java.util.Objects.equals(highlight, that.highlight) &&
+                java.util.Objects.equals(httpService, that.httpService);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = java.util.Objects.hash(comment, highlight, httpService);
+        result = 31 * result + java.util.Arrays.hashCode(requestBytes);
+        result = 31 * result + java.util.Arrays.hashCode(responseBytes);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "HTTPRequestResponse{" +
+                "requestBytes=" + java.util.Arrays.toString(requestBytes) +
+                ", responseBytes=" + java.util.Arrays.toString(responseBytes) +
+                ", comment='" + comment + '\'' +
+                ", highlight='" + highlight + '\'' +
+                ", httpService=" + httpService +
+                '}';
     }
 }

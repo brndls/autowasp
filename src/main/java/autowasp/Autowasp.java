@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import autowasp.persistence.AutowaspPersistence;
 
 /**
  * Autowasp - Burp Suite Extension for OWASP WSTG integration
@@ -108,6 +109,7 @@ public class Autowasp implements BurpExtension {
     // PROJECT WORKSPACE
     // =====================================================================================
     private ProjectWorkspaceFactory projectWorkspace;
+    private AutowaspPersistence persistence;
 
     // =====================================================================================
     // UI HELPER COMPONENTS
@@ -166,6 +168,7 @@ public class Autowasp implements BurpExtension {
 
         // Initialize project workspace
         this.projectWorkspace = new ProjectWorkspaceFactory(this);
+        this.persistence = new AutowaspPersistence(api);
 
         // Register context menu (replaces callbacks.registerContextMenuFactory())
         ContextMenuFactory contextMenu = new ContextMenuFactory(this);
@@ -198,13 +201,27 @@ public class Autowasp implements BurpExtension {
             api.userInterface().registerSuiteTab("Autowasp", gtScannerSplitPane);
 
             logging.logToOutput("Autowasp extension loaded successfully!");
+
+            // Restore checklist if saved state exists
+            persistence.loadChecklistState().stream().findFirst().ifPresent(state -> {
+                logging.logToOutput("Found saved checklist state, restoring...");
+                checklistLogic.loadLocalCopy(); // Load bundled as base
+            });
+
+            // Restore logger if saved state exists
+            restoreLoggerState();
         });
 
         // Register unload handler for clean unload (GUIDELINES.md §6)
         // Terminate any background threads if needed
         // Release resources
         api.extension().registerUnloadingHandler(
-                () -> logging.raiseInfoEvent("Autowasp extension unloading - All resources released."));
+                () -> {
+                    logging.raiseInfoEvent("Autowasp extension unloading - Saving state...");
+                    persistence.saveChecklistState(checklistLog);
+                    persistence.saveLoggerState(loggerList);
+                    logging.raiseInfoEvent("Autowasp extension unloading - All resources released.");
+                });
     }
 
     // =====================================================================================
@@ -277,6 +294,10 @@ public class Autowasp implements BurpExtension {
         return projectWorkspace;
     }
 
+    public AutowaspPersistence getPersistence() {
+        return persistence;
+    }
+
     public JComboBox<String> getComboBox() {
         return comboBox;
     }
@@ -329,5 +350,40 @@ public class Autowasp implements BurpExtension {
         // Montoya API does not have direct issueAlert
         // Using logging as alternative
         logging.logToOutput("[ALERT] " + message);
+    }
+
+    private void restoreLoggerState() {
+        List<autowasp.persistence.LoggerState> savedLoggerStates = persistence.loadLoggerState();
+        if (savedLoggerStates.isEmpty()) {
+            return;
+        }
+
+        logging.logToOutput("Restoring " + savedLoggerStates.size() + " logger entries from project file...");
+        for (autowasp.persistence.LoggerState state : savedLoggerStates) {
+            LoggerEntry entry = new LoggerEntry(state.host(), state.action(), state.vulnType(), state.checklistIssue());
+            entry.setPenTesterComments(state.comments());
+            entry.setEvidence(state.evidence());
+
+            for (autowasp.persistence.InstanceState instState : state.instances()) {
+                try {
+                    java.net.URL url = new java.net.URI(instState.url()).toURL();
+                    autowasp.http.HTTPService svc = null;
+                    if (instState.host() != null) {
+                        svc = new autowasp.http.HTTPService(instState.host(), instState.port(), instState.secure());
+                    }
+                    autowasp.http.HTTPRequestResponse reqRes = new autowasp.http.HTTPRequestResponse(
+                            instState.requestBytes(),
+                            instState.responseBytes(),
+                            svc);
+                    InstanceEntry instEntry = new InstanceEntry(url, instState.confidence(), instState.severity(),
+                            reqRes);
+                    entry.addInstance(instEntry);
+                } catch (Exception e) {
+                    logging.logToError("Failed to restore instance entry: " + e.getMessage());
+                }
+            }
+            loggerTableModel.addAllLoggerEntry(entry);
+        }
+        logging.logToOutput("Logger state restored successfully.");
     }
 }

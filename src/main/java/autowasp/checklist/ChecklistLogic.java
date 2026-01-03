@@ -425,7 +425,7 @@ public class ChecklistLogic implements Serializable {
         formatted = formatted.replaceAll("(\\*\\*|__)(.*?)\\1", "<b>$2</b>");
 
         // Italic (* or _)
-        formatted = formatted.replaceAll("(\\*|_)(.*?)\\1", "<i>$2</i>");
+        formatted = formatted.replaceAll("([*_])(.*?)\\1", "<i>$2</i>");
 
         // Inline Code (`)
         formatted = formatted.replaceAll("`(.*?)`", "<code>$1</code>");
@@ -460,8 +460,9 @@ public class ChecklistLogic implements Serializable {
     }
 
     private String getCategoryCode(String url) {
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("/(\\d{2})-.*?/");
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("/(\\d{2})-[^/]*+/");
         java.util.regex.Matcher matcher = pattern.matcher(url);
+
         if (matcher.find()) {
             String num = matcher.group(1);
             switch (num) {
@@ -539,8 +540,46 @@ public class ChecklistLogic implements Serializable {
             loadNewChecklistEntry(entry);
         }
 
+        // Apply saved persistence state (Phase 7.1)
+        applySavedPersistenceState();
+
         extender.getLoggerTable().generateWSTGList();
         extender.logOutput("Loaded " + entries.size() + " items from bundled WSTG v" + loader.getVersion());
+    }
+
+    /**
+     * Applies saved state (checkboxes, comments) from extensionData to the current
+     * checklist.
+     */
+    private void applySavedPersistenceState() {
+        List<autowasp.persistence.ChecklistState> savedStates = extender.getPersistence().loadChecklistState();
+        if (savedStates.isEmpty()) {
+            return;
+        }
+
+        int restoredCount = 0;
+        for (autowasp.persistence.ChecklistState state : savedStates) {
+            ChecklistEntry entry = extender.checkListHashMap.get(state.refNumber());
+            if (entry != null) {
+                entry.setExclusion(state.excluded());
+                entry.setTestCaseCompleted(state.completed());
+                if (state.comments() != null && !state.comments().isEmpty()) {
+                    entry.clearComments(); // Clear default "Please insert comments" if any
+                    entry.setPenTesterComments(state.comments());
+                }
+                if (state.evidence() != null && !state.evidence().isEmpty()) {
+                    entry.clearEvidences(); // Clear default "nil" if any
+                    entry.setEvidence(state.evidence());
+                }
+                restoredCount++;
+            }
+        }
+
+        if (restoredCount > 0) {
+            extender.logOutput("Restored persistence state for " + restoredCount + " checklist items.");
+            // Refresh table UI
+            extender.getChecklistTableModel().fireTableDataChanged();
+        }
     }
 
     // Saves a local excel file at the directory specified by the user

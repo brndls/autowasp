@@ -25,6 +25,7 @@ import burp.api.montoya.scanner.audit.issues.AuditIssueSeverity;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import autowasp.utils.AutowaspConstants;
 
 /**
  * Scan Issue Wrapper - Montoya API
@@ -52,9 +53,6 @@ public class ScanIssue {
     private final String remediation;
     private final String background;
     private final String remediationBackground;
-
-    private static final String SEVERITY_INFORMATION = "Information";
-    private static final String CONFIDENCE_TENTATIVE = "Tentative";
 
     /**
      * Constructor from Montoya AuditIssue
@@ -116,13 +114,13 @@ public class ScanIssue {
      */
     private String convertSeverity(AuditIssueSeverity severity) {
         if (severity == null)
-            return SEVERITY_INFORMATION;
+            return AutowaspConstants.SEVERITY_INFO;
         return switch (severity) {
-            case HIGH -> "High";
-            case MEDIUM -> "Medium";
-            case LOW -> "Low";
-            case INFORMATION -> SEVERITY_INFORMATION;
-            default -> SEVERITY_INFORMATION;
+            case HIGH -> AutowaspConstants.SEVERITY_HIGH;
+            case MEDIUM -> AutowaspConstants.SEVERITY_MEDIUM;
+            case LOW -> AutowaspConstants.SEVERITY_LOW;
+            case INFORMATION -> AutowaspConstants.SEVERITY_INFO;
+            default -> AutowaspConstants.SEVERITY_INFO;
         };
     }
 
@@ -131,12 +129,12 @@ public class ScanIssue {
      */
     private String convertConfidence(AuditIssueConfidence confidence) {
         if (confidence == null)
-            return CONFIDENCE_TENTATIVE;
+            return AutowaspConstants.CONFIDENCE_TENTATIVE;
         return switch (confidence) {
-            case CERTAIN -> "Certain";
-            case FIRM -> "Firm";
-            case TENTATIVE -> CONFIDENCE_TENTATIVE;
-            default -> CONFIDENCE_TENTATIVE;
+            case CERTAIN -> AutowaspConstants.CONFIDENCE_CERTAIN;
+            case FIRM -> AutowaspConstants.CONFIDENCE_FIRM;
+            case TENTATIVE -> AutowaspConstants.CONFIDENCE_TENTATIVE;
+            default -> AutowaspConstants.CONFIDENCE_TENTATIVE;
         };
     }
 
@@ -178,5 +176,49 @@ public class ScanIssue {
 
     public HTTPService getHttpService() {
         return httpService;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        ScanIssue scanIssue = (ScanIssue) o;
+        return java.util.Objects.equals(httpService, scanIssue.httpService) &&
+                java.util.Objects.equals(url, scanIssue.url) &&
+                java.util.Arrays.equals(httpMessages, scanIssue.httpMessages) &&
+                java.util.Objects.equals(detail, scanIssue.detail) &&
+                java.util.Objects.equals(severity, scanIssue.severity) &&
+                java.util.Objects.equals(confidence, scanIssue.confidence) &&
+                java.util.Objects.equals(name, scanIssue.name) &&
+                java.util.Objects.equals(remediation, scanIssue.remediation) &&
+                java.util.Objects.equals(background, scanIssue.background) &&
+                java.util.Objects.equals(remediationBackground, scanIssue.remediationBackground);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = java.util.Objects.hash(httpService, url, detail, severity, confidence, name, remediation,
+                background,
+                remediationBackground);
+        result = 31 * result + java.util.Arrays.hashCode(httpMessages);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "ScanIssue{" +
+                "httpService=" + httpService +
+                ", url=" + url +
+                ", httpMessages=" + java.util.Arrays.toString(httpMessages) +
+                ", detail='" + detail + '\'' +
+                ", severity='" + severity + '\'' +
+                ", confidence='" + confidence + '\'' +
+                ", name='" + name + '\'' +
+                ", remediation='" + remediation + '\'' +
+                ", background='" + background + '\'' +
+                ", remediationBackground='" + remediationBackground + '\'' +
+                '}';
     }
 }

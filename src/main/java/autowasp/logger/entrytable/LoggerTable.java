@@ -50,14 +50,16 @@ public class LoggerTable extends JTable {
     // Method for table view change selection
     @Override
     public void changeSelection(int row, int col, boolean toggle, boolean extend) {
+        int modelRow = convertRowIndexToModel(row);
         // Get the model and the actual entry
         LoggerTableModel model = (LoggerTableModel) getModel();
-        LoggerEntry loggerEntry = model.getLoggerEntryAt(row);
+        LoggerEntry loggerEntry = model.getLoggerEntryAt(modelRow);
 
         if (loggerEntry != null) {
-            currentRow = model.getActualIndex(row);
+            currentRow = model.getActualIndex(modelRow);
             extender.setCurrentEntryRow(currentRow);
             extender.getExtenderPanelUI().getPenTesterCommentBox().setText(loggerEntry.getPenTesterComments());
+
             extender.getExtenderPanelUI().getEvidenceBox().setText(loggerEntry.getEvidence());
             extender.getInstancesTableModel().clearInstanceEntryList();
             extender.getInstancesTableModel().addAllInstanceEntry(loggerEntry.getInstanceList());
@@ -77,7 +79,9 @@ public class LoggerTable extends JTable {
             int issueNumber = extender.loggerList.get(currentRow).getIssueNumber();
             String finalComments = comments + "\n";
             extender.checklistLog.get(issueNumber).setPenTesterComments(finalComments);
+            extender.getChecklistTableModel().triggerAutoSave();
         }
+        extender.getLoggerTableModel().triggerAutoSave();
     }
 
     // Method to modify pentester's evidences text field
@@ -90,7 +94,9 @@ public class LoggerTable extends JTable {
             int issueNumber = extender.loggerList.get(currentRow).getIssueNumber();
             String finalEvidence = evidences + "\n";
             extender.checklistLog.get(issueNumber).setEvidence(finalEvidence);
+            extender.getChecklistTableModel().triggerAutoSave();
         }
+        extender.getLoggerTableModel().triggerAutoSave();
     }
 
     // Method to setup WSTG mapping column with dropdown combo
@@ -136,6 +142,7 @@ public class LoggerTable extends JTable {
             extender.getLoggerTableModel().updateLoggerEntryTable();
             // Clear instance table
             extender.getInstancesTableModel().clearInstanceEntryList();
+            extender.getLoggerTableModel().triggerAutoSave();
         }
     }
 
@@ -145,5 +152,6 @@ public class LoggerTable extends JTable {
         extender.getInstancesTableModel().clearInstanceEntryList();
         extender.getExtenderPanelUI().getScanStatusLabel().setText("All entries cleared");
         extender.getExtenderPanelUI().getDeleteEntryButton().setEnabled(false);
+        extender.getLoggerTableModel().triggerAutoSave();
     }
 }

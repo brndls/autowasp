@@ -26,8 +26,13 @@ import java.awt.*;
 import java.net.URISyntaxException;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.io.IOException;
+
 import java.io.File;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -72,6 +77,7 @@ public class ExtenderPanelUI implements Runnable {
     private JFileChooser destDirChooser;
     private JLabel scanStatusLabel;
     private JLabel memoryUsageLabel;
+    private JProgressBar memoryProgressBar;
 
     // Checklist UI
     private JTextPane summaryTextPane;
@@ -162,11 +168,21 @@ public class ExtenderPanelUI implements Runnable {
 
         scanStatusPanel.add(Box.createHorizontalStrut(50));
         scanStatusPanel.add(new JLabel("Memory: ", SwingConstants.LEFT));
-        memoryUsageLabel = new JLabel("0 MB", SwingConstants.LEFT);
+        memoryUsageLabel = new JLabel("0 MB / 0 MB", SwingConstants.LEFT);
         scanStatusPanel.add(memoryUsageLabel);
 
-        // Timer to update memory usage every 5 seconds
-        Timer timer = new Timer(5000, e -> updateMemoryUsage());
+        memoryProgressBar = new JProgressBar(0, 100);
+        memoryProgressBar.setPreferredSize(new Dimension(150, 15));
+        memoryProgressBar.setStringPainted(true);
+        scanStatusPanel.add(memoryProgressBar);
+
+        JButton gcButton = new JButton("Update Memory Usage");
+        gcButton.setToolTipText("Manually update memory usage indicator");
+        gcButton.addActionListener(e -> updateMemoryUsage());
+        scanStatusPanel.add(gcButton);
+
+        // Timer to update memory usage every 3 seconds
+        Timer timer = new Timer(3000, e -> updateMemoryUsage());
         timer.start();
 
         return scanStatusPanel;
@@ -174,12 +190,28 @@ public class ExtenderPanelUI implements Runnable {
 
     private void updateMemoryUsage() {
         Runtime runtime = Runtime.getRuntime();
-        long usedMemory = (runtime.totalMemory() - runtime.freeMemory()) / 1024 / 1024;
-        memoryUsageLabel.setText(usedMemory + " MB");
-        if (usedMemory > 400) { // Warning threshold
-            memoryUsageLabel.setForeground(Color.RED);
-        } else {
-            memoryUsageLabel.setForeground(null);
+        long maxMemory = runtime.maxMemory() / 1024 / 1024;
+        long totalMemory = runtime.totalMemory() / 1024 / 1024;
+        long freeMemory = runtime.freeMemory() / 1024 / 1024;
+        long usedMemory = totalMemory - freeMemory;
+
+        memoryUsageLabel.setText(String.format("%d MB / %d MB", usedMemory, maxMemory));
+
+        if (memoryProgressBar != null) {
+            memoryProgressBar.setMaximum((int) maxMemory);
+            memoryProgressBar.setValue((int) usedMemory);
+
+            double percent = (double) usedMemory / maxMemory;
+            if (percent > 0.85) {
+                memoryProgressBar.setForeground(new Color(200, 0, 0)); // Dark Red
+                memoryUsageLabel.setForeground(Color.RED);
+            } else if (percent > 0.7) {
+                memoryProgressBar.setForeground(new Color(255, 140, 0)); // Dark Orange
+                memoryUsageLabel.setForeground(new Color(255, 140, 0));
+            } else {
+                memoryProgressBar.setForeground(new Color(0, 150, 0)); // Green
+                memoryUsageLabel.setForeground(null);
+            }
         }
     }
 
@@ -635,16 +667,49 @@ public class ExtenderPanelUI implements Runnable {
 
     // This method setup the logger functionality tab
     private void setupLoggerPanel() {
+        JSplitPane internalLoggerSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         JTabbedPane loggerTab = new JTabbedPane();
         JTabbedPane instanceLogTab = new JTabbedPane();
-        JSplitPane internalLoggerSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        JSplitPane instancesLogsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         JSplitPane internalPenTesterCommentsSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         JSplitPane internalEvidencesSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        JSplitPane instancesLogsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+
+        // Logger Table Search
+        JPanel loggerSearchPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 5, 2));
+        loggerSearchPanel.add(new JLabel("Search Logger: "));
+        JTextField loggerSearchField = new JTextField(20);
+        loggerSearchPanel.add(loggerSearchField);
+
+        TableRowSorter<TableModel> loggerSorter = new TableRowSorter<>(extender.getLoggerTable().getModel());
+        extender.getLoggerTable().setRowSorter(loggerSorter);
+
+        loggerSearchField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                updateFilter();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                updateFilter();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                updateFilter();
+            }
+
+            private void updateFilter() {
+                String text = loggerSearchField.getText();
+                if (text.trim().isEmpty()) {
+                    loggerSorter.setRowFilter(null);
+                } else {
+                    loggerSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+        });
 
         // Setting up JTable
         JScrollPane loggerScrollPane = new JScrollPane(extender.getLoggerTable());
-        loggerScrollPane.setPreferredSize(new Dimension(300, 200));
+        loggerScrollPane.setPreferredSize(new Dimension(800, 400));
+
         loggerScrollPane.setBorder(new EmptyBorder(0, 0, 10, 0));
         JScrollPane instancesScrollPane = new JScrollPane(extender.getInstanceTable());
         instancesScrollPane.setPreferredSize(new Dimension(700, 200));
@@ -698,6 +763,7 @@ public class ExtenderPanelUI implements Runnable {
 
         // Logger Container with Pagination
         JPanel loggerContainer = new JPanel(new BorderLayout());
+        loggerContainer.add(loggerSearchPanel, BorderLayout.NORTH);
         loggerContainer.add(loggerScrollPane, BorderLayout.CENTER);
         loggerContainer.add(createLoggerPaginationPanel(), BorderLayout.SOUTH);
 
@@ -750,7 +816,43 @@ public class ExtenderPanelUI implements Runnable {
         referencesTextPane = new JTextPane();
         setupHtmlTextPane(referencesTextPane);
 
+        // Search Panel for Checklist
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 5, 2));
+        searchPanel.add(new JLabel("Search WSTG: "));
+        JTextField searchField = new JTextField(20);
+        searchPanel.add(searchField);
+
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(extender.getChecklistTable().getModel());
+        extender.getChecklistTable().setRowSorter(sorter);
+
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                updateFilter();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                updateFilter();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                updateFilter();
+            }
+
+            private void updateFilter() {
+                String text = searchField.getText();
+                if (text.trim().isEmpty()) {
+                    sorter.setRowFilter(null);
+                } else {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+        });
+
+        JPanel tableWithSearchPanel = new JPanel(new BorderLayout());
+        tableWithSearchPanel.add(searchPanel, BorderLayout.NORTH);
         JScrollPane checklistScrollPane = new JScrollPane(extender.getChecklistTable());
+        tableWithSearchPanel.add(checklistScrollPane, BorderLayout.CENTER);
+
         checklistScrollPane.setPreferredSize(new Dimension(300, 200));
         checklistScrollPane.setBorder(new EmptyBorder(0, 0, 10, 0));
         JScrollPane summaryScrollPane = new JScrollPane(summaryTextPane);
@@ -760,7 +862,7 @@ public class ExtenderPanelUI implements Runnable {
         checklistBottomTabs.add("Summary", summaryScrollPane);
         checklistBottomTabs.add("How to test", howToTestScrollPane);
         checklistBottomTabs.add("References", referencesScrollPane);
-        internalChecklistSplitPane.setLeftComponent(checklistScrollPane);
+        internalChecklistSplitPane.setLeftComponent(tableWithSearchPanel);
         internalChecklistSplitPane.setRightComponent(checklistBottomTabs);
         bottomModulesTabs.addTab("OWASP Testing Checklist", internalChecklistSplitPane);
         gtScannerSplitPane.setRightComponent(bottomModulesTabs);

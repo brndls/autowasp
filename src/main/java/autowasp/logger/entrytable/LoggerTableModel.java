@@ -16,6 +16,7 @@
  */
 package autowasp.logger.entrytable;
 
+import javax.swing.Timer;
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
@@ -27,10 +28,30 @@ public class LoggerTableModel extends AbstractTableModel {
     private final String[] columnNames = { "#", "Host", "Action", "Vuln Type", "Mapped to OWASP WSTG" };
     private int pageSize = 100;
     private int currentPage = 0;
+    private Timer autoSaveTimer;
 
     public LoggerTableModel(List<LoggerEntry> listFindingEntry, autowasp.Autowasp extender) {
         this.listFindingEntry = listFindingEntry;
         this.extender = extender;
+        setupAutoSaveTimer();
+    }
+
+    private void setupAutoSaveTimer() {
+        // Debounce timer: wait 3 seconds after last change before saving logger
+        // Logger might be bigger, so 3 seconds is safer
+        autoSaveTimer = new Timer(3000, e -> {
+            if (extender.getPersistence() != null) {
+                extender.getPersistence().saveLoggerState(extender.loggerList);
+                extender.logOutput("Auto-saved logger state to project file.");
+            }
+        });
+        autoSaveTimer.setRepeats(false);
+    }
+
+    public void triggerAutoSave() {
+        if (autoSaveTimer != null) {
+            autoSaveTimer.restart();
+        }
     }
 
     // Pagination Methods
@@ -137,6 +158,7 @@ public class LoggerTableModel extends AbstractTableModel {
         LoggerEntry loggerEntry = listFindingEntry.get(actualIndex);
         if (columnIndex == 4) {
             loggerEntry.setChecklistIssue((String) aValue);
+            triggerAutoSave();
         }
     }
 
@@ -163,6 +185,7 @@ public class LoggerTableModel extends AbstractTableModel {
         if (extender.getExtenderPanelUI() != null) {
             extender.getExtenderPanelUI().updateLoggerPageLabel();
         }
+        triggerAutoSave();
     }
 
     // Method to update entry in table view

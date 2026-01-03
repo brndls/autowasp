@@ -5,7 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-01-03
+
+### Added
+
+- **Project Persistence**: Auto-save and load of checklist state and logger traffic to Burp Suite project files (`.burp`).
+- **Data Compression**: GZIP compression for HTTP traffic in memory, significantly reducing memory footprint for large projects (~70% reduction).
+- **Advanced Search**: Search and filter functionality for both the OWASP WSTG Checklist and the Logger table.
+- **Improved UI Scalability**: Fixed table index mapping to support sorting and filtering without data corruption.
+- **Enhanced Memory Monitor**: Added visual progress bar and "Update Memory Usage" button for better resource tracking.
+- **Traffic Interning**: Memory optimization using shared constants for common vulnerability types and severities.
+
+### Fixed
+
+- Resolved row index mismatch issue when selecting items in sorted/filtered tables.
+- Standardized utility classes with private constructors for better maintainability.
+
 ## [2.1.0] - 2026-01-03
+
 
 ### Added
 
