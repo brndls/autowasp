@@ -4,31 +4,31 @@ This document tracks the ongoing development phases for Autowasp.
 
 ## Phase Overview
 
-| Phase | Name                          | Status       | Effort    |
-| ----- | ----------------------------- | ------------ | --------- |
-| 4.1   | Modernization (Java 21)       | ✅ Complete   | -         |
-| 4.2   | Reliability (Fetch Logic)     | ✅ Complete   | Medium    |
-| 4.3   | Report Enhancements           | ⏳ Pending    | Medium    |
-| 4.4   | UI Improvements               | ⏳ Pending    | Medium    |
-| 5.1   | Unit Tests                    | ✅ Complete   | Medium    |
-| 5.2   | Integration Tests             | ⏳ Pending    | High      |
-| 6.1   | Local Checklist Import        | ✅ Complete   | Medium    |
-| 6.2   | GitHub Release & CI/CD        | ✅ Complete   | Medium    |
-| 6.3   | BApp Store Submission         | 🔄 Finalizing | Low       |
-| 7.0   | Future Maintenance            | ⏳ Pending    | Low       |
-| 7.1   | Handle Large Projects         | ⏳ Pending    | Medium    |
-| 8.1   | Auto-Mapping WSTG             | 🔮 Future     | Medium    |
-| 8.2   | Evidence Collector            | 🔮 Future     | Medium    |
-| 9.1   | Smart Severity Calculator     | 🔮 Future     | Medium    |
-| 9.2   | Retest Tracking               | 🔮 Future     | High      |
-| 10.1  | Burp Collaborator Integration | 🔮 Future     | High      |
-| 10.2  | External Tool Integration     | 🔮 Future     | High      |
-| 11.1  | AI-Powered Analysis           | 🔮 Future     | Very High |
-| 11.2  | Scope-Aware Testing Tracker   | 🔮 Future     | High      |
-| 12.1  | Session Notes                 | ⏳ Pending    | Low       |
-| 12.2  | Payload Manager               | ⏳ Pending    | Medium    |
-| 12.3  | Target Scope Manager          | ⏳ Pending    | High      |
-| 13.1  | Context Menu Enhancement      | ⏳ Pending    | Low       |
+| Phase | Name                          | Status        | Effort    |
+| ----- | ----------------------------- | ------------- | --------- |
+| 4.1   | Modernization (Java 21)       | ✅ Complete    | -         |
+| 4.2   | Reliability (Fetch Logic)     | ✅ Complete    | Medium    |
+| 4.3   | Report Enhancements           | ⏳ Pending     | Medium    |
+| 4.4   | UI Improvements               | ⏳ Pending     | Medium    |
+| 5.1   | Unit Tests                    | ✅ Complete    | Medium    |
+| 5.2   | Integration Tests             | ⏳ Pending     | High      |
+| 6.1   | Local Checklist Import        | ✅ Complete    | Medium    |
+| 6.2   | GitHub Release & CI/CD        | ✅ Complete    | Medium    |
+| 6.3   | BApp Store Submission         | ✅ Complete    | Low       |
+| 7.0   | Future Maintenance            | ⏳ Pending     | Low       |
+| 7.1   | Handle Large Projects         | 🔄 In Progress | Medium    |
+| 8.1   | Auto-Mapping WSTG             | 🔮 Future      | Medium    |
+| 8.2   | Evidence Collector            | 🔮 Future      | Medium    |
+| 9.1   | Smart Severity Calculator     | 🔮 Future      | Medium    |
+| 9.2   | Retest Tracking               | 🔮 Future      | High      |
+| 10.1  | Burp Collaborator Integration | 🔮 Future      | High      |
+| 10.2  | External Tool Integration     | 🔮 Future      | High      |
+| 11.1  | AI-Powered Analysis           | 🔮 Future      | Very High |
+| 11.2  | Scope-Aware Testing Tracker   | 🔮 Future      | High      |
+| 12.1  | Session Notes                 | ⏳ Pending     | Low       |
+| 12.2  | Payload Manager               | ⏳ Pending     | Medium    |
+| 12.3  | Target Scope Manager          | ⏳ Pending     | High      |
+| 13.1  | Context Menu Enhancement      | ⏳ Pending     | Low       |
 
 ---
 
@@ -458,7 +458,7 @@ Reference: [GUIDELINES.md](./GUIDELINES.md)
 
 ## Phase 7.1 - Handle Large Projects & Project Persistence 🔄
 
-**Status:** Planned (Next Priority)  
+**Status:** In Progress  
 **Goal:** Seamless integration with Burp project files and optimized performance for thousands of requests.
 
 - [ ] **Checklist State Persistence (BApp Criteria #4)**

@@ -17,7 +17,12 @@
 package autowasp.persistence;
 
 import autowasp.checklist.ChecklistEntry;
+import autowasp.logger.entrytable.LoggerEntry;
+import autowasp.logger.instancestable.InstanceEntry;
+import autowasp.http.HTTPRequestResponse;
+import autowasp.http.HTTPService;
 import burp.api.montoya.MontoyaApi;
+
 import burp.api.montoya.logging.Logging;
 import burp.api.montoya.persistence.Persistence;
 import burp.api.montoya.persistence.PersistedObject;
@@ -111,5 +116,32 @@ class AutowaspPersistenceTest {
         assertNotNull(results);
         assertTrue(results.isEmpty());
         verify(mockLogging).logToError(contains("Failed to load checklist state"));
+    }
+
+    @Test
+    void testSaveLoggerState() {
+        List<LoggerEntry> entries = new ArrayList<>();
+        LoggerEntry entry = new LoggerEntry("host", "action", "vuln", "issue");
+
+        HTTPService svc = new HTTPService("host", 443, true);
+        HTTPRequestResponse reqRes = new HTTPRequestResponse(new byte[] { 1, 2, 3 }, new byte[] { 4, 5 }, svc);
+        InstanceEntry inst = new InstanceEntry(null, "Certain", "High", reqRes);
+        entry.addInstance(inst);
+        entries.add(entry);
+
+        autowaspPersistence.saveLoggerState(entries);
+
+        verify(mockPersistedObject).setString(eq("autowasp_logger_state_json"), anyString());
+    }
+
+    @Test
+    void testLoadLoggerState() {
+        String json = "[{\"host\":\"host\",\"action\":\"action\",\"instances\":[]}]";
+        when(mockPersistedObject.getString("autowasp_logger_state_json")).thenReturn(json);
+
+        List<LoggerState> results = autowaspPersistence.loadLoggerState();
+
+        assertEquals(1, results.size());
+        assertEquals("host", results.get(0).host());
     }
 }

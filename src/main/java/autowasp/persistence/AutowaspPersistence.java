@@ -17,6 +17,8 @@
 package autowasp.persistence;
 
 import autowasp.checklist.ChecklistEntry;
+import autowasp.logger.entrytable.LoggerEntry;
+
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.persistence.PersistedObject;
 import com.google.gson.Gson;
@@ -33,7 +35,9 @@ import java.util.stream.Collectors;
  */
 public class AutowaspPersistence {
     private static final String CHECKLIST_STATE_KEY = "autowasp_checklist_state_json";
+    private static final String LOGGER_STATE_KEY = "autowasp_logger_state_json";
     private final MontoyaApi api;
+
     private final Gson gson;
 
     public AutowaspPersistence(MontoyaApi api) {
@@ -87,6 +91,81 @@ public class AutowaspPersistence {
             return gson.fromJson(json, listType);
         } catch (Exception e) {
             api.logging().logToError("Failed to load checklist state: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Saves the current logger state to the project file.
+     *
+     * @param entries List of LoggerEntry objects.
+     */
+    public synchronized void saveLoggerState(List<LoggerEntry> entries) {
+        if (entries == null || entries.isEmpty()) {
+            return;
+        }
+
+        try {
+            List<LoggerState> stateList = entries.stream()
+                    .map(entry -> new LoggerState(
+                            entry.getHost(),
+                            entry.getAction(),
+                            entry.getVulnType(),
+                            entry.getChecklistIssue(),
+                            entry.getInstanceList().stream()
+                                    .map(instance -> new InstanceState(
+                                            instance.getUrl(),
+                                            instance.getConfidence(),
+                                            instance.getSeverity(),
+                                            instance.getRequestResponse() != null
+                                                    ? instance.getRequestResponse().getRequest()
+                                                    : null,
+                                            instance.getRequestResponse() != null
+                                                    ? instance.getRequestResponse().getResponse()
+                                                    : null,
+                                            instance.getRequestResponse() != null
+                                                    && instance.getRequestResponse().getHttpService() != null
+                                                            ? instance.getRequestResponse().getHttpService().getHost()
+                                                            : null,
+                                            instance.getRequestResponse() != null
+                                                    && instance.getRequestResponse().getHttpService() != null
+                                                            ? instance.getRequestResponse().getHttpService().getPort()
+                                                            : 0,
+                                            instance.getRequestResponse() != null
+                                                    && instance.getRequestResponse().getHttpService() != null
+                                                    && instance.getRequestResponse().getHttpService().isSecure()))
+                                    .collect(Collectors.toList()),
+                            entry.getPenTesterComments(),
+                            entry.getEvidence(),
+                            entry.getIssueNumber()))
+                    .collect(Collectors.toList());
+
+            String json = gson.toJson(stateList);
+            api.persistence().extensionData().setString(LOGGER_STATE_KEY, json);
+        } catch (Exception e) {
+            api.logging().logToError("Failed to save logger state: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Loads the saved logger state from the project file.
+     *
+     * @return List of LoggerState objects or empty list if none found.
+     */
+    public List<LoggerState> loadLoggerState() {
+        PersistedObject projectData = api.persistence().extensionData();
+        String json = projectData.getString(LOGGER_STATE_KEY);
+
+        if (json == null || json.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        try {
+            Type listType = new TypeToken<ArrayList<LoggerState>>() {
+            }.getType();
+            return gson.fromJson(json, listType);
+        } catch (Exception e) {
+            api.logging().logToError("Failed to load logger state: " + e.getMessage());
             return new ArrayList<>();
         }
     }

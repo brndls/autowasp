@@ -79,6 +79,7 @@ public class LoggerTable extends JTable {
             extender.checklistLog.get(issueNumber).setPenTesterComments(finalComments);
             extender.getChecklistTableModel().triggerAutoSave();
         }
+        extender.getLoggerTableModel().triggerAutoSave();
     }
 
     // Method to modify pentester's evidences text field
@@ -93,6 +94,7 @@ public class LoggerTable extends JTable {
             extender.checklistLog.get(issueNumber).setEvidence(finalEvidence);
             extender.getChecklistTableModel().triggerAutoSave();
         }
+        extender.getLoggerTableModel().triggerAutoSave();
     }
 
     // Method to setup WSTG mapping column with dropdown combo
@@ -138,6 +140,7 @@ public class LoggerTable extends JTable {
             extender.getLoggerTableModel().updateLoggerEntryTable();
             // Clear instance table
             extender.getInstancesTableModel().clearInstanceEntryList();
+            extender.getLoggerTableModel().triggerAutoSave();
         }
     }
 
@@ -147,5 +150,6 @@ public class LoggerTable extends JTable {
         extender.getInstancesTableModel().clearInstanceEntryList();
         extender.getExtenderPanelUI().getScanStatusLabel().setText("All entries cleared");
         extender.getExtenderPanelUI().getDeleteEntryButton().setEnabled(false);
+        extender.getLoggerTableModel().triggerAutoSave();
     }
 }
