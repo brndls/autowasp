@@ -58,7 +58,8 @@ Autowasp is optimized for performance and stability during long-term engagements
 1. Download the latest release build [from Releases](https://github.com/govtech-csg/Autowasp/releases).
 2. Open Burp Suite.
 3. Go to **Extensions** tab -> **Installed** -> **Add**.
-4. Select **Java** as extension type, click **Select file** and select the `autowasp-2.1.0-jar-with-dependencies.jar` file.
+4. Select **Java** as extension type, click **Select file** and select the `autowasp-2.2.0-jar-with-dependencies.jar` file.
+
 5. You should see no output or errors and a new tab labelled **Autowasp** on the top row.
 
 ### 2. Building from Source
