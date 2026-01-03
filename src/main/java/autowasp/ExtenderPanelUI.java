@@ -101,7 +101,7 @@ public class ExtenderPanelUI implements Runnable {
     private JButton deleteEntryButton;
     private JButton deleteInstanceButton;
 
-    ExtenderPanelUI(Autowasp extender) {
+    public ExtenderPanelUI(Autowasp extender) {
         this.extender = extender;
     }
 

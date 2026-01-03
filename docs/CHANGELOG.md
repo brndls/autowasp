@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2026-01-04
+
+### Changed
+
+- **Internal Refactoring**: Extracted component management into domain-specific managers (ChecklistManager, LoggerManager, UIManager, PersistenceManager).
+- **Code Quality**: Resolved SonarQube "Monster Class" warning by reducing `Autowasp.java` dependencies from 21 to 6 (-71%).
+- **Maintainability**: Improved code organization and separation of concerns for better long-term maintenance.
+- **Architecture**: Implemented manager pattern with proper delegation for backward compatibility.
+
+### Technical Details
+
+- Reduced `Autowasp.java` from 390 to 337 lines (-13.6%)
+- Created 4 manager classes totaling 552 lines
+- Maintained 100% backward compatibility - no breaking changes
+- All existing functionality preserved
+
 ## [2.2.0] - 2026-01-03
 
 ### Added

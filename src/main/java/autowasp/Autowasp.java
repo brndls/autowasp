@@ -75,45 +75,26 @@ public class Autowasp implements BurpExtension {
     private Logging logging;
 
     // =====================================================================================
-    // UI COMPONENTS
+    // MANAGERS (Phase 2 - Component Extraction)
     // =====================================================================================
-    // =====================================================================================
-    // UI COMPONENTS
-    // =====================================================================================
-    private ExtenderPanelUI extenderPanelUI;
-    private JSplitPane gtScannerSplitPane;
+    /*
+     * Managers encapsulate related components to reduce coupling.
+     * This reduces dependencies from 21 to 6 (api, logging, 4 managers).
+     * 
+     * - ChecklistManager: OWASP WSTG checklist components
+     * - LoggerManager: HTTP traffic logging & scanning
+     * - UIManager: User interface components
+     * - PersistenceManager: Data persistence & project workspace
+     */
+    private autowasp.managers.ChecklistManager checklistManager;
+    private autowasp.managers.LoggerManager loggerManager;
+    private autowasp.managers.UIManager uiManager;
+    private autowasp.managers.PersistenceManager persistenceManager;
 
     // =====================================================================================
-    // CHECKLIST COMPONENTS
+    // LEGACY FIELDS (Temporary - for backward compatibility)
     // =====================================================================================
-    private ChecklistLogic checklistLogic;
-    private ChecklistTableModel checklistTableModel;
-    private ChecklistTable checklistTable;
-    public final List<ChecklistEntry> checklistLog = new ArrayList<>();
-    public final Map<String, ChecklistEntry> checkListHashMap = new HashMap<>();
-
-    // =====================================================================================
-    // LOGGER COMPONENTS
-    // =====================================================================================
-    private TrafficLogic trafficLogic;
-    public final List<TrafficEntry> trafficLog = new ArrayList<>();
-    private LoggerTableModel loggerTableModel;
-    private InstancesTableModel instancesTableModel;
-    private LoggerTable loggerTable;
-    private InstanceTable instanceTable;
-    public final List<LoggerEntry> loggerList = new ArrayList<>();
-    public final List<InstanceEntry> instanceLog = new ArrayList<>();
-    private ScannerLogic scannerLogic;
-
-    // =====================================================================================
-    // PROJECT WORKSPACE
-    // =====================================================================================
-    private ProjectWorkspaceFactory projectWorkspace;
-    private AutowaspPersistence persistence;
-
-    // =====================================================================================
-    // UI HELPER COMPONENTS
-    // =====================================================================================
+    // TODO Phase 3: Remove these and update all callers to use managers
     private JComboBox<String> comboBox;
     private JComboBox<String> comboBox2;
     private JComboBox<String> comboBox3;
@@ -148,47 +129,43 @@ public class Autowasp implements BurpExtension {
         // Log to Output tab (replaces stdout/stderr PrintWriter)
         logging.logToOutput("Autowasp extension loading...");
 
-        // Initialize UI components
-        this.extenderPanelUI = new ExtenderPanelUI(this);
+        // =====================================================================================
+        // MANAGER INITIALIZATION (Phase 2 - Component Extraction)
+        // =====================================================================================
 
-        // Initialize logger features
-        this.instancesTableModel = new InstancesTableModel(instanceLog);
-        this.instanceTable = new InstanceTable(instancesTableModel, this);
+        // Create managers
+        this.checklistManager = new autowasp.managers.ChecklistManager(this);
+        this.loggerManager = new autowasp.managers.LoggerManager(this);
+        this.uiManager = new autowasp.managers.UIManager(this);
+        this.persistenceManager = new autowasp.managers.PersistenceManager(this);
 
-        this.loggerTableModel = new LoggerTableModel(loggerList, this);
-        this.loggerTable = new LoggerTable(loggerTableModel, this);
-
-        this.scannerLogic = new ScannerLogic(this);
-        this.trafficLogic = new TrafficLogic(this);
-
-        // Initialize OWASP checklist feature
-        this.checklistLogic = new ChecklistLogic(this);
-        this.checklistTableModel = new ChecklistTableModel(this);
-        this.checklistTable = new ChecklistTable(checklistTableModel, this);
-
-        // Initialize project workspace
-        this.projectWorkspace = new ProjectWorkspaceFactory(this);
-        this.persistence = new AutowaspPersistence(api);
+        // Initialize managers
+        checklistManager.initialize();
+        loggerManager.initialize();
+        uiManager.initialize(checklistManager, loggerManager);
+        persistenceManager.initialize();
 
         // Register context menu (replaces callbacks.registerContextMenuFactory())
         ContextMenuFactory contextMenu = new ContextMenuFactory(this);
         api.userInterface().registerContextMenuItemsProvider(contextMenu);
 
-        // Setup ComboBox for table
+        // Setup ComboBox for table columns
         this.comboBox = new JComboBox<>();
-        this.loggerTable.setUpIssueColumn(loggerTable.getColumnModel().getColumn(4));
+        loggerManager.getLoggerTable().setUpIssueColumn(loggerManager.getLoggerTable().getColumnModel().getColumn(4));
 
         this.comboBox2 = new JComboBox<>();
-        this.instanceTable.generateConfidenceList();
-        instanceTable.setUpConfidenceColumn(instanceTable.getColumnModel().getColumn(2));
+        loggerManager.getInstanceTable().generateConfidenceList();
+        loggerManager.getInstanceTable()
+                .setUpConfidenceColumn(loggerManager.getInstanceTable().getColumnModel().getColumn(2));
 
         this.comboBox3 = new JComboBox<>();
-        this.instanceTable.generateSeverityList();
-        instanceTable.setupSeverityColumn(instanceTable.getColumnModel().getColumn(3));
+        loggerManager.getInstanceTable().generateSeverityList();
+        loggerManager.getInstanceTable()
+                .setupSeverityColumn(loggerManager.getInstanceTable().getColumnModel().getColumn(3));
 
         // Create UI and register tab (executed on EDT)
         SwingUtilities.invokeLater(() -> {
-            extenderPanelUI.run();
+            uiManager.getExtenderPanelUI().run();
 
             // Register proxy handler (replaces callbacks.registerProxyListener())
             api.proxy().registerResponseHandler(new AutowaspProxyResponseHandler(this));
@@ -198,35 +175,25 @@ public class Autowasp implements BurpExtension {
             api.scanner().registerAuditIssueHandler(new AutowaspAuditIssueHandler(this));
 
             // Register tab to Burp Suite UI (replaces callbacks.addSuiteTab())
-            api.userInterface().registerSuiteTab("Autowasp", gtScannerSplitPane);
+            api.userInterface().registerSuiteTab("Autowasp", uiManager.getGtScannerSplitPane());
 
             logging.logToOutput("Autowasp extension loaded successfully!");
 
-            // Restore checklist if saved state exists
-            persistence.loadChecklistState().stream().findFirst().ifPresent(state -> {
-                logging.logToOutput("Found saved checklist state, restoring...");
-                checklistLogic.loadLocalCopy(); // Load bundled as base
-            });
-
-            // Restore logger if saved state exists
-            restoreLoggerState();
+            // Restore state from persistence
+            persistenceManager.restoreAllState(checklistManager, loggerManager);
         });
 
         // Register unload handler for clean unload (GUIDELINES.md §6)
         // Terminate any background threads if needed
         // Release resources
         api.extension().registerUnloadingHandler(
-                () -> {
-                    logging.raiseInfoEvent("Autowasp extension unloading - Saving state...");
-                    persistence.saveChecklistState(checklistLog);
-                    persistence.saveLoggerState(loggerList);
-                    logging.raiseInfoEvent("Autowasp extension unloading - All resources released.");
-                });
+                () -> persistenceManager.saveAllState(checklistManager, loggerManager));
     }
 
     // =====================================================================================
-    // PUBLIC API ACCESSORS
+    // PUBLIC API - Core Accessors
     // =====================================================================================
+
     /**
      * Get MontoyaApi instance
      * Used by other components to access Burp Suite features
@@ -242,60 +209,85 @@ public class Autowasp implements BurpExtension {
         return logging;
     }
 
+    // =====================================================================================
+    // PUBLIC API - Manager Accessors
+    // =====================================================================================
+
+    public autowasp.managers.ChecklistManager getChecklistManager() {
+        return checklistManager;
+    }
+
+    public autowasp.managers.LoggerManager getLoggerManager() {
+        return loggerManager;
+    }
+
+    public autowasp.managers.UIManager getUIManager() {
+        return uiManager;
+    }
+
+    public autowasp.managers.PersistenceManager getPersistenceManager() {
+        return persistenceManager;
+    }
+
+    // =====================================================================================
+    // LEGACY API - Component Accessors (Backward Compatibility)
+    // =====================================================================================
+    // TODO Phase 3: Update all callers to use managers directly, then remove these
+
     public ExtenderPanelUI getExtenderPanelUI() {
-        return extenderPanelUI;
+        return uiManager.getExtenderPanelUI();
     }
 
     public JSplitPane getGtScannerSplitPane() {
-        return gtScannerSplitPane;
+        return uiManager.getGtScannerSplitPane();
     }
 
     public void setGtScannerSplitPane(JSplitPane gtScannerSplitPane) {
-        this.gtScannerSplitPane = gtScannerSplitPane;
+        uiManager.setGtScannerSplitPane(gtScannerSplitPane);
     }
 
     public ChecklistLogic getChecklistLogic() {
-        return checklistLogic;
+        return checklistManager.getChecklistLogic();
     }
 
     public ChecklistTableModel getChecklistTableModel() {
-        return checklistTableModel;
+        return checklistManager.getChecklistTableModel();
     }
 
     public ChecklistTable getChecklistTable() {
-        return checklistTable;
+        return checklistManager.getChecklistTable();
     }
 
     public TrafficLogic getTrafficLogic() {
-        return trafficLogic;
+        return loggerManager.getTrafficLogic();
     }
 
     public LoggerTableModel getLoggerTableModel() {
-        return loggerTableModel;
+        return loggerManager.getLoggerTableModel();
     }
 
     public InstancesTableModel getInstancesTableModel() {
-        return instancesTableModel;
+        return loggerManager.getInstancesTableModel();
     }
 
     public LoggerTable getLoggerTable() {
-        return loggerTable;
+        return loggerManager.getLoggerTable();
     }
 
     public InstanceTable getInstanceTable() {
-        return instanceTable;
+        return loggerManager.getInstanceTable();
     }
 
     public ScannerLogic getScannerLogic() {
-        return scannerLogic;
+        return loggerManager.getScannerLogic();
     }
 
     public ProjectWorkspaceFactory getProjectWorkspace() {
-        return projectWorkspace;
+        return persistenceManager.getProjectWorkspace();
     }
 
     public AutowaspPersistence getPersistence() {
-        return persistence;
+        return persistenceManager.getPersistence();
     }
 
     public JComboBox<String> getComboBox() {
@@ -309,6 +301,21 @@ public class Autowasp implements BurpExtension {
     public JComboBox<String> getComboBox3() {
         return comboBox3;
     }
+
+    // =====================================================================================
+    // PUBLIC API - Data Accessors (for backward compatibility)
+    // =====================================================================================
+    // TODO Phase 3: Update callers to use managers directly
+
+    public List<autowasp.checklist.ChecklistEntry> checklistLog = new ArrayList<>();
+    public Map<String, autowasp.checklist.ChecklistEntry> checkListHashMap = new HashMap<>();
+    public List<autowasp.logger.TrafficEntry> trafficLog = new ArrayList<>();
+    public List<autowasp.logger.entrytable.LoggerEntry> loggerList = new ArrayList<>();
+    public List<autowasp.logger.instancestable.InstanceEntry> instanceLog = new ArrayList<>();
+
+    // =====================================================================================
+    // UTILITY METHODS
+    // =====================================================================================
 
     /**
      * Log message to Output tab
@@ -350,40 +357,5 @@ public class Autowasp implements BurpExtension {
         // Montoya API does not have direct issueAlert
         // Using logging as alternative
         logging.logToOutput("[ALERT] " + message);
-    }
-
-    private void restoreLoggerState() {
-        List<autowasp.persistence.LoggerState> savedLoggerStates = persistence.loadLoggerState();
-        if (savedLoggerStates.isEmpty()) {
-            return;
-        }
-
-        logging.logToOutput("Restoring " + savedLoggerStates.size() + " logger entries from project file...");
-        for (autowasp.persistence.LoggerState state : savedLoggerStates) {
-            LoggerEntry entry = new LoggerEntry(state.host(), state.action(), state.vulnType(), state.checklistIssue());
-            entry.setPenTesterComments(state.comments());
-            entry.setEvidence(state.evidence());
-
-            for (autowasp.persistence.InstanceState instState : state.instances()) {
-                try {
-                    java.net.URL url = new java.net.URI(instState.url()).toURL();
-                    autowasp.http.HTTPService svc = null;
-                    if (instState.host() != null) {
-                        svc = new autowasp.http.HTTPService(instState.host(), instState.port(), instState.secure());
-                    }
-                    autowasp.http.HTTPRequestResponse reqRes = new autowasp.http.HTTPRequestResponse(
-                            instState.requestBytes(),
-                            instState.responseBytes(),
-                            svc);
-                    InstanceEntry instEntry = new InstanceEntry(url, instState.confidence(), instState.severity(),
-                            reqRes);
-                    entry.addInstance(instEntry);
-                } catch (Exception e) {
-                    logging.logToError("Failed to restore instance entry: " + e.getMessage());
-                }
-            }
-            loggerTableModel.addAllLoggerEntry(entry);
-        }
-        logging.logToOutput("Logger state restored successfully.");
     }
 }
