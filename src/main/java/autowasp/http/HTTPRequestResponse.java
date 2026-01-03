@@ -104,4 +104,37 @@ public class HTTPRequestResponse implements Serializable {
     public HTTPService getHttpService() {
         return httpService;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        HTTPRequestResponse that = (HTTPRequestResponse) o;
+        return java.util.Arrays.equals(requestBytes, that.requestBytes) &&
+                java.util.Arrays.equals(responseBytes, that.responseBytes) &&
+                java.util.Objects.equals(comment, that.comment) &&
+                java.util.Objects.equals(highlight, that.highlight) &&
+                java.util.Objects.equals(httpService, that.httpService);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = java.util.Objects.hash(comment, highlight, httpService);
+        result = 31 * result + java.util.Arrays.hashCode(requestBytes);
+        result = 31 * result + java.util.Arrays.hashCode(responseBytes);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "HTTPRequestResponse{" +
+                "requestBytes=" + java.util.Arrays.toString(requestBytes) +
+                ", responseBytes=" + java.util.Arrays.toString(responseBytes) +
+                ", comment='" + comment + '\'' +
+                ", highlight='" + highlight + '\'' +
+                ", httpService=" + httpService +
+                '}';
+    }
 }

@@ -91,6 +91,23 @@ public class HTTPService implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        HTTPService that = (HTTPService) o;
+        return port == that.port &&
+                secure == that.secure &&
+                java.util.Objects.equals(host, that.host);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(host, port, secure);
+    }
+
+    @Override
     public String toString() {
         return getProtocol() + "://" + getHost() + ":" + getPort();
     }

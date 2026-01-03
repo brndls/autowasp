@@ -27,7 +27,6 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Handles persistence logic using Montoya's extensionData API.
@@ -63,7 +62,7 @@ public class AutowaspPersistence {
                             entry.isTestcaseCompleted(),
                             entry.getPenTesterComments(),
                             entry.getEvidence()))
-                    .collect(Collectors.toList());
+                    .toList();
 
             String json = gson.toJson(stateList);
             api.persistence().extensionData().setString(CHECKLIST_STATE_KEY, json);
@@ -107,38 +106,8 @@ public class AutowaspPersistence {
 
         try {
             List<LoggerState> stateList = entries.stream()
-                    .map(entry -> new LoggerState(
-                            entry.getHost(),
-                            entry.getAction(),
-                            entry.getVulnType(),
-                            entry.getChecklistIssue(),
-                            entry.getInstanceList().stream()
-                                    .map(instance -> new InstanceState(
-                                            instance.getUrl(),
-                                            instance.getConfidence(),
-                                            instance.getSeverity(),
-                                            instance.getRequestResponse() != null
-                                                    ? instance.getRequestResponse().getRequest()
-                                                    : null,
-                                            instance.getRequestResponse() != null
-                                                    ? instance.getRequestResponse().getResponse()
-                                                    : null,
-                                            instance.getRequestResponse() != null
-                                                    && instance.getRequestResponse().getHttpService() != null
-                                                            ? instance.getRequestResponse().getHttpService().getHost()
-                                                            : null,
-                                            instance.getRequestResponse() != null
-                                                    && instance.getRequestResponse().getHttpService() != null
-                                                            ? instance.getRequestResponse().getHttpService().getPort()
-                                                            : 0,
-                                            instance.getRequestResponse() != null
-                                                    && instance.getRequestResponse().getHttpService() != null
-                                                    && instance.getRequestResponse().getHttpService().isSecure()))
-                                    .collect(Collectors.toList()),
-                            entry.getPenTesterComments(),
-                            entry.getEvidence(),
-                            entry.getIssueNumber()))
-                    .collect(Collectors.toList());
+                    .map(this::mapToLoggerState)
+                    .toList();
 
             String json = gson.toJson(stateList);
             api.persistence().extensionData().setString(LOGGER_STATE_KEY, json);
@@ -147,8 +116,53 @@ public class AutowaspPersistence {
         }
     }
 
+    private LoggerState mapToLoggerState(LoggerEntry entry) {
+        List<InstanceState> instances = entry.getInstanceList().stream()
+                .map(this::mapToInstanceState)
+                .toList();
+
+        return new LoggerState(
+                entry.getHost(),
+                entry.getAction(),
+                entry.getVulnType(),
+                entry.getChecklistIssue(),
+                instances,
+                entry.getPenTesterComments(),
+                entry.getEvidence(),
+                entry.getIssueNumber());
+    }
+
+    private InstanceState mapToInstanceState(autowasp.logger.instancestable.InstanceEntry instance) {
+        byte[] requestBytes = null;
+        byte[] responseBytes = null;
+        String host = null;
+        int port = 0;
+        boolean secure = false;
+
+        if (instance.getRequestResponse() != null) {
+            requestBytes = instance.getRequestResponse().getRequest();
+            responseBytes = instance.getRequestResponse().getResponse();
+            if (instance.getRequestResponse().getHttpService() != null) {
+                host = instance.getRequestResponse().getHttpService().getHost();
+                port = instance.getRequestResponse().getHttpService().getPort();
+                secure = instance.getRequestResponse().getHttpService().isSecure();
+            }
+        }
+
+        return new InstanceState(
+                instance.getUrl(),
+                instance.getConfidence(),
+                instance.getSeverity(),
+                requestBytes,
+                responseBytes,
+                host,
+                port,
+                secure);
+    }
+
     /**
      * Loads the saved logger state from the project file.
+     *
      *
      * @return List of LoggerState objects or empty list if none found.
      */

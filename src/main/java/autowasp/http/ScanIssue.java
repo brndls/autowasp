@@ -179,4 +179,48 @@ public class ScanIssue {
     public HTTPService getHttpService() {
         return httpService;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        ScanIssue scanIssue = (ScanIssue) o;
+        return java.util.Objects.equals(httpService, scanIssue.httpService) &&
+                java.util.Objects.equals(url, scanIssue.url) &&
+                java.util.Arrays.equals(httpMessages, scanIssue.httpMessages) &&
+                java.util.Objects.equals(detail, scanIssue.detail) &&
+                java.util.Objects.equals(severity, scanIssue.severity) &&
+                java.util.Objects.equals(confidence, scanIssue.confidence) &&
+                java.util.Objects.equals(name, scanIssue.name) &&
+                java.util.Objects.equals(remediation, scanIssue.remediation) &&
+                java.util.Objects.equals(background, scanIssue.background) &&
+                java.util.Objects.equals(remediationBackground, scanIssue.remediationBackground);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = java.util.Objects.hash(httpService, url, detail, severity, confidence, name, remediation,
+                background,
+                remediationBackground);
+        result = 31 * result + java.util.Arrays.hashCode(httpMessages);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "ScanIssue{" +
+                "httpService=" + httpService +
+                ", url=" + url +
+                ", httpMessages=" + java.util.Arrays.toString(httpMessages) +
+                ", detail='" + detail + '\'' +
+                ", severity='" + severity + '\'' +
+                ", confidence='" + confidence + '\'' +
+                ", name='" + name + '\'' +
+                ", remediation='" + remediation + '\'' +
+                ", background='" + background + '\'' +
+                ", remediationBackground='" + remediationBackground + '\'' +
+                '}';
+    }
 }

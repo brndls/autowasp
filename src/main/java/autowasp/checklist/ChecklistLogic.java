@@ -425,7 +425,7 @@ public class ChecklistLogic implements Serializable {
         formatted = formatted.replaceAll("(\\*\\*|__)(.*?)\\1", "<b>$2</b>");
 
         // Italic (* or _)
-        formatted = formatted.replaceAll("(\\*|_)(.*?)\\1", "<i>$2</i>");
+        formatted = formatted.replaceAll("([*_])(.*?)\\1", "<i>$2</i>");
 
         // Inline Code (`)
         formatted = formatted.replaceAll("`(.*?)`", "<code>$1</code>");
@@ -460,8 +460,9 @@ public class ChecklistLogic implements Serializable {
     }
 
     private String getCategoryCode(String url) {
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("/(\\d{2})-.*?/");
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("/(\\d{2})-[^/]*+/");
         java.util.regex.Matcher matcher = pattern.matcher(url);
+
         if (matcher.find()) {
             String num = matcher.group(1);
             switch (num) {
