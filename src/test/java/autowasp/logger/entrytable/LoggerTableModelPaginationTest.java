@@ -39,7 +39,9 @@ class LoggerTableModelPaginationTest {
         list = new ArrayList<>();
         extender = mock(Autowasp.class);
         ui = mock(ExtenderPanelUI.class);
-        when(extender.getExtenderPanelUI()).thenReturn(ui);
+        autowasp.managers.UIManager uiManager = mock(autowasp.managers.UIManager.class);
+        when(extender.getUIManager()).thenReturn(uiManager);
+        when(uiManager.getExtenderPanelUI()).thenReturn(ui);
         model = new LoggerTableModel(list, extender);
         model.setPageSize(100);
     }

@@ -102,7 +102,7 @@ public class ScannerLogic {
         String issueHost = issue.getHttpService() != null ? issue.getHttpService().getHost() : "";
         String issueVulnType = issue.getIssueName();
 
-        for (LoggerEntry entry : this.extender.loggerList) {
+        for (LoggerEntry entry : this.extender.getLoggerManager().getLoggerList()) {
             if (entry.getHost().equals(issueHost) && entry.getVulnType().equals(issueVulnType)) {
                 addInstanceIfUnique(entry, instance);
             }
@@ -147,7 +147,7 @@ public class ScannerLogic {
         entry.clearInstances();
         entry.setPenTesterComments(defaultComments);
         entry.setEvidence(evidences);
-        extender.getLoggerTableModel().addAllLoggerEntry(entry);
+        extender.getLoggerManager().getLoggerTableModel().addAllLoggerEntry(entry);
     }
 
     /**

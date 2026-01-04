@@ -40,8 +40,9 @@ public class LoggerTableModel extends AbstractTableModel {
         // Debounce timer: wait 3 seconds after last change before saving logger
         // Logger might be bigger, so 3 seconds is safer
         autoSaveTimer = new Timer(3000, e -> {
-            if (extender.getPersistence() != null) {
-                extender.getPersistence().saveLoggerState(extender.loggerList);
+            if (extender.getPersistenceManager().getPersistence() != null) {
+                extender.getPersistenceManager().getPersistence()
+                        .saveLoggerState(extender.getLoggerManager().getLoggerList());
                 extender.logOutput("Auto-saved logger state to project file.");
             }
         });
@@ -169,8 +170,8 @@ public class LoggerTableModel extends AbstractTableModel {
         this.listFindingEntry.clear();
         this.currentPage = 0;
         this.fireTableDataChanged();
-        if (extender.getExtenderPanelUI() != null) {
-            extender.getExtenderPanelUI().updateLoggerPageLabel();
+        if (extender.getUIManager().getExtenderPanelUI() != null) {
+            extender.getUIManager().getExtenderPanelUI().updateLoggerPageLabel();
         }
     }
 
@@ -182,8 +183,8 @@ public class LoggerTableModel extends AbstractTableModel {
         }
         this.listFindingEntry.add(loggerEntry);
         this.fireTableDataChanged();
-        if (extender.getExtenderPanelUI() != null) {
-            extender.getExtenderPanelUI().updateLoggerPageLabel();
+        if (extender.getUIManager().getExtenderPanelUI() != null) {
+            extender.getUIManager().getExtenderPanelUI().updateLoggerPageLabel();
         }
         triggerAutoSave();
     }
@@ -209,5 +210,9 @@ public class LoggerTableModel extends AbstractTableModel {
 
     public int getActualIndex(int rowIndex) {
         return (currentPage * pageSize) + rowIndex;
+    }
+
+    public int getLoggerListSize() {
+        return listFindingEntry.size();
     }
 }

@@ -39,8 +39,9 @@ public class ChecklistTableModel extends AbstractTableModel {
     private void setupAutoSaveTimer() {
         // Debounce timer: wait 2 seconds after last change before saving
         autoSaveTimer = new Timer(2000, e -> {
-            if (extender.getPersistence() != null) {
-                extender.getPersistence().saveChecklistState(extender.checklistLog);
+            if (extender.getPersistenceManager().getPersistence() != null) {
+                extender.getPersistenceManager().getPersistence()
+                        .saveChecklistState(extender.getChecklistManager().getChecklistLog());
                 extender.logOutput("Auto-saved checklist state to project file.");
             }
         });
@@ -60,7 +61,7 @@ public class ChecklistTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return extender.checklistLog.size();
+        return extender.getChecklistManager().getChecklistLog().size();
     }
 
     @Override
@@ -70,7 +71,7 @@ public class ChecklistTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        ChecklistEntry checklistEntry = extender.checklistLog.get(rowIndex);
+        ChecklistEntry checklistEntry = extender.getChecklistManager().getChecklistLog().get(rowIndex);
         if (columnIndex == 0) {
             return checklistEntry.getRefNumber();
         }
@@ -97,20 +98,20 @@ public class ChecklistTableModel extends AbstractTableModel {
     // Method to set value at selected row and column
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        ChecklistEntry checklistEntry = extender.checklistLog.get(rowIndex);
+        ChecklistEntry checklistEntry = extender.getChecklistManager().getChecklistLog().get(rowIndex);
         if (columnIndex == 3) {
             checklistEntry.setTestCaseCompleted((Boolean) aValue);
             triggerAutoSave();
         } else if (columnIndex == 4) {
             checklistEntry.setExclusion((Boolean) aValue);
             // Refresh Mapping list for logger tab
-            extender.getLoggerTable().resetList();
+            extender.getLoggerManager().getLoggerTable().resetList();
             triggerAutoSave();
         }
     }
 
     public void addValueAt(ChecklistEntry entry, int rowIndex, int columnIndex) {
-        extender.checklistLog.add(entry);
+        extender.getChecklistManager().getChecklistLog().add(entry);
         fireTableRowsInserted(rowIndex, columnIndex);
     }
 

@@ -25,7 +25,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.swing.*;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,19 +64,22 @@ class ChecklistFetchWorkerTest {
     private List<ChecklistEntry> checklistLog;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         running = new AtomicBoolean(true);
         checklistLog = new ArrayList<>();
 
-        // Mock Autowasp dependencies
-        // Mock Autowasp dependencies
-        lenient().when(mockExtender.getChecklistLogic()).thenReturn(mockChecklistLogic);
-        lenient().when(mockExtender.getLoggerTable()).thenReturn(mockLoggerTable);
+        // Mock Managers
+        autowasp.managers.ChecklistManager mockChecklistManager = mock(autowasp.managers.ChecklistManager.class);
+        autowasp.managers.LoggerManager mockLoggerManager = mock(autowasp.managers.LoggerManager.class);
 
-        // Use reflection to set final field checklistLog
-        Field checklistLogField = Autowasp.class.getField("checklistLog");
-        checklistLogField.setAccessible(true);
-        checklistLogField.set(mockExtender, checklistLog);
+        // Configure Extender to return Managers
+        lenient().when(mockExtender.getChecklistManager()).thenReturn(mockChecklistManager);
+        lenient().when(mockExtender.getLoggerManager()).thenReturn(mockLoggerManager);
+
+        // Configure Managers to return components
+        lenient().when(mockChecklistManager.getChecklistLogic()).thenReturn(mockChecklistLogic);
+        lenient().when(mockLoggerManager.getLoggerTable()).thenReturn(mockLoggerTable);
+        lenient().when(mockChecklistManager.getChecklistLog()).thenReturn(checklistLog);
 
         worker = new ChecklistFetchWorker(new ChecklistFetchWorker.ChecklistFetchConfig(
                 mockExtender,
