@@ -1,9 +1,7 @@
 package autowasp.managers;
 
-import burp.api.montoya.MontoyaApi;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Component;
 import javax.swing.UIManager;
 
 /**
@@ -11,7 +9,6 @@ import javax.swing.UIManager;
  */
 public class ThemeManager {
 
-    private final MontoyaApi api;
     private Boolean isDarkMode;
 
     // Light Mode Colors
@@ -31,8 +28,7 @@ public class ThemeManager {
     private static final Color WARNING_COLOR = new Color(204, 120, 50);
     private static final Color ERROR_COLOR = new Color(255, 107, 104);
 
-    public ThemeManager(MontoyaApi api) {
-        this.api = api;
+    public ThemeManager() {
         detectTheme();
     }
 

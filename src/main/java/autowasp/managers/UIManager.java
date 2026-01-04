@@ -70,7 +70,7 @@ public class UIManager {
      */
     public void initialize(ChecklistManager checklistManager, LoggerManager loggerManager) {
         // Initialize Theme Manager
-        this.themeManager = new ThemeManager(autowasp.getApi());
+        this.themeManager = new ThemeManager();
 
         // Initialize main UI panel
         this.extenderPanelUI = new ExtenderPanelUI(autowasp);
