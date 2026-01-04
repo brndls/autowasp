@@ -36,6 +36,17 @@ public class LoggerTable extends JTable {
         super(tableModel);
         this.extender = extender;
         setColumnWidths(50, 50, 150, 300, 150, 300, 150, 300, 200, Integer.MAX_VALUE);
+        extender.getUIManager().getThemeManager().applyThemeToTable(this);
+    }
+
+    @Override
+    public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+        java.awt.Component c = super.prepareRenderer(renderer, row, column);
+        if (!isRowSelected(row)) {
+            c.setBackground(
+                    row % 2 == 0 ? getBackground() : extender.getUIManager().getThemeManager().getAlternateRowColor());
+        }
+        return c;
     }
 
     public void setColumnWidths(int... widths) {

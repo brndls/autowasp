@@ -36,6 +36,7 @@ public class ChecklistTable extends JTable {
         // Just need to make sure that the max value >= Default values or things are
         // gonna be a bit messy.
         setColumnWidths(200, 300, 200, 300, 1350, 1800, 500, 600, 200, 300);
+        extender.getUIManager().getThemeManager().applyThemeToTable(this);
     }
 
     public void setColumnWidths(int... widths) {
@@ -45,6 +46,16 @@ public class ChecklistTable extends JTable {
                 columnModel.getColumn(i / 2).setMaxWidth(widths[i + 1]);
             }
         }
+    }
+
+    @Override
+    public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+        java.awt.Component c = super.prepareRenderer(renderer, row, column);
+        if (!isRowSelected(row)) {
+            c.setBackground(
+                    row % 2 == 0 ? getBackground() : extender.getUIManager().getThemeManager().getAlternateRowColor());
+        }
+        return c;
     }
 
     @Override

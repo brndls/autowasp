@@ -16,12 +16,14 @@ public class ThemeManager {
     private static final Color LIGHT_FOREGROUND = new Color(0, 0, 0);
     private static final Color LIGHT_TABLE_HEADER = new Color(240, 240, 240);
     private static final Color LIGHT_TABLE_SELECTION = new Color(184, 207, 229);
+    private static final Color LIGHT_TABLE_ALTERNATE_ROW = new Color(245, 245, 245);
 
     // Dark Mode Colors (Darcula/IntelliJ style)
     private static final Color DARK_BACKGROUND = new Color(43, 43, 43);
     private static final Color DARK_FOREGROUND = new Color(187, 187, 187);
     private static final Color DARK_TABLE_HEADER = new Color(60, 63, 65);
     private static final Color DARK_TABLE_SELECTION = new Color(75, 110, 175);
+    private static final Color DARK_TABLE_ALTERNATE_ROW = new Color(55, 57, 58);
 
     // Shared Colors
     private static final Color SUCCESS_COLOR = new Color(98, 151, 85);
@@ -105,6 +107,29 @@ public class ThemeManager {
 
     public Font getMonospaceFont() {
         return new Font("Monospaced", Font.PLAIN, getDefaultFont().getSize());
+    }
+
+    public Color getAlternateRowColor() {
+        return isDarkMode() ? DARK_TABLE_ALTERNATE_ROW : LIGHT_TABLE_ALTERNATE_ROW;
+    }
+
+    /**
+     * Applies the current theme to a JTable.
+     * Sets background, foreground, header colors, and selection colors.
+     */
+    public void applyThemeToTable(javax.swing.JTable table) {
+        table.setBackground(getBackgroundColor());
+        table.setForeground(getForegroundColor());
+        table.setSelectionBackground(getTableSelectionColor());
+        table.setSelectionForeground(getForegroundColor());
+        table.setGridColor(isDarkMode() ? new Color(80, 80, 80) : new Color(220, 220, 220));
+
+        if (table.getTableHeader() != null) {
+            table.getTableHeader().setBackground(getTableHeaderColor());
+            table.getTableHeader().setForeground(getForegroundColor());
+            table.getTableHeader().setFont(java.util.Objects
+                    .requireNonNullElse(table.getTableHeader().getFont(), getDefaultFont()).deriveFont(Font.BOLD));
+        }
     }
 
     /**

@@ -21,6 +21,7 @@ import autowasp.Autowasp;
 import autowasp.ExtenderPanelUI;
 
 import javax.swing.*;
+import java.awt.Color;
 
 /**
  * UIManager - Manages User Interface components
@@ -79,6 +80,18 @@ public class UIManager {
         this.comboBox = new JComboBox<>();
         this.comboBox2 = new JComboBox<>();
         this.comboBox3 = new JComboBox<>();
+
+        // Apply theme to comboboxes
+        if (themeManager.isDarkMode()) {
+            Color bg = themeManager.getBackgroundColor();
+            Color fg = themeManager.getForegroundColor();
+            this.comboBox.setBackground(bg);
+            this.comboBox.setForeground(fg);
+            this.comboBox2.setBackground(bg);
+            this.comboBox2.setForeground(fg);
+            this.comboBox3.setBackground(bg);
+            this.comboBox3.setForeground(fg);
+        }
     }
 
     /**
