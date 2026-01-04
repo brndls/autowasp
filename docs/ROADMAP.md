@@ -4,37 +4,37 @@ This document tracks the ongoing development phases for Autowasp.
 
 ## Phase Overview
 
-| Phase | Name                                      | Status        | Effort    |
-| ----- | ----------------------------------------- | ------------- | --------- |
-| 1.0   | Build System Migration (Maven -> Gradle)  | ✅ Complete    | -         |
-| 2.0   | Java Version Upgrade (Java 8 -> 21)       | ✅ Complete    | -         |
-| 3.0   | Montoya API Migration (Core)              | ✅ Complete    | High      |
-| 4.0   | Handler Migration (Listeners -> Handlers) | ✅ Complete    | Medium    |
-| 4.1   | Modernization (Java 21)                   | ✅ Complete    | -         |
-| 4.2   | Reliability (Fetch Logic)                 | ✅ Complete    | Medium    |
-| 4.3   | Report Enhancements                       | ✅ Complete    | Medium    |
-| 4.4   | UI Improvements                           | ✅ Complete    | Medium    |
-| 5.1   | Unit Tests                                | ✅ Complete    | Medium    |
-| 5.2   | Integration Tests                         | ✅ Complete    | High      |
-| 6.1   | Local Checklist Import                    | ✅ Complete    | Medium    |
-| 6.2   | GitHub Release & CI/CD                    | ✅ Complete    | Medium    |
-| 6.3   | BApp Store Submission                     | ✅ Complete    | Low       |
-| 7.0   | Future Maintenance                        | 🔄 In Progress | Low       |
-| 7.1   | Handle Large Projects                     | ✅ Complete    | Medium    |
-| 8.1   | Auto-Mapping WSTG                         | 🔮 Future      | Medium    |
-| 8.2   | Evidence Collector                        | 🔮 Future      | Medium    |
-| 9.1   | Smart Severity Calculator                 | 🔮 Future      | Medium    |
-| 9.2   | Retest Tracking                           | 🔮 Future      | High      |
-| 10.1  | Burp Collaborator Integration             | 🔮 Future      | High      |
-| 10.2  | External Tool Integration                 | 🔮 Future      | High      |
-| 11.1  | AI-Powered Analysis                       | 🔮 Future      | Very High |
-| 11.2  | Scope-Aware Testing Tracker               | 🔮 Future      | High      |
-| 12.1  | Session Notes                             | ⏳ Pending     | Low       |
-| 12.2  | Payload Manager                           | ⏳ Pending     | Medium    |
-| 12.3  | Target Scope Manager                      | ⏳ Pending     | High      |
-| 13.1  | Context Menu Enhancement                  | ⏳ Pending     | Low       |
-| 14.1  | ConfigManager (Future)                    | 🔮 Future      | Medium    |
-| 14.2  | EventManager (Future)                     | 🔮 Future      | Medium    |
+| Phase | Name                                      | Status     | Effort    |
+| ----- | ----------------------------------------- | ---------- | --------- |
+| 1.0   | Build System Migration (Maven -> Gradle)  | ✅ Complete | -         |
+| 2.0   | Java Version Upgrade (Java 8 -> 21)       | ✅ Complete | -         |
+| 3.0   | Montoya API Migration (Core)              | ✅ Complete | High      |
+| 4.0   | Handler Migration (Listeners -> Handlers) | ✅ Complete | Medium    |
+| 4.1   | Modernization (Java 21)                   | ✅ Complete | -         |
+| 4.2   | Reliability (Fetch Logic)                 | ✅ Complete | Medium    |
+| 4.3   | Report Enhancements                       | ✅ Complete | Medium    |
+| 4.4   | UI Improvements                           | ✅ Complete | Medium    |
+| 5.1   | Unit Tests                                | ✅ Complete | Medium    |
+| 5.2   | Integration Tests                         | ✅ Complete | High      |
+| 6.1   | Local Checklist Import                    | ✅ Complete | Medium    |
+| 6.2   | GitHub Release & CI/CD                    | ✅ Complete | Medium    |
+| 6.3   | BApp Store Submission                     | ✅ Complete | Low       |
+| 7.0   | Future Maintenance                        | ✅ Complete | Low       |
+| 7.1   | Handle Large Projects                     | ✅ Complete | Medium    |
+| 8.1   | Auto-Mapping WSTG                         | 🔮 Future   | Medium    |
+| 8.2   | Evidence Collector                        | 🔮 Future   | Medium    |
+| 9.1   | Smart Severity Calculator                 | 🔮 Future   | Medium    |
+| 9.2   | Retest Tracking                           | 🔮 Future   | High      |
+| 10.1  | Burp Collaborator Integration             | 🔮 Future   | High      |
+| 10.2  | External Tool Integration                 | 🔮 Future   | High      |
+| 11.1  | AI-Powered Analysis                       | 🔮 Future   | Very High |
+| 11.2  | Scope-Aware Testing Tracker               | 🔮 Future   | High      |
+| 12.1  | Session Notes                             | ⏳ Pending  | Low       |
+| 12.2  | Payload Manager                           | ⏳ Pending  | Medium    |
+| 12.3  | Target Scope Manager                      | ⏳ Pending  | High      |
+| 13.1  | Context Menu Enhancement                  | ⏳ Pending  | Low       |
+| 14.1  | ConfigManager (Future)                    | 🔮 Future   | Medium    |
+| 14.2  | EventManager (Future)                     | 🔮 Future   | Medium    |
 
 ---
 
@@ -569,9 +569,14 @@ Reference: [GUIDELINES.md](./GUIDELINES.md)
 
 ## Phase 7.0 - Future Maintenance
 
+**Status:** ✅ Complete  
+**Date:** 2026-01-05
+
 **Goal:** Long-term project health and technical debt reduction.
 
-- [ ] Fix Gradle 9.0 deprecation warnings (incompatible with future releases)
+- [x] Fix Gradle 9.0 deprecation warnings (incompatible with future releases)
+- [x] Update Shadow plugin to v8.3.6 (GradleUp)
+- [x] Configure explicit test framework dependencies
 
 ---
 

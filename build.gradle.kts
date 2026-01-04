@@ -36,7 +36,7 @@
 plugins {
     java
     jacoco
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.6"
     id("com.diffplug.spotless") version "6.25.0"
     id("org.sonarqube") version "6.0.1.5171"
 }
@@ -139,6 +139,7 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:5.8.0")
     testImplementation("org.mockito:mockito-inline:5.2.0") // Support for static mocking
     testImplementation("net.portswigger.burp.extensions:montoya-api:2025.12")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 // ════════════════════════════════════════════════════════════════════════════
