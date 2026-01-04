@@ -41,7 +41,7 @@ public class LoggerTableModel extends AbstractTableModel {
         // Logger might be bigger, so 3 seconds is safer
         autoSaveTimer = new Timer(3000, e -> {
             if (extender.getPersistence() != null) {
-                extender.getPersistence().saveLoggerState(extender.loggerList);
+                extender.getPersistence().saveLoggerState(extender.getLoggerManager().getLoggerList());
                 extender.logOutput("Auto-saved logger state to project file.");
             }
         });

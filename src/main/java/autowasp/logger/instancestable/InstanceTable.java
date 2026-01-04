@@ -53,7 +53,7 @@ public class InstanceTable extends JTable {
     public void changeSelection(int row, int col, boolean toggle, boolean extend) {
         // show the log entry for the selected row
         currentRow = row;
-        InstanceEntry instanceEntry = extender.instanceLog.get(row);
+        InstanceEntry instanceEntry = extender.getLoggerManager().getInstanceLog().get(row);
         if (instanceEntry.getRequestResponse() == null) {
             // Kosongkan editor jika tidak ada request/response
             extender.getExtenderPanelUI().getRequestEditor().setRequest(
@@ -112,17 +112,20 @@ public class InstanceTable extends JTable {
     public void deleteInstance() {
         // delete instance
         extender.getExtenderPanelUI().getDeleteInstanceButton().setEnabled(false);
-        extender.loggerList.get(extender.getCurrentEntryRow()).getInstanceList().remove(currentRow);
+        extender.getLoggerManager().getLoggerList().get(extender.getCurrentEntryRow()).getInstanceList()
+                .remove(currentRow);
         // update UI
         // If there are remaining instances
-        if (!extender.loggerList.get(extender.getCurrentEntryRow()).getInstanceList().isEmpty()) {
+        if (!extender.getLoggerManager().getLoggerList().get(extender.getCurrentEntryRow()).getInstanceList()
+                .isEmpty()) {
             // Inform user about instance deletion
             extender.getExtenderPanelUI().getScanStatusLabel().setText("Instance deleted");
             extender.issueAlert("Instance deleted");
             // Repaint instances table
             extender.getInstancesTableModel().clearInstanceEntryList();
             extender.getInstancesTableModel()
-                    .addAllInstanceEntry(extender.loggerList.get(extender.getCurrentEntryRow()).getInstanceList());
+                    .addAllInstanceEntry(extender.getLoggerManager().getLoggerList().get(extender.getCurrentEntryRow())
+                            .getInstanceList());
         }
         // Else, no more instances left in entry
         else {

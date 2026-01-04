@@ -58,7 +58,7 @@ public class AutowaspProxyResponseHandler implements ProxyResponseHandler {
             String url = interceptedResponse.initiatingRequest().url();
 
             if (extender.isInScope(url)) {
-                synchronized (extender.trafficLog) {
+                synchronized (extender.getLoggerManager().getTrafficLog()) {
                     // Classify traffic using TrafficLogic
                     extender.getTrafficLogic().classifyTraffic(interceptedResponse);
                 }

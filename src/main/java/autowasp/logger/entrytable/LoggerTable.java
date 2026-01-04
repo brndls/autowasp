@@ -71,14 +71,14 @@ public class LoggerTable extends JTable {
 
     // Method to modify pentester's comments text field
     public void modifyComments(String comments) {
-        extender.loggerList.get(currentRow).setPenTesterComments(comments);
+        extender.getLoggerManager().getLoggerList().get(currentRow).setPenTesterComments(comments);
         extender.getLoggerTableModel().fireTableDataChanged();
         // Checks if finding is mapped to a checklist entry
         // If it is, set the pentesterComments variable for that checklist entry
-        if (extender.loggerList.get(currentRow).getIssueNumber() != null) {
-            int issueNumber = extender.loggerList.get(currentRow).getIssueNumber();
+        if (extender.getLoggerManager().getLoggerList().get(currentRow).getIssueNumber() != null) {
+            int issueNumber = extender.getLoggerManager().getLoggerList().get(currentRow).getIssueNumber();
             String finalComments = comments + "\n";
-            extender.checklistLog.get(issueNumber).setPenTesterComments(finalComments);
+            extender.getChecklistManager().getChecklistLog().get(issueNumber).setPenTesterComments(finalComments);
             extender.getChecklistTableModel().triggerAutoSave();
         }
         extender.getLoggerTableModel().triggerAutoSave();
@@ -86,14 +86,14 @@ public class LoggerTable extends JTable {
 
     // Method to modify pentester's evidences text field
     public void modifyEvidence(String evidences) {
-        extender.loggerList.get(currentRow).setEvidence(evidences);
+        extender.getLoggerManager().getLoggerList().get(currentRow).setEvidence(evidences);
         extender.getLoggerTableModel().fireTableDataChanged();
         // Checks if finding is mapped to a checklist entry
         // If it is, set the evidence variable for that checklist entry
-        if (extender.loggerList.get(currentRow).getIssueNumber() != null) {
-            int issueNumber = extender.loggerList.get(currentRow).getIssueNumber();
+        if (extender.getLoggerManager().getLoggerList().get(currentRow).getIssueNumber() != null) {
+            int issueNumber = extender.getLoggerManager().getLoggerList().get(currentRow).getIssueNumber();
             String finalEvidence = evidences + "\n";
-            extender.checklistLog.get(issueNumber).setEvidence(finalEvidence);
+            extender.getChecklistManager().getChecklistLog().get(issueNumber).setEvidence(finalEvidence);
             extender.getChecklistTableModel().triggerAutoSave();
         }
         extender.getLoggerTableModel().triggerAutoSave();
@@ -109,7 +109,7 @@ public class LoggerTable extends JTable {
         JComboBox<String> comboBox = extender.getComboBox();
         // Add an N.A. to mark finding as false positive
         comboBox.addItem("N.A.");
-        for (ChecklistEntry entry : extender.checklistLog) {
+        for (ChecklistEntry entry : extender.getChecklistManager().getChecklistLog()) {
             String comboEntry = entry.getRefNumber() + " - " + entry.getTestName();
             comboBox.addItem(comboEntry);
         }
@@ -121,7 +121,7 @@ public class LoggerTable extends JTable {
         JComboBox<String> comboBox = extender.getComboBox();
         // Add an N.A. to mark finding as false positive
         comboBox.addItem("N.A.");
-        for (ChecklistEntry entry : extender.checklistLog) {
+        for (ChecklistEntry entry : extender.getChecklistManager().getChecklistLog()) {
             if (Boolean.FALSE.equals(entry.isExcluded())) {
                 String comboEntry = entry.getRefNumber() + " - " + entry.getTestName();
                 comboBox.addItem(comboEntry);
@@ -131,9 +131,9 @@ public class LoggerTable extends JTable {
 
     // Method to delete logger entry
     public void deleteEntry() {
-        if (currentRow >= 0 && currentRow < extender.loggerList.size()) {
+        if (currentRow >= 0 && currentRow < extender.getLoggerManager().getLoggerList().size()) {
             extender.getExtenderPanelUI().getDeleteEntryButton().setEnabled(false);
-            extender.loggerList.remove(currentRow);
+            extender.getLoggerManager().getLoggerList().remove(currentRow);
             // update UI
             // Inform user about entry deletion
             extender.getExtenderPanelUI().getScanStatusLabel().setText("Entry deleted");
