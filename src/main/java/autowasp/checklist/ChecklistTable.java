@@ -54,13 +54,13 @@ public class ChecklistTable extends JTable {
 
         // Sets the text for each of the bottom tab panes. Setting the caret position to
         // 0 makes sure that the user starts reading from the top
-        extender.getExtenderPanelUI().getSummaryTextPane().setText(checklistEntry.getSummaryHTML());
-
-        extender.getExtenderPanelUI().getSummaryTextPane().setCaretPosition(0);
-        extender.getExtenderPanelUI().getHowToTestTextPane().setText(checklistEntry.getHowToTestHTML());
-        extender.getExtenderPanelUI().getHowToTestTextPane().setCaretPosition(0);
-        extender.getExtenderPanelUI().getReferencesTextPane().setText(checklistEntry.getReferencesHTML());
-        extender.getExtenderPanelUI().getReferencesTextPane().setCaretPosition(0);
+        extender.getUIManager().getExtenderPanelUI().getSummaryTextPane().setText(checklistEntry.getSummaryHTML());
+        extender.getUIManager().getExtenderPanelUI().getSummaryTextPane().setCaretPosition(0);
+        extender.getUIManager().getExtenderPanelUI().getHowToTestTextPane().setText(checklistEntry.getHowToTestHTML());
+        extender.getUIManager().getExtenderPanelUI().getHowToTestTextPane().setCaretPosition(0);
+        extender.getUIManager().getExtenderPanelUI().getReferencesTextPane()
+                .setText(checklistEntry.getReferencesHTML());
+        extender.getUIManager().getExtenderPanelUI().getReferencesTextPane().setCaretPosition(0);
 
         super.changeSelection(row, col, toggle, extend);
     }

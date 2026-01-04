@@ -228,7 +228,7 @@ public class ChecklistLogic implements Serializable {
 
         Document anyPage = fetchWithRetry(anyURL);
         if (anyPage == null) {
-            extender.getExtenderPanelUI().getScanStatusLabel().setText("Failed to fetch: " + anyURL);
+            extender.getUIManager().getExtenderPanelUI().getScanStatusLabel().setText("Failed to fetch: " + anyURL);
             return new ArrayList<>();
         }
 
@@ -512,7 +512,7 @@ public class ChecklistLogic implements Serializable {
                 }
             }
 
-            extender.getExtenderPanelUI().getScanStatusLabel()
+            extender.getUIManager().getExtenderPanelUI().getScanStatusLabel()
                     .setText("File saved to " + filePath);
             extender.issueAlert("File saved to " + filePath);
         }
@@ -543,7 +543,7 @@ public class ChecklistLogic implements Serializable {
         // Apply saved persistence state (Phase 7.1)
         applySavedPersistenceState();
 
-        extender.getLoggerTable().generateWSTGList();
+        extender.getLoggerManager().getLoggerTable().generateWSTGList();
         extender.logOutput("Loaded " + entries.size() + " items from bundled WSTG v" + loader.getVersion());
     }
 
@@ -552,7 +552,8 @@ public class ChecklistLogic implements Serializable {
      * checklist.
      */
     private void applySavedPersistenceState() {
-        List<autowasp.persistence.ChecklistState> savedStates = extender.getPersistence().loadChecklistState();
+        List<autowasp.persistence.ChecklistState> savedStates = extender.getPersistenceManager().getPersistence()
+                .loadChecklistState();
         if (savedStates.isEmpty()) {
             return;
         }
@@ -578,7 +579,7 @@ public class ChecklistLogic implements Serializable {
         if (restoredCount > 0) {
             extender.logOutput("Restored persistence state for " + restoredCount + " checklist items.");
             // Refresh table UI
-            extender.getChecklistTableModel().fireTableDataChanged();
+            extender.getChecklistManager().getChecklistTableModel().fireTableDataChanged();
         }
     }
 
@@ -721,7 +722,7 @@ public class ChecklistLogic implements Serializable {
             checklistWorkbook.write(excelWriter);
             excelWriter.close();
             extender.issueAlert("Excel report generated!");
-            extender.getExtenderPanelUI().getScanStatusLabel().setText("Excel report generated!");
+            extender.getUIManager().getExtenderPanelUI().getScanStatusLabel().setText("Excel report generated!");
         } catch (IOException e) {
             extender.issueAlert("Error, file not found");
         }
@@ -747,7 +748,7 @@ public class ChecklistLogic implements Serializable {
         int row = this.extender.getChecklistManager().getChecklistLog().size();
         ChecklistEntry checklistEntry = new ChecklistEntry(tableElements, contentElements, url);
         checklistEntry.cleanEntry();
-        extender.getChecklistTableModel().addValueAt(checklistEntry, row, row);
+        extender.getChecklistManager().getChecklistTableModel().addValueAt(checklistEntry, row, row);
         extender.getChecklistManager().getCheckListHashMap().put(checklistEntry.getRefNumber(), checklistEntry);
         return true;
     }
@@ -756,7 +757,7 @@ public class ChecklistLogic implements Serializable {
     // checklistLog using the setValueAt() method
     public void loadNewChecklistEntry(ChecklistEntry entry) {
         int row = this.extender.getChecklistManager().getChecklistLog().size();
-        extender.getChecklistTableModel().addValueAt(entry, row, row);
+        extender.getChecklistManager().getChecklistTableModel().addValueAt(entry, row, row);
     }
 
     // Logic to calculate file hash

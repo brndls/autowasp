@@ -39,8 +39,9 @@ public class ChecklistTableModel extends AbstractTableModel {
     private void setupAutoSaveTimer() {
         // Debounce timer: wait 2 seconds after last change before saving
         autoSaveTimer = new Timer(2000, e -> {
-            if (extender.getPersistence() != null) {
-                extender.getPersistence().saveChecklistState(extender.getChecklistManager().getChecklistLog());
+            if (extender.getPersistenceManager().getPersistence() != null) {
+                extender.getPersistenceManager().getPersistence()
+                        .saveChecklistState(extender.getChecklistManager().getChecklistLog());
                 extender.logOutput("Auto-saved checklist state to project file.");
             }
         });
@@ -104,7 +105,7 @@ public class ChecklistTableModel extends AbstractTableModel {
         } else if (columnIndex == 4) {
             checklistEntry.setExclusion((Boolean) aValue);
             // Refresh Mapping list for logger tab
-            extender.getLoggerTable().resetList();
+            extender.getLoggerManager().getLoggerTable().resetList();
             triggerAutoSave();
         }
     }

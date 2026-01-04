@@ -106,7 +106,7 @@ public class ChecklistManager {
      * Called during extension unload
      */
     public void saveState() {
-        autowasp.getPersistence().saveChecklistState(checklistLog);
+        autowasp.getPersistenceManager().getPersistence().saveChecklistState(checklistLog);
     }
 
     /**
@@ -114,7 +114,7 @@ public class ChecklistManager {
      * Called during extension initialization
      */
     public void restoreState() {
-        autowasp.getPersistence().loadChecklistState().stream().findFirst().ifPresent(state -> {
+        autowasp.getPersistenceManager().getPersistence().loadChecklistState().stream().findFirst().ifPresent(state -> {
             autowasp.getLogging().logToOutput("Found saved checklist state, restoring...");
             checklistLogic.loadLocalCopy(); // Load bundled as base
         });

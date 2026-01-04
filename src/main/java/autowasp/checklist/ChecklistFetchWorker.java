@@ -142,7 +142,7 @@ public class ChecklistFetchWorker extends SwingWorker<Void, String> {
             String summary = "Fetch complete: " + successCount + " loaded, " + skippedCount + " skipped";
             config.statusLabel().setText(summary);
             config.extender().issueAlert(summary);
-            config.extender().getLoggerTable().generateWSTGList();
+            config.extender().getLoggerManager().getLoggerTable().generateWSTGList();
         }
 
         if (config.onComplete() != null) {
