@@ -83,10 +83,10 @@ This approach provides:
 
 ## Step 4: Verify Configuration
 
-All SonarQube configuration is defined in [build.gradle.kts](../build.gradle.kts) in the `sonarqube` block:
+All SonarCloud configuration is defined in [build.gradle.kts](../build.gradle.kts) in the `sonar` block:
 
 ```kotlin
-sonarqube {
+sonar {
     properties {
         property("sonar.organization", "honk-buzz")
         property("sonar.projectKey", "brndls_autowasp")
@@ -101,7 +101,7 @@ sonarqube {
 
 ## Step 5: Trigger GitHub Actions
 
-The SonarQube analysis will run automatically when you:
+The SonarCloud analysis will run automatically when you:
 - Push to the `main` branch
 - Create or update a pull request
 
@@ -109,7 +109,7 @@ To trigger it manually:
 
 ```bash
 # Make a small change (if needed)
-git commit --allow-empty -m "chore: Trigger SonarQube analysis"
+git commit --allow-empty -m "chore: Trigger SonarCloud analysis"
 git push origin main
 ```
 
@@ -125,9 +125,9 @@ git push origin main
 4. Click the workflow to see the logs
 5. Ensure all steps completed successfully (✅)
 
-### 6.2 Check SonarQube Cloud Dashboard
+### 6.2 Check SonarCloud Dashboard
 
-1. Return to [SonarQube Cloud](https://sonarcloud.io/)
+1. Return to [SonarCloud](https://sonarcloud.io/)
 2. Select the **"autowasp"** project
 3. Verify that metrics appear:
    - **Quality Gate**: Status (Passed/Failed)
@@ -140,7 +140,7 @@ git push origin main
 
 ## Running Analysis Locally (Optional)
 
-To run SonarQube analysis on your local machine, you need to provide the `SONAR_TOKEN` via environment variable.
+To run SonarCloud analysis on your local machine, you need to provide the `SONAR_TOKEN` via environment variable.
 
 ### Using .envrc (Recommended)
 
@@ -154,7 +154,7 @@ echo 'export SONAR_TOKEN="sqp_your_token_here"' >> .envrc
 direnv allow
 
 # 3. Run analysis (token is automatically available)
-./gradlew clean test jacocoTestReport sonarqube
+./gradlew clean test jacocoTestReport sonar
 ```
 
 > [!TIP]
@@ -169,7 +169,7 @@ For one-time use or if not using direnv:
 export SONAR_TOKEN=your_token_here
 
 # Run tests, generate coverage, and analyze
-./gradlew clean test jacocoTestReport sonarqube
+./gradlew clean test jacocoTestReport sonar
 ```
 
 ---
@@ -186,10 +186,10 @@ export SONAR_TOKEN=your_token_here
 
 ### Error: "sonar.organization not defined"
 
-**Cause:** The `sonarqube` block in `build.gradle.kts` is missing or incomplete.
+**Cause:** The `sonar` block in `build.gradle.kts` is missing or incomplete.
 
 **Solution:**
-1. Verify that `build.gradle.kts` contains the `sonarqube { ... }` block
+1. Verify that `build.gradle.kts` contains the `sonar { ... }` block
 2. Check that `sonar.organization` property is defined
 
 ### Error: "Coverage report not found"
@@ -213,7 +213,7 @@ export SONAR_TOKEN=your_token_here
 
 ## Maintenance
 
-### Update SonarQube Plugin Version
+### Update Sonar plugin version
 
 Edit `build.gradle.kts`:
 
@@ -227,13 +227,13 @@ Check the latest version at: https://plugins.gradle.org/plugin/org.sonarqube
 
 If the token needs to be rotated:
 
-1. Generate a new token in SonarQube Cloud (Step 2)
+1. Generate a new token in SonarCloud (Step 2)
 2. Update GitHub Secret `SONAR_TOKEN` with the new token
 3. Re-run the workflow to verify
 
 ### Update Project Configuration
 
-If you need to change organization or project key, edit the `sonarqube` block in `build.gradle.kts`.
+If you need to change organization or project key, edit the `sonar` block in `build.gradle.kts`.
 
 ---
 

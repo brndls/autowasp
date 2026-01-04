@@ -38,7 +38,7 @@ plugins {
     jacoco
     id("com.gradleup.shadow") version "8.3.6"
     id("com.diffplug.spotless") version "6.25.0"
-    id("org.sonarqube") version "6.0.1.5171"
+    id("org.sonarqube") version "7.2.2.6593"
 }
 
 spotless {
@@ -203,17 +203,15 @@ tasks.jacocoTestReport {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// SONARQUBE CONFIGURATION
+// SONAR CONFIGURATION
 // ════════════════════════════════════════════════════════════════════════════
 /**
- * SonarQube Cloud integration for code quality and coverage reporting.
- * Note: Gradle SonarQube plugin does NOT read sonar-project.properties automatically.
- * All required properties must be defined here.
+ * SonarCloud integration for code quality and coverage reporting.
  *
- * Run analysis: ./gradlew sonarqube
+ * Run analysis: ./gradlew sonar
  * Requires: SONAR_TOKEN environment variable
  */
-sonarqube {
+sonar {
     properties {
         // Organization and project identification
         property("sonar.organization", "honk-buzz")
@@ -221,7 +219,7 @@ sonarqube {
         property("sonar.projectName", "Autowasp")
         property("sonar.projectVersion", version.toString())
 
-        // SonarQube Cloud host
+        // SonarCloud host (optional for SonarCloud but good for clarity)
         property("sonar.host.url", "https://sonarcloud.io")
 
         // Source configuration
