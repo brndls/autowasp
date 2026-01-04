@@ -75,6 +75,7 @@ public class Autowasp implements BurpExtension {
     private autowasp.managers.LoggerManager loggerManager;
     private autowasp.managers.UIManager uiManager;
     private autowasp.managers.PersistenceManager persistenceManager;
+    private autowasp.managers.ReportManager reportManager;
 
     // =====================================================================================
     // MONTOYA API ENTRY POINT
@@ -106,6 +107,7 @@ public class Autowasp implements BurpExtension {
         this.loggerManager = new autowasp.managers.LoggerManager(this);
         this.uiManager = new autowasp.managers.UIManager(this);
         this.persistenceManager = new autowasp.managers.PersistenceManager(this);
+        this.reportManager = new autowasp.managers.ReportManager(this);
 
         // Initialize managers
         checklistManager.initialize();
@@ -184,6 +186,10 @@ public class Autowasp implements BurpExtension {
 
     public autowasp.managers.PersistenceManager getPersistenceManager() {
         return persistenceManager;
+    }
+
+    public autowasp.managers.ReportManager getReportManager() {
+        return reportManager;
     }
 
     // =====================================================================================

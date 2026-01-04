@@ -18,8 +18,6 @@
 package autowasp.checklist;
 
 import autowasp.Autowasp;
-import autowasp.logger.entrytable.LoggerEntry;
-import autowasp.logger.instancestable.InstanceEntry;
 
 // Montoya HTTP API imports (BApp Store Criteria #7)
 import burp.api.montoya.http.message.HttpRequestResponse;
@@ -34,18 +32,6 @@ import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.Hyperlink;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.common.usermodel.HyperlinkType;
 
 /* Notes:
  * 1. The URL for the OWASP content page is currently pointing to our own branch of OWASP's repository.
@@ -580,151 +566,6 @@ public class ChecklistLogic implements Serializable {
             extender.logOutput("Restored persistence state for " + restoredCount + " checklist items.");
             // Refresh table UI
             extender.getChecklistManager().getChecklistTableModel().fireTableDataChanged();
-        }
-    }
-
-    // Saves a local excel file at the directory specified by the user
-    public void saveToExcelFile(String absoluteFilePath) {
-        populateChecklistEntryData();
-
-        try (XSSFWorkbook checklistWorkbook = new XSSFWorkbook()) {
-            XSSFSheet checklistSheet = checklistWorkbook.createSheet("OWASP Checklist");
-
-            createHeaderRow(checklistWorkbook, checklistSheet);
-            writeChecklistRows(checklistWorkbook, checklistSheet);
-
-            autoSizeColumns(checklistSheet);
-
-            writeToFile(checklistWorkbook, absoluteFilePath);
-        } catch (IOException e) {
-            extender.issueAlert("Error initializing workbook");
-        }
-    }
-
-    private void populateChecklistEntryData() {
-        for (LoggerEntry findingEntry : extender.getLoggerManager().getLoggerList()) {
-            processFindingEntry(findingEntry);
-        }
-    }
-
-    private void processFindingEntry(LoggerEntry findingEntry) {
-        String issue = findingEntry.getChecklistIssue();
-        if (issue == null || issue.isEmpty() || "N.A.".equals(issue)) {
-            return;
-        }
-
-        int cutIndex = issue.indexOf(" -");
-        if (cutIndex == -1) {
-            return;
-        }
-
-        String findingRefID = issue.substring(0, cutIndex);
-        ChecklistEntry checklistEntry = extender.getChecklistManager().getCheckListHashMap().get(findingRefID);
-
-        if (checklistEntry != null) {
-            StringBuilder comments = new StringBuilder();
-            comments.append(findingEntry.getPenTesterComments());
-            comments.append("\nAffected Instance include(s):\n");
-            for (InstanceEntry instanceEntry : findingEntry.getInstanceList()) {
-                if (!"False Positive".equals(instanceEntry.getConfidence())) {
-                    comments.append(instanceEntry.getUrl()).append(" - (")
-                            .append(instanceEntry.getConfidence())
-                            .append(")\n");
-                }
-            }
-            String evidence = findingEntry.getEvidence() + "\n\n";
-            comments.append("\n\n");
-
-            checklistEntry.setPenTesterComments(comments.toString());
-            checklistEntry.setEvidence(evidence);
-        }
-    }
-
-    private void createHeaderRow(XSSFWorkbook checklistWorkbook, XSSFSheet checklistSheet) {
-        XSSFCellStyle headerStyle = checklistWorkbook.createCellStyle();
-        XSSFFont headerFont = checklistWorkbook.createFont();
-        headerFont.setBold(true);
-        headerStyle.setFont(headerFont);
-        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
-        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-        XSSFRow columnHeadersRow = checklistSheet.createRow(0);
-        String[] headerArray = new String[] { ChecklistEntry.REF_NUMBER_KEY, ChecklistEntry.CATEGORY_KEY,
-                ChecklistEntry.TEST_NAME_KEY,
-                "Pentester Comments",
-                "Evidence", "URL" };
-        for (int i = 0; i < 6; i++) {
-            XSSFCell cell = columnHeadersRow.createCell(i);
-            cell.setCellValue(headerArray[i]);
-            cell.setCellStyle(headerStyle);
-        }
-    }
-
-    private void writeChecklistRows(XSSFWorkbook checklistWorkbook, XSSFSheet checklistSheet) {
-        XSSFCellStyle urlStyle = checklistWorkbook.createCellStyle();
-        urlStyle.setWrapText(true);
-        XSSFFont urlFont = checklistWorkbook.createFont();
-        urlFont.setUnderline(org.apache.poi.ss.usermodel.Font.U_SINGLE);
-        urlFont.setColor(IndexedColors.BLUE.getIndex());
-        urlStyle.setFont(urlFont);
-
-        XSSFCellStyle cellStyle = checklistWorkbook.createCellStyle();
-        cellStyle.setWrapText(true);
-
-        int rowNum = 0;
-        for (int i = 0; i < extender.getChecklistManager().getChecklistLog().size(); i++) {
-            ChecklistEntry entry = extender.getChecklistManager().getChecklistLog().get(i);
-            String[] contentArray = new String[] { entry.getRefNumber(), entry.getCategory(), entry.getTestName(),
-                    entry.getPenTesterComments().trim(), entry.getEvidence().trim(), entry.getUrl() };
-            entry.clearComments();
-            entry.clearEvidences();
-
-            if (contentArray[3].equals(""))
-                contentArray[3] = "N.A.";
-            if (contentArray[4].equals(""))
-                contentArray[4] = "N.A.";
-
-            XSSFRow row = checklistSheet.createRow(++rowNum);
-            for (int j = 0; j < 6; j++) {
-                XSSFCell cell = row.createCell(j);
-                cell.setCellValue(contentArray[j]);
-                if (j != 5) {
-                    cell.setCellStyle(cellStyle);
-                } else {
-                    cell.setCellStyle(urlStyle);
-                    CreationHelper helper = checklistWorkbook.getCreationHelper();
-                    Hyperlink articleLink = helper.createHyperlink(HyperlinkType.URL);
-                    articleLink.setAddress(entry.getUrl());
-                    cell.setHyperlink(articleLink);
-                }
-            }
-            row.setHeight((short) -1);
-        }
-    }
-
-    private void autoSizeColumns(XSSFSheet checklistSheet) {
-        if (checklistSheet.getPhysicalNumberOfRows() > 0) {
-            org.apache.poi.ss.usermodel.Row headerRow = checklistSheet.getRow(0);
-            if (headerRow != null) {
-                for (int i = 0; i < headerRow.getPhysicalNumberOfCells(); i++) {
-                    checklistSheet.autoSizeColumn(i);
-                }
-            }
-        }
-        checklistSheet.setColumnWidth(3, 25600);
-        checklistSheet.setColumnWidth(4, 25600);
-    }
-
-    private void writeToFile(XSSFWorkbook checklistWorkbook, String absoluteFilePath) {
-        try {
-            FileOutputStream excelWriter = new FileOutputStream(
-                    new File(absoluteFilePath + File.separator + "OWASP Checklist.xlsx"));
-            checklistWorkbook.write(excelWriter);
-            excelWriter.close();
-            extender.issueAlert("Excel report generated!");
-            extender.getUIManager().getExtenderPanelUI().getScanStatusLabel().setText("Excel report generated!");
-        } catch (IOException e) {
-            extender.issueAlert("Error, file not found");
         }
     }
 

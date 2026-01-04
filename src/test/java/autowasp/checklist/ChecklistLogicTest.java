@@ -306,20 +306,6 @@ class ChecklistLogicTest {
     }
 
     @Test
-    void testSaveToExcelFileNoContent(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tempDir) {
-        String destPath = tempDir.toAbsolutePath().toString();
-
-        // No entries in checklistLog
-        checklistLogic.saveToExcelFile(destPath);
-
-        // Verify file created (even empty)
-        java.io.File excelFile = new java.io.File(destPath, "OWASP Checklist.xlsx");
-        assertTrue(excelFile.exists());
-
-        verify(mockExtender).issueAlert(contains("Excel report generated"));
-    }
-
-    @Test
     void testFetchWithRetryNonOKStatusCode() {
         String testUrl = "http://notfound.com";
 

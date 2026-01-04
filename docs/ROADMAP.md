@@ -12,7 +12,7 @@ This document tracks the ongoing development phases for Autowasp.
 | 4.0   | Handler Migration (Listeners -> Handlers) | ✅ Complete | Medium    |
 | 4.1   | Modernization (Java 21)                   | ✅ Complete | -         |
 | 4.2   | Reliability (Fetch Logic)                 | ✅ Complete | Medium    |
-| 4.3   | Report Enhancements                       | ⏳ Pending  | Medium    |
+| 4.3   | Report Enhancements                       | ✅ Complete | Medium    |
 | 4.4   | UI Improvements                           | ✅ Complete | Medium    |
 | 5.1   | Unit Tests                                | ✅ Complete | Medium    |
 | 5.2   | Integration Tests                         | ⏳ Pending  | High      |
@@ -181,7 +181,7 @@ private Document fetchWithRetry(String url) {
 
 ### Report Features
 
-- [ ] Add summary sheet with statistics
+- [x] Add summary sheet with statistics
 - [ ] Include severity/confidence charts
 - [ ] Add HTML report option
 - [ ] Add JSON export for automation
@@ -209,9 +209,9 @@ private Document fetchWithRetry(String url) {
 
 ### Persistence Integration (requires Phase 7.1)
 
-- [ ] Load saved checklist progress when generating report
-- [ ] Include historical traffic instances from project file
-- [ ] Export report with embedded session metadata
+- [x] Load saved checklist progress when generating report
+- [x] Include historical traffic instances from project file
+- [x] Export report with embedded session metadata
 
 ---
 

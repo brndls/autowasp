@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Keyboard Shortcuts**: Comprehensive shortcut system (`Ctrl+Shift+W` to Add, `Ctrl+F` to Search, `Delete` to Remove) for faster workflow.
 - **Context Menu Integration**: Added "Send to Autowasp" support to Target Site Map (Tree/Table) and consistent actions across Proxy/Intruder/Repeater.
 - **Focus Features**: Context-aware search (`Ctrl+F` focuses the search bar of the active tab) and quick actions.
+- **Detailed Reporting**: Completely overhauled Excel reports (Phase 4.3) featuring a new "Dashboard" summary sheet, improved formatting, and integrated WSTG checklist status.
 
 ### Changed
 

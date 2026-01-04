@@ -350,8 +350,10 @@ public class ExtenderPanelUI implements Runnable {
 
                 if (userOption == JFileChooser.APPROVE_OPTION) {
                     checklistDestDir = destDirChooser.getSelectedFile();
-                    extender.getChecklistManager().getChecklistLogic()
-                            .saveToExcelFile(checklistDestDir.getAbsolutePath());
+                    extender.getReportManager().generateExcelReport(checklistDestDir);
+
+                    scanStatusLabel.setText("Report generated: " + checklistDestDir.getName());
+                    extender.issueAlert("Report generated successfully!");
                 }
             }
         });
