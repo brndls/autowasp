@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.5] - 2026-01-04
+
+### Added
+
+- **Integration Test Suite**: Implemented a comprehensive integration testing framework (Phase 5.2) with automated scenarios for Persistence and Reporting.
+- **Automated Verification**: Established `IntegrationTestBase` for hybrid mocking of Montoya API, allowing end-to-end testing in headless environments.
+
+### Fixed
+
+- **Compliance**: Added Apache 2.0 license headers to all newly created source and test files (12+ files) to ensure legal consistency and BApp Store compliance.
+- **Reliability**: Verified checklist data serialization integrity through integration tests.
+
 ## [2.2.4] - 2026-01-04
 
 ### Fixed
