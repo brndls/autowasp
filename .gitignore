@@ -3,3 +3,7 @@
 
 # IDE metadata
 src/main/java/META-INF/
+
+# SonarQube - local override file for testing/development
+# Main config (sonar-project.properties) is committed to repository
+sonar-project-local.properties

@@ -2,6 +2,12 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+<!-- SonarQube Cloud Badges -->
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=brndls_autowasp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=brndls_autowasp)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=brndls_autowasp&metric=coverage)](https://sonarcloud.io/summary/new_code?id=brndls_autowasp)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=brndls_autowasp&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=brndls_autowasp)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=brndls_autowasp&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=brndls_autowasp)
+
 ![Autowasp Logo](./images/Autowasp1.png)
 
 Welcome to Autowasp, a Burp Suite extension that integrates OWASP Web Security Testing Guide (WSTG) directly into your testing workflow. It provides a structured environment for penetration testers to track progress, log traffic, and generate comprehensive reports aligned with industry standards.
@@ -58,13 +64,56 @@ Autowasp is optimized for performance and stability during long-term engagements
 1. Download the latest release build [from Releases](https://github.com/govtech-csg/Autowasp/releases).
 2. Open Burp Suite.
 3. Go to **Extensions** tab -> **Installed** -> **Add**.
-4. Select **Java** as extension type, click **Select file** and select the `autowasp-2.2.4-jar-with-dependencies.jar` file.
+4. Select **Java** as extension type, click **Select file** and select the `autowasp-2.2.5-jar-with-dependencies.jar` file.
 
 5. You should see no output or errors and a new tab labelled **Autowasp** on the top row.
 
 ### 2. Building from Source
 
 For advanced users who want to build the project manually (e.g. using Gradle, Docker, or Nix), please refer to the [Development Guide](docs/DEVELOPMENT.md) for detailed instructions.
+
+## Code Quality & Testing
+
+Autowasp uses **SonarQube Cloud** for continuous code quality analysis and test coverage reporting. This helps maintain high code quality standards and ensures comprehensive test coverage.
+
+### Test Coverage
+
+- **Coverage Tool:** JaCoCo
+- **Current Coverage:** See badge above
+- **Coverage Reports:** Generated automatically on each build
+- **View Reports:** Check [SonarQube Cloud Dashboard](https://sonarcloud.io/)
+
+### Running Tests Locally
+
+```bash
+# Run all tests
+./gradlew test
+
+# Generate coverage report
+./gradlew jacocoTestReport
+
+# View HTML report
+open build/reports/jacoco/test/html/index.html
+```
+
+### SonarQube Cloud Integration
+
+The project is configured for SonarQube Cloud integration. The configuration file (`sonar-project.properties`) is already committed to the repository.
+
+**For maintainers setting up SonarQube:**
+
+1. Create SonarQube Cloud account and project
+2. Add `SONAR_TOKEN` to GitHub Secrets
+3. Follow the [SonarQube Setup Guide](docs/SONARQUBE.md) for detailed instructions
+
+**For local testing with different settings:**
+```bash
+# Create local override (gitignored)
+cp sonar-project.properties sonar-project-local.properties
+# Edit sonar-project-local.properties with your test settings
+```
+
+> **Note:** Credentials are provided via environment variables, never hardcoded in configuration files.
 
 ## Usage
 
