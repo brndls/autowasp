@@ -235,7 +235,7 @@ public class ExtenderPanelUI implements Runnable {
             cancelFetchButton.setEnabled(true);
             generateWebChecklistButton.setEnabled(false);
             fetchProgressBar.setVisible(true);
-            extender.checklistLog.clear();
+            extender.getChecklistManager().getChecklistLog().clear();
             running.set(true);
 
             fetchWorker = new ChecklistFetchWorker(new ChecklistFetchWorker.ChecklistFetchConfig(
@@ -289,7 +289,7 @@ public class ExtenderPanelUI implements Runnable {
 
         saveLocalCopyButton = new JButton("Save a Local WSTG Checklist");
         saveLocalCopyButton.addActionListener(e -> {
-            if (extender.checklistLog.isEmpty()) {
+            if (extender.getChecklistManager().getChecklistLog().isEmpty()) {
                 scanStatusLabel.setText(CHECKLIST_NOT_FETCHED_MSG);
                 extender.issueAlert(CHECKLIST_NOT_FETCHED_MSG);
             } else {
@@ -320,7 +320,7 @@ public class ExtenderPanelUI implements Runnable {
     private void setupExcelReportButton() {
         generateExcelReportButton = new JButton("Generate Excel Report");
         generateExcelReportButton.addActionListener(e -> {
-            if (extender.checklistLog.isEmpty()) {
+            if (extender.getChecklistManager().getChecklistLog().isEmpty()) {
                 scanStatusLabel.setText(CHECKLIST_NOT_FETCHED_MSG);
                 extender.issueAlert(CHECKLIST_NOT_FETCHED_MSG);
             } else {

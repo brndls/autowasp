@@ -54,7 +54,7 @@ public class ProjectWorkspaceFactory implements Serializable {
             String validatedPath = serializer.validateDirectoryPath(absoluteFilePath);
 
             // Save using JSON serializer
-            serializer.saveToJson(extender.loggerList, validatedPath);
+            serializer.saveToJson(extender.getLoggerManager().getLoggerList(), validatedPath);
 
             // Construct display path
             String filePath = validatedPath + File.separator + PROJECT_FILE_NAME;
