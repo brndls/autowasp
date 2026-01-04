@@ -70,49 +70,74 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
     @Override
     public List<Component> provideMenuItems(ContextMenuEvent event) {
         List<Component> menuItems = new ArrayList<>();
-        JMenuItem item;
 
-        // Context menu for Proxy History
         if (event.invocationType() == InvocationType.PROXY_HISTORY) {
-            List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
-            if (!selectedItems.isEmpty()) {
-                item = new JMenuItem("Send to Autowasp (Proxy)", null);
-                item.addActionListener(e -> {
-                    String action = "Sent from Proxy History";
-                    String comments = getAnnotationsComment(selectedItems.get(0));
-                    logToAutowasp(action, comments, selectedItems);
-                });
-                menuItems.add(item);
-            }
-        }
-        // Context menu for Message Editor (Repeater, etc.)
-        // Use messageEditorRequestResponse() to detect message editor context
-        else if (event.messageEditorRequestResponse().isPresent()) {
-            item = new JMenuItem("Send to Autowasp", null);
-            item.addActionListener(e -> {
-                String action = "Sent from Message Editor";
-                burp.api.montoya.ui.contextmenu.MessageEditorHttpRequestResponse editorReqResp = event
-                        .messageEditorRequestResponse().get();
-                logEditorRequestToAutowasp(action, editorReqResp);
-            });
-            menuItems.add(item);
-        }
-        // Context menu for Intruder
-        else if (event.invocationType() == InvocationType.INTRUDER_PAYLOAD_POSITIONS ||
+            menuItems.addAll(createProxyHistoryMenuItems(event));
+        } else if (event.invocationType() == InvocationType.INTRUDER_PAYLOAD_POSITIONS ||
                 event.invocationType() == InvocationType.INTRUDER_ATTACK_RESULTS) {
-            List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
-            if (!selectedItems.isEmpty()) {
-                item = new JMenuItem("Send to Autowasp (Intruder)", null);
-                item.addActionListener(e -> {
-                    String action = "Sent from Intruder";
-                    String comments = getAnnotationsComment(selectedItems.get(0));
-                    logToAutowasp(action, comments, selectedItems);
-                });
-                menuItems.add(item);
-            }
+            menuItems.addAll(createIntruderMenuItems(event));
+        } else if (event.invocationType() == InvocationType.SITE_MAP_TABLE ||
+                event.invocationType() == InvocationType.SITE_MAP_TREE) {
+            menuItems.addAll(createTargetMenuItems(event));
+        } else if (event.messageEditorRequestResponse().isPresent()) {
+            menuItems.addAll(createMessageEditorMenuItems(event));
         }
 
         return menuItems;
+    }
+
+    private List<Component> createProxyHistoryMenuItems(ContextMenuEvent event) {
+        List<Component> items = new ArrayList<>();
+        List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
+        if (!selectedItems.isEmpty()) {
+            JMenuItem item = new JMenuItem("Send to Autowasp (Proxy)");
+            item.addActionListener(e -> {
+                String comments = getAnnotationsComment(selectedItems.get(0));
+                logToAutowasp("Sent from Proxy History", comments, selectedItems);
+            });
+            items.add(item);
+        }
+        return items;
+    }
+
+    private List<Component> createIntruderMenuItems(ContextMenuEvent event) {
+        List<Component> items = new ArrayList<>();
+        List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
+        if (!selectedItems.isEmpty()) {
+            JMenuItem item = new JMenuItem("Send to Autowasp (Intruder)");
+            item.addActionListener(e -> {
+                String comments = getAnnotationsComment(selectedItems.get(0));
+                logToAutowasp("Sent from Intruder", comments, selectedItems);
+            });
+            items.add(item);
+        }
+        return items;
+    }
+
+    private List<Component> createTargetMenuItems(ContextMenuEvent event) {
+        List<Component> items = new ArrayList<>();
+        List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
+        if (!selectedItems.isEmpty()) {
+            JMenuItem item = new JMenuItem("Send to Autowasp (Target)");
+            item.addActionListener(e -> {
+                String comments = getAnnotationsComment(selectedItems.get(0));
+                logToAutowasp("Sent from Target", comments, selectedItems);
+            });
+            items.add(item);
+        }
+        return items;
+    }
+
+    private List<Component> createMessageEditorMenuItems(ContextMenuEvent event) {
+        List<Component> items = new ArrayList<>();
+        JMenuItem item = new JMenuItem("Send to Autowasp");
+        item.addActionListener(e -> {
+            burp.api.montoya.ui.contextmenu.MessageEditorHttpRequestResponse editorReqResp = event
+                    .messageEditorRequestResponse().get();
+            logEditorRequestToAutowasp("Sent from Message Editor", editorReqResp);
+        });
+        items.add(item);
+        return items;
     }
 
     /**

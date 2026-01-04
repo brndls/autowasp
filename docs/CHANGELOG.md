@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.3] - 2026-01-04
+
+### Added
+
+- **Dark Mode Support**: Full support for Burp Suite's Dark Mode, including automatic theme detection and color palette adaptation.
+- **Keyboard Shortcuts**: Comprehensive shortcut system (`Ctrl+Shift+W` to Add, `Ctrl+F` to Search, `Delete` to Remove) for faster workflow.
+- **Context Menu Integration**: Added "Send to Autowasp" support to Target Site Map (Tree/Table) and consistent actions across Proxy/Intruder/Repeater.
+- **Focus Features**: Context-aware search (`Ctrl+F` focuses the search bar of the active tab) and quick actions.
+
+### Changed
+
+- **UI Modernization**: Complete styling overhaul for `ExtenderPanelUI`, including updated margins, borders, and consistent fonts.
+- **Table Design**: Enhanced `ChecklistTable`, `LoggerTable`, and `InstanceTable` with alternating row colors and improved selection contrast.
+- **Code Organization**: Implemented `ThemeManager` and `KeyboardShortcutsManager` to separate UI logic from presentation code.
+- **User Experience**: Improved responsiveness of search fields and interactions.
+
 ## [2.2.2] - 2026-01-04
 
 ### Changed

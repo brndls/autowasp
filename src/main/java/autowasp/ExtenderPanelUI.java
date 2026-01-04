@@ -94,6 +94,10 @@ public class ExtenderPanelUI implements Runnable {
     private File checklistDestDir;
     private JLabel loggerPageLabel;
 
+    // Search Fields
+    private JTextField loggerSearchField;
+    private JTextField checklistSearchField;
+
     // Loggers UI
     private JTabbedPane bottomModulesTabs;
     private JTextPane penTesterCommentBox;
@@ -114,6 +118,11 @@ public class ExtenderPanelUI implements Runnable {
         setupTopPanel();
         setupCheckListPanel();
         setupLoggerPanel();
+
+        // Register Keyboard Shortcuts
+        autowasp.ui.KeyboardShortcutsManager shortcutsManager = new autowasp.ui.KeyboardShortcutsManager(extender);
+        shortcutsManager.registerGlobalShortcuts(bottomModulesTabs); // Register on main tabbed pane or split pane
+        shortcutsManager.registerGlobalShortcuts(gtScannerSplitPane);
 
         // Consolidate all modular tabs and set to the scanner bottom pane
         gtScannerSplitPane.setRightComponent(bottomModulesTabs);
@@ -143,6 +152,13 @@ public class ExtenderPanelUI implements Runnable {
         JPanel setupPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 10));
         setupPanel.add(new JLabel("Target:", SwingConstants.LEFT), BorderLayout.LINE_START);
         JTextField hostField = new JTextField("", 15);
+
+        // Theme application
+        autowasp.managers.ThemeManager themeManager = extender.getUIManager().getThemeManager();
+        hostField.setBackground(themeManager.getBackgroundColor());
+        hostField.setForeground(themeManager.getForegroundColor());
+        hostField.setCaretColor(themeManager.getForegroundColor());
+
         JButton addToScopeButton = new JButton("Add Target to Scope");
         addToScopeButton.addActionListener(e -> addTargetToScope(hostField));
 
@@ -170,6 +186,11 @@ public class ExtenderPanelUI implements Runnable {
         scanStatusPanel.add(new JLabel("Memory: ", SwingConstants.LEFT));
         memoryUsageLabel = new JLabel("0 MB / 0 MB", SwingConstants.LEFT);
         scanStatusPanel.add(memoryUsageLabel);
+
+        // Theme application
+        autowasp.managers.ThemeManager themeManager = extender.getUIManager().getThemeManager();
+        scanStatusLabel.setForeground(themeManager.getForegroundColor());
+        memoryUsageLabel.setForeground(themeManager.getForegroundColor());
 
         memoryProgressBar = new JProgressBar(0, 100);
         memoryProgressBar.setPreferredSize(new Dimension(150, 15));
@@ -680,7 +701,14 @@ public class ExtenderPanelUI implements Runnable {
         // Logger Table Search
         JPanel loggerSearchPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 5, 2));
         loggerSearchPanel.add(new JLabel("Search Logger: "));
-        JTextField loggerSearchField = new JTextField(20);
+        loggerSearchField = new JTextField(20);
+
+        // Theme application
+        autowasp.managers.ThemeManager themeManager = extender.getUIManager().getThemeManager();
+        loggerSearchField.setBackground(themeManager.getBackgroundColor());
+        loggerSearchField.setForeground(themeManager.getForegroundColor());
+        loggerSearchField.setCaretColor(themeManager.getForegroundColor());
+
         loggerSearchPanel.add(loggerSearchField);
 
         TableRowSorter<TableModel> loggerSorter = new TableRowSorter<>(
@@ -723,6 +751,11 @@ public class ExtenderPanelUI implements Runnable {
         penTesterCommentBox = new JTextPane();
         penTesterCommentBox.setContentType("text/plain");
         penTesterCommentBox.setEditable(true);
+        // Theme application
+        penTesterCommentBox.setBackground(themeManager.getBackgroundColor());
+        penTesterCommentBox.setForeground(themeManager.getForegroundColor());
+        penTesterCommentBox.setCaretColor(themeManager.getForegroundColor());
+
         JScrollPane penTesterCommentBoxScrollPane = new JScrollPane(penTesterCommentBox);
         JPanel commentsPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 10));
         JButton clearCommentsButton = new JButton("Clear Comments");
@@ -740,6 +773,11 @@ public class ExtenderPanelUI implements Runnable {
         evidenceBox = new JTextPane();
         evidenceBox.setContentType("text/plain");
         evidenceBox.setEditable(true);
+        // Theme application
+        evidenceBox.setBackground(themeManager.getBackgroundColor());
+        evidenceBox.setForeground(themeManager.getForegroundColor());
+        evidenceBox.setCaretColor(themeManager.getForegroundColor());
+
         JScrollPane evidenceBoxScrollPane = new JScrollPane(evidenceBox);
         JPanel evidencePanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 10));
         JButton clearEvidencesButton = new JButton("Clear Evidence");
@@ -825,14 +863,21 @@ public class ExtenderPanelUI implements Runnable {
         // Search Panel for Checklist
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 5, 2));
         searchPanel.add(new JLabel("Search WSTG: "));
-        JTextField searchField = new JTextField(20);
-        searchPanel.add(searchField);
+        checklistSearchField = new JTextField(20);
+
+        // Theme application
+        autowasp.managers.ThemeManager themeManager = extender.getUIManager().getThemeManager();
+        checklistSearchField.setBackground(themeManager.getBackgroundColor());
+        checklistSearchField.setForeground(themeManager.getForegroundColor());
+        checklistSearchField.setCaretColor(themeManager.getForegroundColor());
+
+        searchPanel.add(checklistSearchField);
 
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(
                 extender.getChecklistManager().getChecklistTable().getModel());
         extender.getChecklistManager().getChecklistTable().setRowSorter(sorter);
 
-        searchField.getDocument().addDocumentListener(new DocumentListener() {
+        checklistSearchField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 updateFilter();
             }
@@ -846,7 +891,7 @@ public class ExtenderPanelUI implements Runnable {
             }
 
             private void updateFilter() {
-                String text = searchField.getText();
+                String text = checklistSearchField.getText();
                 if (text.trim().isEmpty()) {
                     sorter.setRowFilter(null);
                 } else {
@@ -877,6 +922,13 @@ public class ExtenderPanelUI implements Runnable {
 
     private void setupHtmlTextPane(javax.swing.text.JTextComponent pane) {
         pane.setEditable(false);
+
+        // Apply theme colors
+        autowasp.managers.ThemeManager themeManager = extender.getUIManager().getThemeManager();
+        pane.setBackground(themeManager.getBackgroundColor());
+        pane.setForeground(themeManager.getForegroundColor());
+        pane.setCaretColor(themeManager.getForegroundColor());
+
         if (pane instanceof JEditorPane editorPane) {
             editorPane.setContentType(HTML_CONTENT_TYPE);
             editorPane.addHyperlinkListener(e -> {
@@ -888,6 +940,14 @@ public class ExtenderPanelUI implements Runnable {
                     }
                 }
             });
+
+            // For dark mode, we might need to adjust HTML style if content doesn't specify
+            // colors
+            if (themeManager.isDarkMode()) {
+                // This is a simple heuristic, for complex HTML validation manual testing is
+                // needed
+                editorPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+            }
         }
         pane.putClientProperty(HTML_DISABLE_PROPERTY, null);
     }
@@ -956,5 +1016,17 @@ public class ExtenderPanelUI implements Runnable {
 
     public JButton getCancelFetchButton() {
         return cancelFetchButton;
+    }
+
+    public JTextField getLoggerSearchField() {
+        return loggerSearchField;
+    }
+
+    public JTextField getChecklistSearchField() {
+        return checklistSearchField;
+    }
+
+    public JTabbedPane getBottomModulesTabs() {
+        return bottomModulesTabs;
     }
 }
