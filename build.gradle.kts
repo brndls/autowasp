@@ -201,3 +201,61 @@ tasks.jacocoTestReport {
         }
     )
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// SONARQUBE CONFIGURATION
+// ════════════════════════════════════════════════════════════════════════════
+/**
+ * SonarQube Cloud integration for code quality and coverage reporting.
+ * Note: Gradle SonarQube plugin does NOT read sonar-project.properties automatically.
+ * All required properties must be defined here.
+ *
+ * Run analysis: ./gradlew sonarqube
+ * Requires: SONAR_TOKEN environment variable
+ */
+sonarqube {
+    properties {
+        // Organization and project identification
+        property("sonar.organization", "honk-buzz")
+        property("sonar.projectKey", "brndls_autowasp")
+        property("sonar.projectName", "Autowasp")
+        property("sonar.projectVersion", version.toString())
+
+        // SonarQube Cloud host
+        property("sonar.host.url", "https://sonarcloud.io")
+
+        // Source configuration
+        property("sonar.sources", "src/main/java")
+        property("sonar.tests", "src/test/java")
+        property("sonar.java.source", "21")
+        property("sonar.java.target", "21")
+        property("sonar.sourceEncoding", "UTF-8")
+
+        // Coverage configuration
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+        property("sonar.coverage.exclusions", listOf(
+            "**/ExtenderPanelUI*.java",
+            "**/checklist/*Table*.java",
+            "**/logger/**/*Table*.java",
+            "**/http/ContextMenuFactory*.java",
+            "**/checklist/ChecklistFetchWorker*.java",
+            "**/ProjectWorkspaceFactory*.java",
+            "**/Autowasp*.java"
+        ).joinToString(","))
+
+        // Analysis exclusions
+        property("sonar.exclusions", listOf(
+            "**/build/**",
+            "**/bin/**",
+            "**/.gradle/**",
+            "**/.legacy-backup/**"
+        ).joinToString(","))
+
+        // SCM and links
+        property("sonar.scm.provider", "git")
+        property("sonar.links.homepage", "https://github.com/brndls/autowasp")
+        property("sonar.links.ci", "https://github.com/brndls/autowasp/actions")
+        property("sonar.links.issue", "https://github.com/brndls/autowasp/issues")
+        property("sonar.links.scm", "https://github.com/brndls/autowasp")
+    }
+}
