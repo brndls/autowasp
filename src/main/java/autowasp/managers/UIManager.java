@@ -41,6 +41,7 @@ public class UIManager {
 
     // UI components
     private ExtenderPanelUI extenderPanelUI;
+    private ThemeManager themeManager;
     private JSplitPane gtScannerSplitPane;
 
     // UI helper components (for table column editors)
@@ -68,6 +69,9 @@ public class UIManager {
      * @param loggerManager    Reference to logger manager (for UI setup)
      */
     public void initialize(ChecklistManager checklistManager, LoggerManager loggerManager) {
+        // Initialize Theme Manager
+        this.themeManager = new ThemeManager(autowasp.getApi());
+
         // Initialize main UI panel
         this.extenderPanelUI = new ExtenderPanelUI(autowasp);
 
@@ -105,6 +109,10 @@ public class UIManager {
 
     public ExtenderPanelUI getExtenderPanelUI() {
         return extenderPanelUI;
+    }
+
+    public ThemeManager getThemeManager() {
+        return themeManager;
     }
 
     public JSplitPane getGtScannerSplitPane() {
