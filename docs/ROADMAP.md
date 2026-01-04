@@ -19,7 +19,7 @@ This document tracks the ongoing development phases for Autowasp.
 | 6.1   | Local Checklist Import                    | ✅ Complete | Medium    |
 | 6.2   | GitHub Release & CI/CD                    | ✅ Complete | Medium    |
 | 6.3   | BApp Store Submission                     | ✅ Complete | Low       |
-| 7.0   | Future Maintenance                        | ⏳ Pending  | Low       |
+| 7.0   | Future Maintenance                        | ✅ Complete | Low       |
 | 7.1   | Handle Large Projects                     | ✅ Complete | Medium    |
 | 8.1   | Auto-Mapping WSTG                         | 🔮 Future   | Medium    |
 | 8.2   | Evidence Collector                        | 🔮 Future   | Medium    |
@@ -569,9 +569,14 @@ Reference: [GUIDELINES.md](./GUIDELINES.md)
 
 ## Phase 7.0 - Future Maintenance
 
+**Status:** ✅ Complete  
+**Date:** 2026-01-05
+
 **Goal:** Long-term project health and technical debt reduction.
 
-- [ ] Fix Gradle 9.0 deprecation warnings (incompatible with future releases)
+- [x] Fix Gradle 9.0 deprecation warnings (incompatible with future releases)
+- [x] Update Shadow plugin to v8.3.6 (GradleUp)
+- [x] Configure explicit test framework dependencies
 
 ---
 

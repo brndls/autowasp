@@ -36,9 +36,9 @@
 plugins {
     java
     jacoco
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.6"
     id("com.diffplug.spotless") version "6.25.0"
-    id("org.sonarqube") version "6.0.1.5171"
+    id("org.sonarqube") version "7.2.2.6593"
 }
 
 spotless {
@@ -60,7 +60,7 @@ spotless {
  * - version: Software version (SNAPSHOT = still in development)
  */
 group = "autowasp"
-version = "2.2.5"
+version = "2.2.6"
 
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -139,6 +139,7 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:5.8.0")
     testImplementation("org.mockito:mockito-inline:5.2.0") // Support for static mocking
     testImplementation("net.portswigger.burp.extensions:montoya-api:2025.12")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -199,4 +200,60 @@ tasks.jacocoTestReport {
             )
         }
     )
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// SONAR CONFIGURATION
+// ════════════════════════════════════════════════════════════════════════════
+/**
+ * SonarCloud integration for code quality and coverage reporting.
+ *
+ * Run analysis: ./gradlew sonar
+ * Requires: SONAR_TOKEN environment variable
+ */
+sonar {
+    properties {
+        // Organization and project identification
+        property("sonar.organization", "honk-buzz")
+        property("sonar.projectKey", "brndls_autowasp")
+        property("sonar.projectName", "Autowasp")
+        property("sonar.projectVersion", version.toString())
+
+        // SonarCloud host (optional for SonarCloud but good for clarity)
+        property("sonar.host.url", "https://sonarcloud.io")
+
+        // Source configuration
+        property("sonar.sources", "src/main/java")
+        property("sonar.tests", "src/test/java")
+        property("sonar.java.source", "21")
+        property("sonar.java.target", "21")
+        property("sonar.sourceEncoding", "UTF-8")
+
+        // Coverage configuration
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+        property("sonar.coverage.exclusions", listOf(
+            "**/ExtenderPanelUI*.java",
+            "**/checklist/*Table*.java",
+            "**/logger/**/*Table*.java",
+            "**/http/ContextMenuFactory*.java",
+            "**/checklist/ChecklistFetchWorker*.java",
+            "**/ProjectWorkspaceFactory*.java",
+            "**/Autowasp*.java"
+        ).joinToString(","))
+
+        // Analysis exclusions
+        property("sonar.exclusions", listOf(
+            "**/build/**",
+            "**/bin/**",
+            "**/.gradle/**",
+            "**/.legacy-backup/**"
+        ).joinToString(","))
+
+        // SCM and links
+        property("sonar.scm.provider", "git")
+        property("sonar.links.homepage", "https://github.com/brndls/autowasp")
+        property("sonar.links.ci", "https://github.com/brndls/autowasp/actions")
+        property("sonar.links.issue", "https://github.com/brndls/autowasp/issues")
+        property("sonar.links.scm", "https://github.com/brndls/autowasp")
+    }
 }

@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - dev
+      - 'release/*'
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -48,11 +50,17 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build and analyze
+      - name: Build, test and generate coverage
+        run: ./gradlew build test jacocoTestReport --info --stacktrace
+
+      - name: Run SonarCloud analysis
+        # Only run when SONAR_TOKEN is available
+        # This prevents conflicts with Automatic Analysis and allows PR builds to pass
+        if: ${{ env.SONAR_TOKEN != '' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed for PR decoration
-        run: ./gradlew build test jacocoTestReport sonarqube --info
+        run: ./gradlew sonar --info --stacktrace -Dsonar.verbose=true
 
       - name: Upload coverage reports
         if: always()

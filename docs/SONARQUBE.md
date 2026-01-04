@@ -12,14 +12,14 @@ Comprehensive guide to integrate Autowasp with SonarQube Cloud for test coverage
 
 > [!IMPORTANT]
 > **How Configuration Works**
-> - `sonar-project.properties` is committed to the repository with actual project settings
+> - All SonarQube settings are defined in `build.gradle.kts` (single source of truth)
 > - Credentials (SONAR_TOKEN) are provided via **environment variables**, never hardcoded
-> - For local testing with different settings, create `sonar-project-local.properties` (gitignored)
+> - For local testing, set `SONAR_TOKEN` via `.envrc` (gitignored)
 
 This approach provides:
 - ✅ **Transparency**: Everyone can see the project configuration
 - ✅ **Security**: No credentials in the repository
-- ✅ **Flexibility**: Local overrides for testing without affecting the main config
+- ✅ **DRY**: Single source of truth in `build.gradle.kts`
 
 ---
 
@@ -40,7 +40,7 @@ This approach provides:
 4. Choose your organization or user account (e.g., `brndls`)
 5. Choose the **"Free"** plan for open-source projects
 6. Click **"Create Organization"**
-7. **Note the organization key** that is created (e.g., `brndls`)
+7. **Note the organization key** that is created (e.g., `honk-buzz`)
 
 ### 1.3 Create Project
 
@@ -83,34 +83,25 @@ This approach provides:
 
 ## Step 4: Verify Configuration
 
-The `sonar-project.properties` file is already committed to the repository with the correct configuration:
+All SonarCloud configuration is defined in [build.gradle.kts](../build.gradle.kts) in the `sonar` block:
 
-```properties
-sonar.organization=brndls
-sonar.projectKey=brndls_autowasp
+```kotlin
+sonar {
+    properties {
+        property("sonar.organization", "honk-buzz")
+        property("sonar.projectKey", "brndls_autowasp")
+        // ... other properties
+    }
+}
 ```
 
-**No changes needed!** The configuration is ready to use.
-
-### Optional: Local Override for Testing
-
-If you need to test with different SonarQube Cloud settings (e.g., personal account for development):
-
-```bash
-# Create local override file (this file is gitignored)
-cat > sonar-project-local.properties << EOF
-sonar.organization=your-test-org
-sonar.projectKey=your-test-project
-EOF
-```
-
-The local override file will be used instead of the main configuration when running locally.
+**No separate properties file needed!** The configuration is centralized in `build.gradle.kts`.
 
 ---
 
 ## Step 5: Trigger GitHub Actions
 
-The SonarQube analysis will run automatically when you:
+The SonarCloud analysis will run automatically when you:
 - Push to the `main` branch
 - Create or update a pull request
 
@@ -118,7 +109,7 @@ To trigger it manually:
 
 ```bash
 # Make a small change (if needed)
-git commit --allow-empty -m "chore: Trigger SonarQube analysis"
+git commit --allow-empty -m "chore: Trigger SonarCloud analysis"
 git push origin main
 ```
 
@@ -130,13 +121,13 @@ git push origin main
 
 1. Open the repository on GitHub
 2. Click the **"Actions"** tab
-3. See that the **"SonarQube Cloud Analysis"** workflow is running
+3. See that the **"Build and Analyze"** workflow is running
 4. Click the workflow to see the logs
 5. Ensure all steps completed successfully (✅)
 
-### 6.2 Check SonarQube Cloud Dashboard
+### 6.2 Check SonarCloud Dashboard
 
-1. Return to [SonarQube Cloud](https://sonarcloud.io/)
+1. Return to [SonarCloud](https://sonarcloud.io/)
 2. Select the **"autowasp"** project
 3. Verify that metrics appear:
    - **Quality Gate**: Status (Passed/Failed)
@@ -147,22 +138,11 @@ git push origin main
 
 ---
 
-## Step 7: Update README Badges (Optional)
-
-The README already includes SonarQube Cloud badges with placeholders. Update them with your actual project key:
-
-```markdown
-<!-- Replace YOUR_PROJECT_KEY with brndls_autowasp -->
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=brndls_autowasp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=brndls_autowasp)
-```
-
----
-
 ## Running Analysis Locally (Optional)
 
-To run SonarQube analysis on your local machine, you need to provide the `SONAR_TOKEN` via environment variable.
+To run SonarCloud analysis on your local machine, you need to provide the `SONAR_TOKEN` via environment variable.
 
-### Method 1: Using .envrc (Recommended)
+### Using .envrc (Recommended)
 
 If you're using `direnv` (already configured in this project):
 
@@ -174,13 +154,13 @@ echo 'export SONAR_TOKEN="sqp_your_token_here"' >> .envrc
 direnv allow
 
 # 3. Run analysis (token is automatically available)
-./gradlew clean test jacocoTestReport sonarqube
+./gradlew clean test jacocoTestReport sonar
 ```
 
 > [!TIP]
 > The `.envrc` file is gitignored, so your token won't be committed. The `.envrc.example` file includes a commented template for `SONAR_TOKEN`.
 
-### Method 2: Manual Export
+### Manual Export
 
 For one-time use or if not using direnv:
 
@@ -188,29 +168,8 @@ For one-time use or if not using direnv:
 # Set environment variable with your token
 export SONAR_TOKEN=your_token_here
 
-# Run tests and generate coverage
-./gradlew clean test jacocoTestReport
-
-# Run SonarQube analysis
-./gradlew sonarqube \
-  -Dsonar.host.url=https://sonarcloud.io \
-  -Dsonar.token=$SONAR_TOKEN
-```
-
-### Method 3: Local Override File
-
-For testing with different SonarQube settings (e.g., personal account):
-
-```bash
-# Create local override (gitignored)
-cp sonar-project.properties sonar-project-local.properties
-
-# Edit with your test settings
-vim sonar-project-local.properties
-
-# Run analysis (will use local override)
-export SONAR_TOKEN=your_token_here
-./gradlew sonarqube
+# Run tests, generate coverage, and analyze
+./gradlew clean test jacocoTestReport sonar
 ```
 
 ---
@@ -225,14 +184,13 @@ export SONAR_TOKEN=your_token_here
 1. Verify the secret name in GitHub Settings → Secrets is `SONAR_TOKEN`
 2. Re-run the workflow after adding the secret
 
-### Error: "Project key not found"
+### Error: "sonar.organization not defined"
 
-**Cause:** Project key in `sonar-project.properties` doesn't match SonarQube Cloud.
+**Cause:** The `sonar` block in `build.gradle.kts` is missing or incomplete.
 
 **Solution:**
-1. Check the project key in the SonarQube Cloud dashboard
-2. Update `sonar-project.properties` if needed
-3. Commit and push the changes
+1. Verify that `build.gradle.kts` contains the `sonar { ... }` block
+2. Check that `sonar.organization` property is defined
 
 ### Error: "Coverage report not found"
 
@@ -241,7 +199,6 @@ export SONAR_TOKEN=your_token_here
 **Solution:**
 1. Verify that the workflow runs `./gradlew jacocoTestReport`
 2. Check if the file exists: `build/reports/jacoco/test/jacocoTestReport.xml`
-3. Verify that the path in `sonar-project.properties` matches
 
 ### Workflow not running
 
@@ -256,7 +213,7 @@ export SONAR_TOKEN=your_token_here
 
 ## Maintenance
 
-### Update SonarQube Plugin Version
+### Update Sonar plugin version
 
 Edit `build.gradle.kts`:
 
@@ -270,17 +227,13 @@ Check the latest version at: https://plugins.gradle.org/plugin/org.sonarqube
 
 If the token needs to be rotated:
 
-1. Generate a new token in SonarQube Cloud (Step 2)
+1. Generate a new token in SonarCloud (Step 2)
 2. Update GitHub Secret `SONAR_TOKEN` with the new token
 3. Re-run the workflow to verify
 
 ### Update Project Configuration
 
-If you need to change organization or project key:
-
-1. Edit `sonar-project.properties`
-2. Update the values
-3. Commit and push the changes
+If you need to change organization or project key, edit the `sonar` block in `build.gradle.kts`.
 
 ---
 

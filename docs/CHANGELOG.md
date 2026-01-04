@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.6] - 2026-01-05
+
+### Added
+
+- **SonarQube Cloud Integration**: Integrated SonarQube Cloud for continuous code quality analysis and test coverage reporting.
+- **Environment Configuration**: Added support for `.envrc` and local property overrides for secure credential management.
+
+### Changed
+
+- **Gradle Maintenance**: Updated Shadow plugin to v8.3.6 and added explicit JUnit Platform Launcher dependency to resolve Gradle 9.0 deprecation warnings.
+
 ## [2.2.5] - 2026-01-04
 
 ### Added
