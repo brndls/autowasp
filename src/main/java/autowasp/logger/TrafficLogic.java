@@ -488,7 +488,7 @@ public class TrafficLogic {
             findingEntry.addInstance(instanceEntry);
             findingEntry.setPenTesterComments(comments + "\n" + trafficMsg);
 
-            extender.getLoggerTableModel().addAllLoggerEntry(findingEntry);
+            extender.getLoggerManager().getLoggerTableModel().addAllLoggerEntry(findingEntry);
         } catch (Exception e) {
             extender.logError("MalformedURLException at storeTrafficFinding: " + e.getMessage());
         }

@@ -85,21 +85,48 @@ class ChecklistLogicTest {
     private ChecklistLogic checklistLogic;
     private MockedStatic<HttpRequest> mockedHttpRequest;
 
+    @Mock
+    private autowasp.managers.ChecklistManager mockChecklistManager;
+    @Mock
+    private autowasp.managers.LoggerManager mockLoggerManager;
+    @Mock
+    private autowasp.managers.UIManager mockUIManager;
+
+    private List<ChecklistEntry> checklistLog;
+    private Map<String, ChecklistEntry> checkListHashMap;
+    private List<autowasp.logger.entrytable.LoggerEntry> loggerList;
+
     @BeforeEach
     void setUp() {
+        // Initialize data structures
+        checklistLog = new ArrayList<>();
+        checkListHashMap = new HashMap<>();
+        loggerList = new ArrayList<>();
+
         // Setup Extender mocks
-        lenient().when(mockExtender.getExtenderPanelUI()).thenReturn(mockPanelUI);
+        lenient().when(mockExtender.getChecklistManager()).thenReturn(mockChecklistManager);
+        lenient().when(mockExtender.getLoggerManager()).thenReturn(mockLoggerManager);
+        lenient().when(mockExtender.getUIManager()).thenReturn(mockUIManager);
+
+        // Setup UIManager
+        lenient().when(mockUIManager.getExtenderPanelUI()).thenReturn(mockPanelUI);
+
         // Stub getter methods for encapsulated fields
         lenient().when(mockPanelUI.getScanStatusLabel()).thenReturn(mockStatusLabel);
         lenient().when(mockPanelUI.getSummaryTextPane()).thenReturn(new JTextPane());
         lenient().when(mockPanelUI.getHowToTestTextPane()).thenReturn(new JEditorPane());
         lenient().when(mockPanelUI.getReferencesTextPane()).thenReturn(new JTextPane());
         lenient().when(mockPanelUI.getCancelFetchButton()).thenReturn(new JButton());
-        // Setup checklist fields using reflection because they are final in Autowasp
-        lenient().when(mockExtender.getChecklistTableModel()).thenReturn(mockChecklistTableModel);
-        setField(mockExtender, "checklistLog", new ArrayList<ChecklistEntry>());
-        setField(mockExtender, "checkListHashMap", new HashMap<String, ChecklistEntry>());
-        setField(mockExtender, "loggerList", new ArrayList<>());
+
+        // Setup ChecklistManager
+        lenient().when(mockChecklistManager.getChecklistTableModel()).thenReturn(mockChecklistTableModel);
+        lenient().when(mockChecklistManager.getChecklistLog()).thenReturn(checklistLog);
+        lenient().when(mockChecklistManager.getCheckListHashMap()).thenReturn(checkListHashMap);
+
+        // Setup LoggerManager
+        lenient().when(mockLoggerManager.getLoggerList()).thenReturn(loggerList);
+        lenient().when(mockLoggerManager.getLoggerTable())
+                .thenReturn(mock(autowasp.logger.entrytable.LoggerTable.class));
 
         // Common API mocks
         lenient().when(mockExtender.getApi()).thenReturn(mockApi);
@@ -110,17 +137,6 @@ class ChecklistLogicTest {
 
         // Mock HttpRequest.httpRequestFromUrl() static method
         mockedHttpRequest = Mockito.mockStatic(HttpRequest.class);
-    }
-
-    // Helper to set private/final fields on mocks
-    private void setField(Object target, String fieldName, Object value) {
-        try {
-            java.lang.reflect.Field field = target.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(target, value);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to set field " + fieldName, e);
-        }
     }
 
     @AfterEach
@@ -235,8 +251,8 @@ class ChecklistLogicTest {
         assertTrue(result);
         // Verify entry added to map and table
         verify(mockChecklistTableModel).addValueAt(any(ChecklistEntry.class), eq(0), eq(0));
-        assertEquals(1, mockExtender.checkListHashMap.size());
-        assertTrue(mockExtender.checkListHashMap.containsKey("WSTG-TEST-02"));
+        assertEquals(1, checkListHashMap.size());
+        assertTrue(checkListHashMap.containsKey("WSTG-TEST-02"));
     }
 
     @Test
@@ -275,7 +291,7 @@ class ChecklistLogicTest {
         // Setup mock data
         ChecklistEntry entry1 = new ChecklistEntry(new HashMap<>(), new HashMap<>(), "url1");
         entry1.setRefNumber("REF1");
-        mockExtender.checklistLog.add(entry1);
+        checklistLog.add(entry1);
 
         checklistLogic.saveLocalCopy(destPath);
 

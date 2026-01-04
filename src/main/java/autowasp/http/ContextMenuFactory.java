@@ -159,7 +159,7 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
             }
         }
 
-        extender.getLoggerTableModel().addAllLoggerEntry(findingEntry);
+        extender.getLoggerManager().getLoggerTableModel().addAllLoggerEntry(findingEntry);
     }
 
     /**
@@ -193,6 +193,6 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
             extender.logError(ERROR_PARSING_URL + e.getMessage());
         }
 
-        extender.getLoggerTableModel().addAllLoggerEntry(findingEntry);
+        extender.getLoggerManager().getLoggerTableModel().addAllLoggerEntry(findingEntry);
     }
 }
