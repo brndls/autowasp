@@ -4,37 +4,38 @@ This document tracks the ongoing development phases for Autowasp.
 
 ## Phase Overview
 
-| Phase | Name                                      | Status     | Effort    |
-| ----- | ----------------------------------------- | ---------- | --------- |
-| 1.0   | Build System Migration (Maven -> Gradle)  | ✅ Complete | -         |
-| 2.0   | Java Version Upgrade (Java 8 -> 21)       | ✅ Complete | -         |
-| 3.0   | Montoya API Migration (Core)              | ✅ Complete | High      |
-| 4.0   | Handler Migration (Listeners -> Handlers) | ✅ Complete | Medium    |
-| 4.1   | Modernization (Java 21)                   | ✅ Complete | -         |
-| 4.2   | Reliability (Fetch Logic)                 | ✅ Complete | Medium    |
-| 4.3   | Report Enhancements                       | ✅ Complete | Medium    |
-| 4.4   | UI Improvements                           | ✅ Complete | Medium    |
-| 5.1   | Unit Tests                                | ✅ Complete | Medium    |
-| 5.2   | Integration Tests                         | ✅ Complete | High      |
-| 6.1   | Local Checklist Import                    | ✅ Complete | Medium    |
-| 6.2   | GitHub Release & CI/CD                    | ✅ Complete | Medium    |
-| 6.3   | BApp Store Submission                     | ✅ Complete | Low       |
-| 7.0   | Future Maintenance                        | ✅ Complete | Low       |
-| 7.1   | Handle Large Projects                     | ✅ Complete | Medium    |
-| 8.1   | Auto-Mapping WSTG                         | 🔮 Future   | Medium    |
-| 8.2   | Evidence Collector                        | 🔮 Future   | Medium    |
-| 9.1   | Smart Severity Calculator                 | 🔮 Future   | Medium    |
-| 9.2   | Retest Tracking                           | 🔮 Future   | High      |
-| 10.1  | Burp Collaborator Integration             | 🔮 Future   | High      |
-| 10.2  | External Tool Integration                 | 🔮 Future   | High      |
-| 11.1  | AI-Powered Analysis                       | 🔮 Future   | Very High |
-| 11.2  | Scope-Aware Testing Tracker               | 🔮 Future   | High      |
-| 12.1  | Session Notes                             | ⏳ Pending  | Low       |
-| 12.2  | Payload Manager                           | ⏳ Pending  | Medium    |
-| 12.3  | Target Scope Manager                      | ⏳ Pending  | High      |
-| 13.1  | Context Menu Enhancement                  | ⏳ Pending  | Low       |
-| 14.1  | ConfigManager (Future)                    | 🔮 Future   | Medium    |
-| 14.2  | EventManager (Future)                     | 🔮 Future   | Medium    |
+| Phase | Name                                      | Status        | Effort    |
+| ----- | ----------------------------------------- | ------------- | --------- |
+| 1.0   | Build System Migration (Maven -> Gradle)  | ✅ Complete    | -         |
+| 2.0   | Java Version Upgrade (Java 8 -> 21)       | ✅ Complete    | -         |
+| 3.0   | Montoya API Migration (Core)              | ✅ Complete    | High      |
+| 4.0   | Handler Migration (Listeners -> Handlers) | ✅ Complete    | Medium    |
+| 4.1   | Modernization (Java 21)                   | ✅ Complete    | -         |
+| 4.2   | Reliability (Fetch Logic)                 | ✅ Complete    | Medium    |
+| 4.3   | Report Enhancements                       | ✅ Complete    | Medium    |
+| 4.4   | UI Improvements                           | ✅ Complete    | Medium    |
+| 5.1   | Unit Tests                                | ✅ Complete    | Medium    |
+| 5.2   | Integration Tests                         | ✅ Complete    | High      |
+| 5.3   | Code Coverage Improvement                 | 🔄 In Progress | Medium    |
+| 6.1   | Local Checklist Import                    | ✅ Complete    | Medium    |
+| 6.2   | GitHub Release & CI/CD                    | ✅ Complete    | Medium    |
+| 6.3   | BApp Store Submission                     | ✅ Complete    | Low       |
+| 7.0   | Future Maintenance                        | ✅ Complete    | Low       |
+| 7.1   | Handle Large Projects                     | ✅ Complete    | Medium    |
+| 8.1   | Auto-Mapping WSTG                         | 🔮 Future      | Medium    |
+| 8.2   | Evidence Collector                        | 🔮 Future      | Medium    |
+| 9.1   | Smart Severity Calculator                 | 🔮 Future      | Medium    |
+| 9.2   | Retest Tracking                           | 🔮 Future      | High      |
+| 10.1  | Burp Collaborator Integration             | 🔮 Future      | High      |
+| 10.2  | External Tool Integration                 | 🔮 Future      | High      |
+| 11.1  | AI-Powered Analysis                       | 🔮 Future      | Very High |
+| 11.2  | Scope-Aware Testing Tracker               | 🔮 Future      | High      |
+| 12.1  | Session Notes                             | ⏳ Pending     | Low       |
+| 12.2  | Payload Manager                           | ⏳ Pending     | Medium    |
+| 12.3  | Target Scope Manager                      | ⏳ Pending     | High      |
+| 13.1  | Context Menu Enhancement                  | ⏳ Pending     | Low       |
+| 14.1  | ConfigManager (Future)                    | 🔮 Future      | Medium    |
+| 14.2  | EventManager (Future)                     | 🔮 Future      | Medium    |
 
 ---
 
@@ -311,6 +312,63 @@ Rich context menu options for streamlined workflow using `api.userInterface().re
 | Cancel Fetch    | Click "Cancel Fetch" mid-process | Fetch stops, status cancelled         |
 
 ---
+
+## Phase 5.3 - Code Coverage Improvement 🔄
+
+**Status**: 🔄 In Progress  
+**Date**: 2026-01-05  
+**Branch**: `test/code-coverage-improvement-phase-5.3`
+
+**Goal**: Increase code coverage from 50.8% to meet or exceed 80% SonarQube threshold.
+
+### Current Coverage Analysis
+
+Based on SonarQube report, prioritized files for testing:
+
+**Priority 1: Zero Coverage (Quick Wins)**
+- `HTTPService.java` - 0% (8 lines, 12 conditions)
+- `ScannerLogic.java` - 0% (13 lines, 10 conditions)
+- `TrafficEntry.java` - 0% (1 line)
+- `TrafficInstance.java` - 0% (30 lines)
+
+**Priority 2: Very Low Coverage**
+- `TrafficLogic.java` - 1.9% (43 lines, 10 conditions)
+- `InstanceState.java` - 2.4% (19 lines, 22 conditions)
+- `ProjectSerializer.java` - 5.1% (56 lines, 38 conditions)
+
+**Priority 3: Low Coverage (20-35%)**
+- `HTTPRequestResponse.java` - 21.3%
+- `KeyboardShortcutsManager.java` - 31.3%
+- `InstanceEntry.java` - 33.3%
+- `ScanIssue.java` - 34.7%
+
+### Implementation Tasks
+
+- [ ] **Priority 1: Data Models** (0% → 100%)
+  - [ ] Create `TrafficEntryTest.java`
+  - [ ] Create `TrafficInstanceTest.java`
+- [ ] **Priority 2: HTTP Layer** (0-21% → 80%)
+  - [ ] Enhance `HTTPServiceTest.java`
+  - [ ] Enhance `HTTPRequestResponseTest.java`
+- [ ] **Priority 3: Business Logic** (0-2% → 75%)
+  - [ ] Create `ScannerLogicTest.java`
+  - [ ] Create `TrafficLogicTest.java`
+- [ ] **Priority 4: Persistence** (2-5% → 75-80%)
+  - [ ] Enhance `InstanceStateTest.java`
+  - [ ] Enhance `ProjectSerializerTest.java`
+- [ ] **Priority 5: UI Components** (31-35% → 75-80%)
+  - [ ] Enhance `KeyboardShortcutsManagerTest.java`
+  - [ ] Enhance `ScanIssueTest.java`
+
+### Verification
+
+- [ ] Run tests: `./gradlew test`
+- [ ] Generate coverage: `./gradlew jacocoTestReport`
+- [ ] Run SonarQube: `./gradlew sonar`
+- [ ] Verify coverage ≥ 80%
+
+---
+
 
 ## Phase 6.1 - Local Checklist Import ✅
 
