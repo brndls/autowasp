@@ -25,7 +25,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.swing.*;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +64,7 @@ class ChecklistFetchWorkerTest {
     private List<ChecklistEntry> checklistLog;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         running = new AtomicBoolean(true);
         checklistLog = new ArrayList<>();
 
