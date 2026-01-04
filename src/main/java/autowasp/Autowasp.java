@@ -65,7 +65,7 @@ public class Autowasp implements BurpExtension {
     /*
      * Managers encapsulate related components to reduce coupling.
      * This reduces dependencies from 21 to 6 (api, logging, 4 managers).
-     * 
+     *
      * - ChecklistManager: OWASP WSTG checklist components
      * - LoggerManager: HTTP traffic logging & scanning
      * - UIManager: User interface components
