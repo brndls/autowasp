@@ -87,7 +87,7 @@ public class ChecklistFetchWorker extends SwingWorker<Void, String> {
         for (String urlStr : articleURLs) {
             // Check for cancellation
             if (isCancelled() || !config.running().get()) {
-                config.extender().checklistLog.clear();
+                config.extender().getChecklistManager().getChecklistLog().clear();
                 return null;
             }
 

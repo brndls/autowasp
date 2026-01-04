@@ -502,7 +502,7 @@ public class ChecklistLogic implements Serializable {
         try (FileOutputStream fileOutputStream = new FileOutputStream(filePath);
                 ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream)) {
 
-            for (ChecklistEntry entry : extender.checklistLog) {
+            for (ChecklistEntry entry : extender.getChecklistManager().getChecklistLog()) {
                 if (entry.isExcluded()) {
                     ChecklistEntry tempChecklistEntry = entry;
                     tempChecklistEntry.setExclusion(false);
@@ -523,8 +523,8 @@ public class ChecklistLogic implements Serializable {
      * BApp Store Criteria #8: Support Offline Working.
      */
     public void loadLocalCopy() {
-        extender.checklistLog.clear();
-        extender.checkListHashMap.clear();
+        extender.getChecklistManager().getChecklistLog().clear();
+        extender.getChecklistManager().getCheckListHashMap().clear();
 
         LocalChecklistLoader loader = new LocalChecklistLoader();
         List<ChecklistEntry> entries = loader.loadFromResources();
@@ -536,7 +536,7 @@ public class ChecklistLogic implements Serializable {
         }
 
         for (ChecklistEntry entry : entries) {
-            extender.checkListHashMap.put(entry.getRefNumber(), entry);
+            extender.getChecklistManager().getCheckListHashMap().put(entry.getRefNumber(), entry);
             loadNewChecklistEntry(entry);
         }
 
@@ -559,7 +559,7 @@ public class ChecklistLogic implements Serializable {
 
         int restoredCount = 0;
         for (autowasp.persistence.ChecklistState state : savedStates) {
-            ChecklistEntry entry = extender.checkListHashMap.get(state.refNumber());
+            ChecklistEntry entry = extender.getChecklistManager().getCheckListHashMap().get(state.refNumber());
             if (entry != null) {
                 entry.setExclusion(state.excluded());
                 entry.setTestCaseCompleted(state.completed());
@@ -601,7 +601,7 @@ public class ChecklistLogic implements Serializable {
     }
 
     private void populateChecklistEntryData() {
-        for (LoggerEntry findingEntry : extender.loggerList) {
+        for (LoggerEntry findingEntry : extender.getLoggerManager().getLoggerList()) {
             processFindingEntry(findingEntry);
         }
     }
@@ -618,7 +618,7 @@ public class ChecklistLogic implements Serializable {
         }
 
         String findingRefID = issue.substring(0, cutIndex);
-        ChecklistEntry checklistEntry = extender.checkListHashMap.get(findingRefID);
+        ChecklistEntry checklistEntry = extender.getChecklistManager().getCheckListHashMap().get(findingRefID);
 
         if (checklistEntry != null) {
             StringBuilder comments = new StringBuilder();
@@ -671,8 +671,8 @@ public class ChecklistLogic implements Serializable {
         cellStyle.setWrapText(true);
 
         int rowNum = 0;
-        for (int i = 0; i < extender.checklistLog.size(); i++) {
-            ChecklistEntry entry = extender.checklistLog.get(i);
+        for (int i = 0; i < extender.getChecklistManager().getChecklistLog().size(); i++) {
+            ChecklistEntry entry = extender.getChecklistManager().getChecklistLog().get(i);
             String[] contentArray = new String[] { entry.getRefNumber(), entry.getCategory(), entry.getTestName(),
                     entry.getPenTesterComments().trim(), entry.getEvidence().trim(), entry.getUrl() };
             entry.clearComments();
@@ -744,18 +744,18 @@ public class ChecklistLogic implements Serializable {
             return false;
         }
 
-        int row = this.extender.checklistLog.size();
+        int row = this.extender.getChecklistManager().getChecklistLog().size();
         ChecklistEntry checklistEntry = new ChecklistEntry(tableElements, contentElements, url);
         checklistEntry.cleanEntry();
         extender.getChecklistTableModel().addValueAt(checklistEntry, row, row);
-        extender.checkListHashMap.put(checklistEntry.getRefNumber(), checklistEntry);
+        extender.getChecklistManager().getCheckListHashMap().put(checklistEntry.getRefNumber(), checklistEntry);
         return true;
     }
 
     // Adds a ChecklistEntry object created from a local saved file to the
     // checklistLog using the setValueAt() method
     public void loadNewChecklistEntry(ChecklistEntry entry) {
-        int row = this.extender.checklistLog.size();
+        int row = this.extender.getChecklistManager().getChecklistLog().size();
         extender.getChecklistTableModel().addValueAt(entry, row, row);
     }
 

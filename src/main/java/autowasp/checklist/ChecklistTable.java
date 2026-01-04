@@ -50,7 +50,7 @@ public class ChecklistTable extends JTable {
     @Override
     public void changeSelection(int row, int col, boolean toggle, boolean extend) {
         int modelRow = convertRowIndexToModel(row);
-        ChecklistEntry checklistEntry = extender.checklistLog.get(modelRow);
+        ChecklistEntry checklistEntry = extender.getChecklistManager().getChecklistLog().get(modelRow);
 
         // Sets the text for each of the bottom tab panes. Setting the caret position to
         // 0 makes sure that the user starts reading from the top
