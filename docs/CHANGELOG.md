@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.4] - 2026-01-04
+
+### Fixed
+
+- **Security (ReDoS)**: Fixed 3 vulnerable regular expressions in `ChecklistLogic.java` that could lead to Regular Expression Denial of Service (catastrophic backtracking). Replaced lazy quantifiers with negated character classes.
+- **Code Quality**: Encapsulated multiple public boolean fields in `TrafficInstance.java` and provided proper accessors, following "No public fields" rule.
+- **Naming Inconsistency**: Renamed `setHttpVerb()` to `setHTTPVerb()` to align with field naming and prevent confusion.
+- **Error Handling**: Improved exception specificity in `ReportManager.java` (switched from `RuntimeException` to `IllegalStateException`).
+
 ## [2.2.3] - 2026-01-04
 
 ### Added

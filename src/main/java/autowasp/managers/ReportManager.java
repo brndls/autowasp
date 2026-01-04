@@ -42,7 +42,8 @@ public class ReportManager {
             api.logging().logToOutput("Report generation successful: " + file.getAbsolutePath());
         } catch (Exception e) {
             api.logging().logToError("Failed to generate report: " + e.getMessage(), e);
-            throw new RuntimeException("Failed to generate report", e);
+            // Using IllegalStateException instead of generic RuntimeException
+            throw new IllegalStateException("Failed to generate report: " + e.getMessage(), e);
         }
     }
 

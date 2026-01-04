@@ -19,16 +19,16 @@ package autowasp.logger;
 
 public class TrafficInstance {
 
-    public boolean isUnencrypted;
-    public boolean isBase64;
-    public boolean isXContent;
-    public final boolean isServerInfoLeaked;
-    public boolean isServerErrorInfoLeaked;
-    public boolean isCorHeaders;
-    public final boolean isUnauthorisedDisclosure;
-    public final boolean isXSS;
-    public boolean isCGI;
-    public boolean isHTTPVerb;
+    private boolean isUnencrypted;
+    private boolean isBase64;
+    private boolean isXContent;
+    private boolean isServerInfoLeaked;
+    private boolean isServerErrorInfoLeaked;
+    private boolean isCorHeaders;
+    private boolean isUnauthorisedDisclosure;
+    private boolean isXSS;
+    private boolean isCGI;
+    private boolean isHTTPVerb;
 
     public TrafficInstance() {
         this.isUnencrypted = false;
@@ -43,15 +43,97 @@ public class TrafficInstance {
         this.isHTTPVerb = false;
     }
 
+    public void setUnencrypted(boolean unencrypted) {
+        this.isUnencrypted = unencrypted;
+    }
+
+    public boolean isUnencrypted() {
+        return isUnencrypted;
+    }
+
+    public void setBase64(boolean base64) {
+        this.isBase64 = base64;
+    }
+
+    public boolean isBase64() {
+        return isBase64;
+    }
+
+    public void setXContent(boolean xContent) {
+        this.isXContent = xContent;
+    }
+
+    public boolean isXContent() {
+        return isXContent;
+    }
+
+    public void setServerInfoLeaked(boolean serverInfoLeaked) {
+        this.isServerInfoLeaked = serverInfoLeaked;
+    }
+
+    public boolean isServerInfoLeaked() {
+        return isServerInfoLeaked;
+    }
+
+    public void setServerErrorInfoLeaked(boolean serverErrorInfoLeaked) {
+        this.isServerErrorInfoLeaked = serverErrorInfoLeaked;
+    }
+
+    public boolean isServerErrorInfoLeaked() {
+        return isServerErrorInfoLeaked;
+    }
+
+    public void setCorHeaders(boolean corHeaders) {
+        this.isCorHeaders = corHeaders;
+    }
+
+    public boolean isCorHeaders() {
+        return isCorHeaders;
+    }
+
+    public void setUnauthorisedDisclosure(boolean unauthorisedDisclosure) {
+        this.isUnauthorisedDisclosure = unauthorisedDisclosure;
+    }
+
+    public boolean isUnauthorisedDisclosure() {
+        return isUnauthorisedDisclosure;
+    }
+
+    public void setXSS(boolean xss) {
+        this.isXSS = xss;
+    }
+
+    public boolean isXSS() {
+        return isXSS;
+    }
+
+    public void setCGI(boolean cgi) {
+        this.isCGI = cgi;
+    }
+
+    public boolean isCGI() {
+        return isCGI;
+    }
+
+    public void setHTTPVerb(boolean httpVerb) {
+        this.isHTTPVerb = httpVerb;
+    }
+
+    public boolean isHTTPVerb() {
+        return isHTTPVerb;
+    }
+
+    // Legacy setters for compatibility if needed, though better to use standard
+    // ones
     public void setUnencrypted() {
         this.isUnencrypted = true;
     }
 
-    public void setServerInfoLeaked() {
+    public void setServerErrorInfoLeaked() {
         this.isServerErrorInfoLeaked = true;
     }
 
-    public void setServerErrorInfoLeaked() {
+    public void setServerInfoLeaked() {
         this.isServerErrorInfoLeaked = true;
     }
 
@@ -67,7 +149,7 @@ public class TrafficInstance {
         this.isCorHeaders = true;
     }
 
-    public void setHttpVerb() {
+    public void setHTTPVerb() {
         this.isHTTPVerb = true;
     }
 

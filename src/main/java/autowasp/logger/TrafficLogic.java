@@ -233,7 +233,7 @@ public class TrafficLogic {
                     this.trafficMsg = "[+] No dangerous HTTP method could be used on this site";
                 }
                 this.flag = "HTTP verb testing";
-                affectedInstancesList.setHttpVerb();
+                affectedInstancesList.setHTTPVerb();
                 this.httpVerbFlag = true;
                 storeTrafficFinding();
             }

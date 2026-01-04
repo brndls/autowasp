@@ -47,7 +47,6 @@ public class ExcelReportWriter {
         createSummarySheet(stats);
         createFindingsSheet(entries);
 
-        // TODO: Create Checklist Sheet in next step
         createChecklistSheet(extender.getChecklistManager().getChecklistLog());
 
         // Write to file

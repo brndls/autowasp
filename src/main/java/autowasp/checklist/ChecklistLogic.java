@@ -189,7 +189,8 @@ public class ChecklistLogic implements Serializable {
 
         String content = httpResponse.bodyToString();
         // Regex to find markdown links: [label](path/to/file.md)
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\[.*?\\]\\((.*?\\.md)\\)");
+        // Using negated character classes to prevent ReDoS (catastrophic backtracking)
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\[[^\\]]+\\]\\(([^)]+\\.md)\\)");
         java.util.regex.Matcher matcher = pattern.matcher(content);
 
         String baseUrl = rawUrl.substring(0, rawUrl.lastIndexOf('/') + 1);
@@ -250,7 +251,8 @@ public class ChecklistLogic implements Serializable {
         tableElements.put(ChecklistEntry.REF_NUMBER_KEY, refNumber);
 
         // Extract Title (usually first # heading)
-        java.util.regex.Pattern titlePattern = java.util.regex.Pattern.compile("^#\\s+(.*)$",
+        // Using negated character class to prevent ReDoS on long lines
+        java.util.regex.Pattern titlePattern = java.util.regex.Pattern.compile("^#\\s+([^\\r\\n]+)",
                 java.util.regex.Pattern.MULTILINE);
         java.util.regex.Matcher titleMatcher = titlePattern.matcher(content);
         String testName = titleMatcher.find() ? titleMatcher.group(1).trim() : "Unknown Test";
@@ -417,7 +419,8 @@ public class ChecklistLogic implements Serializable {
         formatted = formatted.replaceAll("`(.*?)`", "<code>$1</code>");
 
         // Links [text](url)
-        formatted = formatted.replaceAll("\\[(.*?)\\]\\((.*?)\\)", "<a href=\"$2\">$1</a>");
+        // Using negated character classes to prevent ReDoS (catastrophic backtracking)
+        formatted = formatted.replaceAll("\\[([^\\]]+)\\]\\(([^)]+)\\)", "<a href=\"$2\">$1</a>");
 
         // Convert internal newlines to spaces for paragraph flow
         return formatted.replace("\n", " ");
