@@ -147,7 +147,7 @@ public class ScannerLogic {
         entry.clearInstances();
         entry.setPenTesterComments(defaultComments);
         entry.setEvidence(evidences);
-        extender.getLoggerTableModel().addAllLoggerEntry(entry);
+        extender.getLoggerManager().getLoggerTableModel().addAllLoggerEntry(entry);
     }
 
     /**

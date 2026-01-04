@@ -56,9 +56,9 @@ public class InstanceTable extends JTable {
         InstanceEntry instanceEntry = extender.getLoggerManager().getInstanceLog().get(row);
         if (instanceEntry.getRequestResponse() == null) {
             // Kosongkan editor jika tidak ada request/response
-            extender.getExtenderPanelUI().getRequestEditor().setRequest(
+            extender.getUIManager().getExtenderPanelUI().getRequestEditor().setRequest(
                     burp.api.montoya.http.message.requests.HttpRequest.httpRequest(""));
-            extender.getExtenderPanelUI().getResponseEditor().setResponse(
+            extender.getUIManager().getExtenderPanelUI().getResponseEditor().setResponse(
                     burp.api.montoya.http.message.responses.HttpResponse.httpResponse(""));
         } else {
             // Set request dan response ke editor
@@ -67,32 +67,32 @@ public class InstanceTable extends JTable {
             byte[] reqBytes = instanceEntry.getRequestResponse().getRequest();
             byte[] resBytes = instanceEntry.getRequestResponse().getResponse();
 
-            extender.getExtenderPanelUI().getRequestEditor().setRequest(
+            extender.getUIManager().getExtenderPanelUI().getRequestEditor().setRequest(
                     burp.api.montoya.http.message.requests.HttpRequest.httpRequest(
                             burp.api.montoya.core.ByteArray.byteArray(reqBytes)));
-            extender.getExtenderPanelUI().getResponseEditor().setResponse(
+            extender.getUIManager().getExtenderPanelUI().getResponseEditor().setResponse(
                     burp.api.montoya.http.message.responses.HttpResponse.httpResponse(
                             burp.api.montoya.core.ByteArray.byteArray(resBytes)));
         }
         super.changeSelection(row, col, toggle, extend);
-        extender.getExtenderPanelUI().deleteInstanceButtonEnabled();
+        extender.getUIManager().getExtenderPanelUI().deleteInstanceButtonEnabled();
     }
 
     // Method to setup confidence column with dropdown combo
     public void setUpConfidenceColumn(TableColumn column) {
-        DefaultCellEditor dce = new DefaultCellEditor(extender.getComboBox2());
+        DefaultCellEditor dce = new DefaultCellEditor(extender.getUIManager().getComboBox2());
         column.setCellEditor(dce);
     }
 
     // Method to setup Severity column with dropdown combo
     public void setupSeverityColumn(TableColumn column) {
-        DefaultCellEditor dce = new DefaultCellEditor(extender.getComboBox3());
+        DefaultCellEditor dce = new DefaultCellEditor(extender.getUIManager().getComboBox3());
         column.setCellEditor(dce);
     }
 
     // Method to prepare confidence dropdown combo
     public void generateConfidenceList() {
-        JComboBox<String> comboBox = extender.getComboBox2();
+        JComboBox<String> comboBox = extender.getUIManager().getComboBox2();
         comboBox.addItem("False Positive");
         comboBox.addItem("Certain");
         comboBox.addItem("Firm");
@@ -101,7 +101,7 @@ public class InstanceTable extends JTable {
 
     // Method to prepare severity dropdown combo
     public void generateSeverityList() {
-        JComboBox<String> comboBox = extender.getComboBox3();
+        JComboBox<String> comboBox = extender.getUIManager().getComboBox3();
         comboBox.addItem("High");
         comboBox.addItem("Medium");
         comboBox.addItem("Low");
@@ -111,26 +111,28 @@ public class InstanceTable extends JTable {
     // Method to delete instance
     public void deleteInstance() {
         // delete instance
-        extender.getExtenderPanelUI().getDeleteInstanceButton().setEnabled(false);
-        extender.getLoggerManager().getLoggerList().get(extender.getCurrentEntryRow()).getInstanceList()
+        extender.getUIManager().getExtenderPanelUI().getDeleteInstanceButton().setEnabled(false);
+        extender.getLoggerManager().getLoggerList().get(extender.getUIManager().getCurrentEntryRow()).getInstanceList()
                 .remove(currentRow);
         // update UI
         // If there are remaining instances
-        if (!extender.getLoggerManager().getLoggerList().get(extender.getCurrentEntryRow()).getInstanceList()
+        if (!extender.getLoggerManager().getLoggerList().get(extender.getUIManager().getCurrentEntryRow())
+                .getInstanceList()
                 .isEmpty()) {
             // Inform user about instance deletion
-            extender.getExtenderPanelUI().getScanStatusLabel().setText("Instance deleted");
+            extender.getUIManager().getExtenderPanelUI().getScanStatusLabel().setText("Instance deleted");
             extender.issueAlert("Instance deleted");
             // Repaint instances table
-            extender.getInstancesTableModel().clearInstanceEntryList();
-            extender.getInstancesTableModel()
-                    .addAllInstanceEntry(extender.getLoggerManager().getLoggerList().get(extender.getCurrentEntryRow())
+            extender.getLoggerManager().getInstancesTableModel().clearInstanceEntryList();
+            extender.getLoggerManager().getInstancesTableModel()
+                    .addAllInstanceEntry(extender.getLoggerManager().getLoggerList()
+                            .get(extender.getUIManager().getCurrentEntryRow())
                             .getInstanceList());
         }
         // Else, no more instances left in entry
         else {
             // delete entries instead
-            extender.getLoggerTable().deleteEntry();
+            extender.getLoggerManager().getLoggerTable().deleteEntry();
         }
     }
 

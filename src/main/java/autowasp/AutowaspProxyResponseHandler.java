@@ -60,7 +60,7 @@ public class AutowaspProxyResponseHandler implements ProxyResponseHandler {
             if (extender.isInScope(url)) {
                 synchronized (extender.getLoggerManager().getTrafficLog()) {
                     // Classify traffic using TrafficLogic
-                    extender.getTrafficLogic().classifyTraffic(interceptedResponse);
+                    extender.getLoggerManager().getTrafficLogic().classifyTraffic(interceptedResponse);
                 }
             }
         } catch (Exception e) {

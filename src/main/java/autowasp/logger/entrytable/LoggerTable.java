@@ -57,56 +57,57 @@ public class LoggerTable extends JTable {
 
         if (loggerEntry != null) {
             currentRow = model.getActualIndex(modelRow);
-            extender.setCurrentEntryRow(currentRow);
-            extender.getExtenderPanelUI().getPenTesterCommentBox().setText(loggerEntry.getPenTesterComments());
+            extender.getUIManager().setCurrentEntryRow(currentRow);
+            extender.getUIManager().getExtenderPanelUI().getPenTesterCommentBox()
+                    .setText(loggerEntry.getPenTesterComments());
 
-            extender.getExtenderPanelUI().getEvidenceBox().setText(loggerEntry.getEvidence());
-            extender.getInstancesTableModel().clearInstanceEntryList();
-            extender.getInstancesTableModel().addAllInstanceEntry(loggerEntry.getInstanceList());
+            extender.getUIManager().getExtenderPanelUI().getEvidenceBox().setText(loggerEntry.getEvidence());
+            extender.getLoggerManager().getInstancesTableModel().clearInstanceEntryList();
+            extender.getLoggerManager().getInstancesTableModel().addAllInstanceEntry(loggerEntry.getInstanceList());
 
             super.changeSelection(row, col, toggle, extend);
-            extender.getExtenderPanelUI().deleteEntryButtonEnabled();
+            extender.getUIManager().getExtenderPanelUI().deleteEntryButtonEnabled();
         }
     }
 
     // Method to modify pentester's comments text field
     public void modifyComments(String comments) {
         extender.getLoggerManager().getLoggerList().get(currentRow).setPenTesterComments(comments);
-        extender.getLoggerTableModel().fireTableDataChanged();
+        extender.getLoggerManager().getLoggerTableModel().fireTableDataChanged();
         // Checks if finding is mapped to a checklist entry
         // If it is, set the pentesterComments variable for that checklist entry
         if (extender.getLoggerManager().getLoggerList().get(currentRow).getIssueNumber() != null) {
             int issueNumber = extender.getLoggerManager().getLoggerList().get(currentRow).getIssueNumber();
             String finalComments = comments + "\n";
             extender.getChecklistManager().getChecklistLog().get(issueNumber).setPenTesterComments(finalComments);
-            extender.getChecklistTableModel().triggerAutoSave();
+            extender.getChecklistManager().getChecklistTableModel().triggerAutoSave();
         }
-        extender.getLoggerTableModel().triggerAutoSave();
+        extender.getLoggerManager().getLoggerTableModel().triggerAutoSave();
     }
 
     // Method to modify pentester's evidences text field
     public void modifyEvidence(String evidences) {
         extender.getLoggerManager().getLoggerList().get(currentRow).setEvidence(evidences);
-        extender.getLoggerTableModel().fireTableDataChanged();
+        extender.getLoggerManager().getLoggerTableModel().fireTableDataChanged();
         // Checks if finding is mapped to a checklist entry
         // If it is, set the evidence variable for that checklist entry
         if (extender.getLoggerManager().getLoggerList().get(currentRow).getIssueNumber() != null) {
             int issueNumber = extender.getLoggerManager().getLoggerList().get(currentRow).getIssueNumber();
             String finalEvidence = evidences + "\n";
             extender.getChecklistManager().getChecklistLog().get(issueNumber).setEvidence(finalEvidence);
-            extender.getChecklistTableModel().triggerAutoSave();
+            extender.getChecklistManager().getChecklistTableModel().triggerAutoSave();
         }
-        extender.getLoggerTableModel().triggerAutoSave();
+        extender.getLoggerManager().getLoggerTableModel().triggerAutoSave();
     }
 
     // Method to setup WSTG mapping column with dropdown combo
     public void setUpIssueColumn(TableColumn column) {
-        column.setCellEditor(new DefaultCellEditor(extender.getComboBox()));
+        column.setCellEditor(new DefaultCellEditor(extender.getUIManager().getComboBox()));
     }
 
     // Method to generate WSTG list for dropdown
     public void generateWSTGList() {
-        JComboBox<String> comboBox = extender.getComboBox();
+        JComboBox<String> comboBox = extender.getUIManager().getComboBox();
         // Add an N.A. to mark finding as false positive
         comboBox.addItem("N.A.");
         for (ChecklistEntry entry : extender.getChecklistManager().getChecklistLog()) {
@@ -117,8 +118,8 @@ public class LoggerTable extends JTable {
 
     // Method to reset WSTG mapping column
     public void resetList() {
-        extender.getComboBox().removeAllItems();
-        JComboBox<String> comboBox = extender.getComboBox();
+        extender.getUIManager().getComboBox().removeAllItems();
+        JComboBox<String> comboBox = extender.getUIManager().getComboBox();
         // Add an N.A. to mark finding as false positive
         comboBox.addItem("N.A.");
         for (ChecklistEntry entry : extender.getChecklistManager().getChecklistLog()) {
@@ -132,26 +133,26 @@ public class LoggerTable extends JTable {
     // Method to delete logger entry
     public void deleteEntry() {
         if (currentRow >= 0 && currentRow < extender.getLoggerManager().getLoggerList().size()) {
-            extender.getExtenderPanelUI().getDeleteEntryButton().setEnabled(false);
+            extender.getUIManager().getExtenderPanelUI().getDeleteEntryButton().setEnabled(false);
             extender.getLoggerManager().getLoggerList().remove(currentRow);
             // update UI
             // Inform user about entry deletion
-            extender.getExtenderPanelUI().getScanStatusLabel().setText("Entry deleted");
+            extender.getUIManager().getExtenderPanelUI().getScanStatusLabel().setText("Entry deleted");
             extender.issueAlert("Entry deleted");
             // Repaint logger entries table
-            extender.getLoggerTableModel().updateLoggerEntryTable();
+            extender.getLoggerManager().getLoggerTableModel().updateLoggerEntryTable();
             // Clear instance table
-            extender.getInstancesTableModel().clearInstanceEntryList();
-            extender.getLoggerTableModel().triggerAutoSave();
+            extender.getLoggerManager().getInstancesTableModel().clearInstanceEntryList();
+            extender.getLoggerManager().getLoggerTableModel().triggerAutoSave();
         }
     }
 
     // Method to clear all entries
     public void clearAllEntries() {
-        extender.getLoggerTableModel().clearLoggerList();
-        extender.getInstancesTableModel().clearInstanceEntryList();
-        extender.getExtenderPanelUI().getScanStatusLabel().setText("All entries cleared");
-        extender.getExtenderPanelUI().getDeleteEntryButton().setEnabled(false);
-        extender.getLoggerTableModel().triggerAutoSave();
+        extender.getLoggerManager().getLoggerTableModel().clearLoggerList();
+        extender.getLoggerManager().getInstancesTableModel().clearInstanceEntryList();
+        extender.getUIManager().getExtenderPanelUI().getScanStatusLabel().setText("All entries cleared");
+        extender.getUIManager().getExtenderPanelUI().getDeleteEntryButton().setEnabled(false);
+        extender.getLoggerManager().getLoggerTableModel().triggerAutoSave();
     }
 }

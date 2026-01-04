@@ -140,7 +140,7 @@ public class LoggerManager {
      * Called during extension unload
      */
     public void saveState() {
-        autowasp.getPersistence().saveLoggerState(loggerList);
+        autowasp.getPersistenceManager().getPersistence().saveLoggerState(loggerList);
     }
 
     /**
@@ -148,7 +148,7 @@ public class LoggerManager {
      * Called during extension initialization
      */
     public void restoreState() {
-        List<LoggerState> savedLoggerStates = autowasp.getPersistence().loadLoggerState();
+        List<LoggerState> savedLoggerStates = autowasp.getPersistenceManager().getPersistence().loadLoggerState();
         if (savedLoggerStates.isEmpty()) {
             return;
         }

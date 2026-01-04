@@ -60,21 +60,21 @@ public class AutowaspAuditIssueHandler implements AuditIssueHandler {
                 String issueName = auditIssue.name();
 
                 // Cek apakah issue sudah pernah di-log (avoid duplicate)
-                if (!extender.getScannerLogic().getRepeatedIssue().contains(issueName)) {
+                if (!extender.getLoggerManager().getScannerLogic().getRepeatedIssue().contains(issueName)) {
                     // Add to the list of logged issues
-                    extender.getScannerLogic().getRepeatedIssue().add(issueName);
+                    extender.getLoggerManager().getScannerLogic().getRepeatedIssue().add(issueName);
 
                     // Alert user
                     extender.issueAlert("New Scan found: " + issueName);
 
                     // Log scan issue baru
-                    extender.getScannerLogic().logNewScan(auditIssue);
+                    extender.getLoggerManager().getScannerLogic().logNewScan(auditIssue);
 
                     // Log instance
-                    extender.getScannerLogic().logNewInstance(auditIssue);
+                    extender.getLoggerManager().getScannerLogic().logNewInstance(auditIssue);
                 } else {
                     // Issue sudah ada, hanya log instance baru
-                    extender.getScannerLogic().logNewInstance(auditIssue);
+                    extender.getLoggerManager().getScannerLogic().logNewInstance(auditIssue);
                 }
             }
         } catch (Exception e) {
