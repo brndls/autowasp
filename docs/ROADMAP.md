@@ -4,33 +4,98 @@ This document tracks the ongoing development phases for Autowasp.
 
 ## Phase Overview
 
-| Phase | Name                          | Status     | Effort    |
-| ----- | ----------------------------- | ---------- | --------- |
-| 4.1   | Modernization (Java 21)       | ✅ Complete | -         |
-| 4.2   | Reliability (Fetch Logic)     | ✅ Complete | Medium    |
-| 4.3   | Report Enhancements           | ⏳ Pending  | Medium    |
-| 4.4   | UI Improvements               | ⏳ Pending  | Medium    |
-| 5.1   | Unit Tests                    | ✅ Complete | Medium    |
-| 5.2   | Integration Tests             | ⏳ Pending  | High      |
-| 6.1   | Local Checklist Import        | ✅ Complete | Medium    |
-| 6.2   | GitHub Release & CI/CD        | ✅ Complete | Medium    |
-| 6.3   | BApp Store Submission         | ✅ Complete | Low       |
-| 7.0   | Future Maintenance            | ⏳ Pending  | Low       |
-| 7.1   | Handle Large Projects         | ✅ Complete | Medium    |
-| 8.1   | Auto-Mapping WSTG             | 🔮 Future   | Medium    |
-| 8.2   | Evidence Collector            | 🔮 Future   | Medium    |
-| 9.1   | Smart Severity Calculator     | 🔮 Future   | Medium    |
-| 9.2   | Retest Tracking               | 🔮 Future   | High      |
-| 10.1  | Burp Collaborator Integration | 🔮 Future   | High      |
-| 10.2  | External Tool Integration     | 🔮 Future   | High      |
-| 11.1  | AI-Powered Analysis           | 🔮 Future   | Very High |
-| 11.2  | Scope-Aware Testing Tracker   | 🔮 Future   | High      |
-| 12.1  | Session Notes                 | ⏳ Pending  | Low       |
-| 12.2  | Payload Manager               | ⏳ Pending  | Medium    |
-| 12.3  | Target Scope Manager          | ⏳ Pending  | High      |
-| 13.1  | Context Menu Enhancement      | ⏳ Pending  | Low       |
-| 14.1  | ConfigManager (Future)        | 🔮 Future   | Medium    |
-| 14.2  | EventManager (Future)         | 🔮 Future   | Medium    |
+| Phase | Name                                      | Status        | Effort    |
+| ----- | ----------------------------------------- | ------------- | --------- |
+| 1.0   | Build System Migration (Maven -> Gradle)  | ✅ Complete    | -         |
+| 2.0   | Java Version Upgrade (Java 8 -> 21)       | ✅ Complete    | -         |
+| 3.0   | Montoya API Migration (Core)              | ✅ Complete    | High      |
+| 4.0   | Handler Migration (Listeners -> Handlers) | ✅ Complete    | Medium    |
+| 4.1   | Modernization (Java 21)                   | ✅ Complete    | -         |
+| 4.2   | Reliability (Fetch Logic)                 | ✅ Complete    | Medium    |
+| 4.3   | Report Enhancements                       | ⏳ Pending     | Medium    |
+| 4.4   | UI Improvements                           | 🚀 In Progress | Medium    |
+| 5.1   | Unit Tests                                | ✅ Complete    | Medium    |
+| 5.2   | Integration Tests                         | ⏳ Pending     | High      |
+| 6.1   | Local Checklist Import                    | ✅ Complete    | Medium    |
+| 6.2   | GitHub Release & CI/CD                    | ✅ Complete    | Medium    |
+| 6.3   | BApp Store Submission                     | ✅ Complete    | Low       |
+| 7.0   | Future Maintenance                        | ⏳ Pending     | Low       |
+| 7.1   | Handle Large Projects                     | ✅ Complete    | Medium    |
+| 8.1   | Auto-Mapping WSTG                         | 🔮 Future      | Medium    |
+| 8.2   | Evidence Collector                        | 🔮 Future      | Medium    |
+| 9.1   | Smart Severity Calculator                 | 🔮 Future      | Medium    |
+| 9.2   | Retest Tracking                           | 🔮 Future      | High      |
+| 10.1  | Burp Collaborator Integration             | 🔮 Future      | High      |
+| 10.2  | External Tool Integration                 | 🔮 Future      | High      |
+| 11.1  | AI-Powered Analysis                       | 🔮 Future      | Very High |
+| 11.2  | Scope-Aware Testing Tracker               | 🔮 Future      | High      |
+| 12.1  | Session Notes                             | ⏳ Pending     | Low       |
+| 12.2  | Payload Manager                           | ⏳ Pending     | Medium    |
+| 12.3  | Target Scope Manager                      | ⏳ Pending     | High      |
+| 13.1  | Context Menu Enhancement                  | ⏳ Pending     | Low       |
+| 14.1  | ConfigManager (Future)                    | 🔮 Future      | Medium    |
+| 14.2  | EventManager (Future)                     | 🔮 Future      | Medium    |
+
+---
+
+## Phase 1 - Build System Migration (Maven → Gradle)
+
+**Status**: ✅ Complete  
+**Date**: 2026-01-01
+
+**Goal**: Modernize build infrastructure and developer experience.
+
+- [x] Migrate from Maven `pom.xml` to Gradle `build.gradle.kts`
+- [x] Adopt Kotlin DSL for better IDE support
+- [x] Configure Shadow plugin for fat JAR generation
+- [x] Create consistent `.devcontainer` environment
+
+---
+
+## Phase 2 - Java Version Upgrade (Java 8 → Java 21)
+
+**Status**: ✅ Complete  
+**Date**: 2026-01-01
+
+**Goal**: Upgrade from legacy Java 8 to modern Java 21 LTS.
+
+- [x] Update source/target compatibility to Java 21
+- [x] Update Docker/DevContainer base images
+- [x] Enable modern language features (var, records, switch expressions)
+- [x] Upgrade dependencies (Jsoup 1.12 -> 1.18, GSON 2.8 -> 2.11)
+
+---
+
+## Phase 3 - Montoya API Migration (Core)
+
+**Status**: ✅ Complete  
+**Date**: 2026-01-01
+
+**Goal**: Migrate from deprecated Extender API to modern Montoya API.
+
+> [!NOTE]
+> This was a "Big Bang" migration for the core entry point, as the underlying architecture is fundamentally different.
+
+**Key Changes:**
+- [x] Replace `IBurpExtender` with `BurpExtension`
+- [x] Replace `callbacks` with `MontoyaApi`
+- [x] Refactor entry point `Autowasp.java`
+- [x] implement `AuditIssueHandler` (was `IScannerListener`)
+- [x] implement `ProxyResponseHandler` (was `IProxyListener`)
+
+---
+
+## Phase 4 - Handler Migration & Clean Architecture
+
+**Status**: ✅ Complete  
+**Date**: 2026-01-02
+
+**Goal**: Break monolith `Autowasp.java` into dedicated handlers and managers.
+
+### 4.0 Handler Extraction
+- [x] Extract `AutowaspAuditIssueHandler`
+- [x] Extract `AutowaspProxyResponseHandler`
+- [x] Extract `AutowaspContextMenuProvider`
 
 ---
 
