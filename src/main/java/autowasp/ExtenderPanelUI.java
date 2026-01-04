@@ -117,7 +117,7 @@ public class ExtenderPanelUI implements Runnable {
 
         // Consolidate all modular tabs and set to the scanner bottom pane
         gtScannerSplitPane.setRightComponent(bottomModulesTabs);
-        extender.setGtScannerSplitPane(gtScannerSplitPane);
+        extender.getUIManager().setGtScannerSplitPane(gtScannerSplitPane);
     }
 
     // This method setup the top panel view of Autowasp
@@ -148,7 +148,7 @@ public class ExtenderPanelUI implements Runnable {
 
         enableScanningButton = new JButton("Enable Burp Scanner logging");
         enableScanningButton.addActionListener(e -> {
-            extender.getScannerLogic().extractExistingScan();
+            extender.getLoggerManager().getScannerLogic().extractExistingScan();
             enableScanningButton.setEnabled(false);
             scanStatusLabel.setText("Extracted Scanner Logs. Passive Scanner logging enabled");
             extender.issueAlert("Extracted Scanner Logs. Passive Scanner logging enabled");
@@ -341,10 +341,10 @@ public class ExtenderPanelUI implements Runnable {
         miscPanel.add(new JLabel("Misc Actions:", SwingConstants.LEFT), BorderLayout.LINE_START);
 
         deleteEntryButton = new JButton("Delete Entry");
-        deleteEntryButton.addActionListener(e -> extender.getLoggerTable().deleteEntry());
+        deleteEntryButton.addActionListener(e -> extender.getLoggerManager().getLoggerTable().deleteEntry());
 
         deleteInstanceButton = new JButton("Delete Instance");
-        deleteInstanceButton.addActionListener(e -> extender.getInstanceTable().deleteInstance());
+        deleteInstanceButton.addActionListener(e -> extender.getLoggerManager().getInstanceTable().deleteInstance());
 
         JButton clearAllButton = new JButton("Clear All Logs");
         clearAllButton.addActionListener(e -> {
@@ -354,7 +354,9 @@ public class ExtenderPanelUI implements Runnable {
                     "Confirm Clear All",
                     JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
-                extender.getLoggerTable().clearAllEntries();
+                if (extender.getLoggerManager().getLoggerTableModel().getLoggerListSize() > 0) {
+                    extender.getLoggerManager().getLoggerTable().clearAllEntries();
+                }
             }
         });
 
@@ -382,7 +384,7 @@ public class ExtenderPanelUI implements Runnable {
             if (userOption == JFileChooser.APPROVE_OPTION) {
                 checklistDestDir = destDirChooser.getSelectedFile();
                 try {
-                    extender.getProjectWorkspace().saveFile(checklistDestDir.getAbsolutePath());
+                    extender.getPersistenceManager().getProjectWorkspace().saveFile(checklistDestDir.getAbsolutePath());
                 } catch (IOException ioException) {
                     extender.logOutput("IOException at createSaveProjectButton");
                 }
@@ -486,7 +488,7 @@ public class ExtenderPanelUI implements Runnable {
      */
     private void loadProjectInBackground(String canonicalPath, JButton loadProjectButton) {
         Runnable runnable = () -> {
-            extender.getProjectWorkspace().readFromFile(canonicalPath);
+            extender.getPersistenceManager().getProjectWorkspace().readFromFile(canonicalPath);
             loadProjectButton.setEnabled(false);
         };
         Thread loadThread = new Thread(runnable);
@@ -563,7 +565,7 @@ public class ExtenderPanelUI implements Runnable {
             scanStatusLabel.setText("Target added to scope: " + input);
             if (!enableScanningButton.isEnabled()) {
                 // Automatically extract scan related to the newly added domain
-                extender.getScannerLogic().extractExistingScan();
+                extender.getLoggerManager().getScannerLogic().extractExistingScan();
             }
             hostField.setText("");
         } catch (Exception e1) {
@@ -682,8 +684,9 @@ public class ExtenderPanelUI implements Runnable {
         JTextField loggerSearchField = new JTextField(20);
         loggerSearchPanel.add(loggerSearchField);
 
-        TableRowSorter<TableModel> loggerSorter = new TableRowSorter<>(extender.getLoggerTable().getModel());
-        extender.getLoggerTable().setRowSorter(loggerSorter);
+        TableRowSorter<TableModel> loggerSorter = new TableRowSorter<>(
+                extender.getLoggerManager().getLoggerTable().getModel());
+        extender.getLoggerManager().getLoggerTable().setRowSorter(loggerSorter);
 
         loggerSearchField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -709,11 +712,11 @@ public class ExtenderPanelUI implements Runnable {
         });
 
         // Setting up JTable
-        JScrollPane loggerScrollPane = new JScrollPane(extender.getLoggerTable());
+        JScrollPane loggerScrollPane = new JScrollPane(extender.getLoggerManager().getLoggerTable());
         loggerScrollPane.setPreferredSize(new Dimension(800, 400));
 
         loggerScrollPane.setBorder(new EmptyBorder(0, 0, 10, 0));
-        JScrollPane instancesScrollPane = new JScrollPane(extender.getInstanceTable());
+        JScrollPane instancesScrollPane = new JScrollPane(extender.getLoggerManager().getInstanceTable());
         instancesScrollPane.setPreferredSize(new Dimension(700, 200));
         instancesScrollPane.setBorder(new EmptyBorder(0, 0, 10, 0));
 
@@ -727,7 +730,8 @@ public class ExtenderPanelUI implements Runnable {
         clearCommentsButton.addActionListener(e -> penTesterCommentBox.setText(""));
         JButton saveCommentsButton = new JButton("Save Comments");
         saveCommentsButton.addActionListener(
-                e -> extender.getLoggerTable().modifyComments(penTesterCommentBox.getText().trim() + "\n"));
+                e -> extender.getLoggerManager().getLoggerTable()
+                        .modifyComments(penTesterCommentBox.getText().trim() + "\n"));
         commentsPanel.add(saveCommentsButton);
         commentsPanel.add(clearCommentsButton);
         internalPenTesterCommentsSplitPane.setTopComponent(commentsPanel);
@@ -743,7 +747,8 @@ public class ExtenderPanelUI implements Runnable {
         clearEvidencesButton.addActionListener(e -> evidenceBox.setText(""));
         JButton saveEvidencesButton = new JButton("Save Evidence");
         saveEvidencesButton
-                .addActionListener(e -> extender.getLoggerTable().modifyEvidence(evidenceBox.getText().trim()));
+                .addActionListener(
+                        e -> extender.getLoggerManager().getLoggerTable().modifyEvidence(evidenceBox.getText().trim()));
         evidencePanel.add(saveEvidencesButton);
         evidencePanel.add(clearEvidencesButton);
         internalEvidencesSplitPane.setTopComponent(evidencePanel);
@@ -781,12 +786,12 @@ public class ExtenderPanelUI implements Runnable {
         loggerPageLabel = new JLabel("Page 1 of 1");
 
         prevButton.addActionListener(e -> {
-            extender.getLoggerTableModel().previousPage();
+            extender.getLoggerManager().getLoggerTableModel().previousPage();
             updateLoggerPageLabel();
         });
 
         nextButton.addActionListener(e -> {
-            extender.getLoggerTableModel().nextPage();
+            extender.getLoggerManager().getLoggerTableModel().nextPage();
             updateLoggerPageLabel();
         });
 
@@ -799,9 +804,9 @@ public class ExtenderPanelUI implements Runnable {
 
     public void updateLoggerPageLabel() {
         if (loggerPageLabel != null) {
-            int current = extender.getLoggerTableModel().getCurrentPage() + 1;
-            int total = extender.getLoggerTableModel().getTotalPages();
-            loggerPageLabel.setText("Page " + current + " of " + total);
+            int currentPage = extender.getLoggerManager().getLoggerTableModel().getCurrentPage();
+            int totalPages = extender.getLoggerManager().getLoggerTableModel().getTotalPages();
+            loggerPageLabel.setText("Page " + currentPage + " of " + totalPages);
         }
     }
 
@@ -824,8 +829,9 @@ public class ExtenderPanelUI implements Runnable {
         JTextField searchField = new JTextField(20);
         searchPanel.add(searchField);
 
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(extender.getChecklistTable().getModel());
-        extender.getChecklistTable().setRowSorter(sorter);
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(
+                extender.getChecklistManager().getChecklistTable().getModel());
+        extender.getChecklistManager().getChecklistTable().setRowSorter(sorter);
 
         searchField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -852,7 +858,7 @@ public class ExtenderPanelUI implements Runnable {
 
         JPanel tableWithSearchPanel = new JPanel(new BorderLayout());
         tableWithSearchPanel.add(searchPanel, BorderLayout.NORTH);
-        JScrollPane checklistScrollPane = new JScrollPane(extender.getChecklistTable());
+        JScrollPane checklistScrollPane = new JScrollPane(extender.getChecklistManager().getChecklistTable());
         tableWithSearchPanel.add(checklistScrollPane, BorderLayout.CENTER);
 
         checklistScrollPane.setPreferredSize(new Dimension(300, 200));

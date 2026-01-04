@@ -23,24 +23,9 @@ import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.logging.Logging;
 
 // Project imports
-import autowasp.checklist.*;
-import autowasp.http.*;
-import autowasp.logger.ScannerLogic;
-import autowasp.logger.TrafficEntry;
-import autowasp.logger.TrafficLogic;
-import autowasp.logger.entrytable.LoggerEntry;
-import autowasp.logger.entrytable.LoggerTable;
-import autowasp.logger.entrytable.LoggerTableModel;
-import autowasp.logger.instancestable.InstanceEntry;
-import autowasp.logger.instancestable.InstanceTable;
-import autowasp.logger.instancestable.InstancesTableModel;
-
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import autowasp.persistence.AutowaspPersistence;
+// Project imports
+import autowasp.http.ContextMenuFactory;
+import javax.swing.SwingUtilities;
 
 /**
  * Autowasp - Burp Suite Extension for OWASP WSTG integration
@@ -92,22 +77,6 @@ public class Autowasp implements BurpExtension {
     private autowasp.managers.PersistenceManager persistenceManager;
 
     // =====================================================================================
-    // LEGACY FIELDS (Temporary - for backward compatibility)
-    // =====================================================================================
-    private JComboBox<String> comboBox;
-    private JComboBox<String> comboBox2;
-    private JComboBox<String> comboBox3;
-    private int currentEntryRow;
-
-    public void setCurrentEntryRow(int currentEntryRow) {
-        this.currentEntryRow = currentEntryRow;
-    }
-
-    public int getCurrentEntryRow() {
-        return currentEntryRow;
-    }
-
-    // =====================================================================================
     // MONTOYA API ENTRY POINT
     // =====================================================================================
     /**
@@ -148,19 +117,8 @@ public class Autowasp implements BurpExtension {
         ContextMenuFactory contextMenu = new ContextMenuFactory(this);
         api.userInterface().registerContextMenuItemsProvider(contextMenu);
 
-        // Setup ComboBox for table columns
-        this.comboBox = new JComboBox<>();
-        loggerManager.getLoggerTable().setUpIssueColumn(loggerManager.getLoggerTable().getColumnModel().getColumn(4));
-
-        this.comboBox2 = new JComboBox<>();
-        loggerManager.getInstanceTable().generateConfidenceList();
-        loggerManager.getInstanceTable()
-                .setUpConfidenceColumn(loggerManager.getInstanceTable().getColumnModel().getColumn(2));
-
-        this.comboBox3 = new JComboBox<>();
-        loggerManager.getInstanceTable().generateSeverityList();
-        loggerManager.getInstanceTable()
-                .setupSeverityColumn(loggerManager.getInstanceTable().getColumnModel().getColumn(3));
+        // Initialize Managers UI connection
+        uiManager.setupUI(loggerManager);
 
         // Create UI and register tab (executed on EDT)
         SwingUtilities.invokeLater(() -> {
@@ -229,88 +187,13 @@ public class Autowasp implements BurpExtension {
     }
 
     // =====================================================================================
-    // LEGACY API - Component Accessors (Backward Compatibility)
+    // LEGACY API - Data Accessors (for backward compatibility)
     // =====================================================================================
-
-    public ExtenderPanelUI getExtenderPanelUI() {
-        return uiManager.getExtenderPanelUI();
-    }
-
-    public JSplitPane getGtScannerSplitPane() {
-        return uiManager.getGtScannerSplitPane();
-    }
-
-    public void setGtScannerSplitPane(JSplitPane gtScannerSplitPane) {
-        uiManager.setGtScannerSplitPane(gtScannerSplitPane);
-    }
-
-    public ChecklistLogic getChecklistLogic() {
-        return checklistManager.getChecklistLogic();
-    }
-
-    public ChecklistTableModel getChecklistTableModel() {
-        return checklistManager.getChecklistTableModel();
-    }
-
-    public ChecklistTable getChecklistTable() {
-        return checklistManager.getChecklistTable();
-    }
-
-    public TrafficLogic getTrafficLogic() {
-        return loggerManager.getTrafficLogic();
-    }
-
-    public LoggerTableModel getLoggerTableModel() {
-        return loggerManager.getLoggerTableModel();
-    }
-
-    public InstancesTableModel getInstancesTableModel() {
-        return loggerManager.getInstancesTableModel();
-    }
-
-    public LoggerTable getLoggerTable() {
-        return loggerManager.getLoggerTable();
-    }
-
-    public InstanceTable getInstanceTable() {
-        return loggerManager.getInstanceTable();
-    }
-
-    public ScannerLogic getScannerLogic() {
-        return loggerManager.getScannerLogic();
-    }
-
-    public ProjectWorkspaceFactory getProjectWorkspace() {
-        return persistenceManager.getProjectWorkspace();
-    }
-
-    public AutowaspPersistence getPersistence() {
-        return persistenceManager.getPersistence();
-    }
-
-    public JComboBox<String> getComboBox() {
-        return comboBox;
-    }
-
-    public JComboBox<String> getComboBox2() {
-        return comboBox2;
-    }
-
-    public JComboBox<String> getComboBox3() {
-        return comboBox3;
-    }
+    // Public fields removed in Phase 4 - Full Data Encapsulation
 
     // =====================================================================================
     // LEGACY API - Data Accessors (for backward compatibility)
     // =====================================================================================
-    // Public fields maintained for backward compatibility
-    // Phase 4 will migrate these to proper encapsulation
-
-    public final List<autowasp.checklist.ChecklistEntry> checklistLog = new ArrayList<>();
-    public final Map<String, autowasp.checklist.ChecklistEntry> checkListHashMap = new HashMap<>();
-    public final List<autowasp.logger.TrafficEntry> trafficLog = new ArrayList<>();
-    public final List<autowasp.logger.entrytable.LoggerEntry> loggerList = new ArrayList<>();
-    public final List<autowasp.logger.instancestable.InstanceEntry> instanceLog = new ArrayList<>();
 
     // =====================================================================================
     // UTILITY METHODS

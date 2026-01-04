@@ -60,7 +60,7 @@ public class ProjectWorkspaceFactory implements Serializable {
             String filePath = validatedPath + File.separator + PROJECT_FILE_NAME;
 
             // Update UI
-            extender.getExtenderPanelUI().getScanStatusLabel()
+            extender.getUIManager().getExtenderPanelUI().getScanStatusLabel()
                     .setText("File saved to " + filePath);
             extender.issueAlert("File saved to " + filePath);
 
@@ -80,7 +80,7 @@ public class ProjectWorkspaceFactory implements Serializable {
      * - Prevents path traversal attacks
      */
     public void readFromFile(String absoluteFilePath) {
-        extender.getLoggerTableModel().clearLoggerList();
+        extender.getLoggerManager().getLoggerTableModel().clearLoggerList();
 
         try {
             // Validate file path
@@ -91,12 +91,12 @@ public class ProjectWorkspaceFactory implements Serializable {
 
             // Add entries to logger
             for (LoggerEntry entry : entries) {
-                extender.getLoggerTableModel().addAllLoggerEntry(entry);
-                extender.getScannerLogic().repeatedIssue.add(entry.getVulnType());
+                extender.getLoggerManager().getLoggerTableModel().addAllLoggerEntry(entry);
+                extender.getLoggerManager().getScannerLogic().repeatedIssue.add(entry.getVulnType());
             }
 
             // Update UI
-            extender.getExtenderPanelUI().getScanStatusLabel()
+            extender.getUIManager().getExtenderPanelUI().getScanStatusLabel()
                     .setText("Project loaded from " + validatedPath);
             extender.issueAlert("Project loaded successfully");
 
