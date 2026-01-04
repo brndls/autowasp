@@ -22,6 +22,11 @@ export GRADLE_USER_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/gradle"
 # Project-specific settings
 export AUTOWASP_DEV=1
 
+# SonarQube Cloud (optional - for local testing)
+# Get token from: https://sonarcloud.io/account/security
+# Uncomment and set your token to run SonarQube analysis locally:
+# export SONAR_TOKEN="your_token_here"
+
 # Log environment activation
 echo "🔧 Autowasp dev environment loaded"
 echo "   JAVA_HOME: $JAVA_HOME"
