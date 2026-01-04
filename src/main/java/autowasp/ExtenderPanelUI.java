@@ -353,10 +353,9 @@ public class ExtenderPanelUI implements Runnable {
                     "Are you sure you want to clear all logger entries?",
                     "Confirm Clear All",
                     JOptionPane.YES_NO_OPTION);
-            if (result == JOptionPane.YES_OPTION) {
-                if (extender.getLoggerManager().getLoggerTableModel().getLoggerListSize() > 0) {
-                    extender.getLoggerManager().getLoggerTable().clearAllEntries();
-                }
+            if (result == JOptionPane.YES_OPTION
+                    && extender.getLoggerManager().getLoggerTableModel().getLoggerListSize() > 0) {
+                extender.getLoggerManager().getLoggerTable().clearAllEntries();
             }
         });
 
