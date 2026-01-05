@@ -156,4 +156,257 @@ class ScanIssueTest {
         assertNull(s4.getUrl());
         assertNull(s4.getHttpService());
     }
+
+    // Additional comprehensive tests
+
+    @Test
+    void testNullDetailHandling() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue.detail()).thenReturn(null);
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        assertEquals("", scanIssue.getIssueDetail());
+    }
+
+    @Test
+    void testNullRemediationHandling() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue.remediation()).thenReturn(null);
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        assertEquals("", scanIssue.getRemediationDetail());
+    }
+
+    @Test
+    void testNullBackgroundInDefinition() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        AuditIssueDefinition mockDef = mock(AuditIssueDefinition.class);
+
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue.definition()).thenReturn(mockDef);
+        when(mockDef.background()).thenReturn(null);
+        when(mockDef.remediation()).thenReturn(null);
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        assertEquals("", scanIssue.getIssueBackground());
+        assertEquals("", scanIssue.getRemediationBackground());
+    }
+
+    @Test
+    void testNullRequestResponsesList() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue.requestResponses()).thenReturn(null);
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        assertNotNull(scanIssue.getHttpMessages());
+        assertEquals(0, scanIssue.getHttpMessages().length);
+    }
+
+    @Test
+    void testEmptyRequestResponsesList() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue.requestResponses()).thenReturn(Collections.emptyList());
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        assertNotNull(scanIssue.getHttpMessages());
+        assertEquals(0, scanIssue.getHttpMessages().length);
+    }
+
+    @Test
+    void testMultipleRequestResponses() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        HttpRequestResponse mockRR1 = createMockRequestResponse();
+        HttpRequestResponse mockRR2 = createMockRequestResponse();
+
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue.requestResponses()).thenReturn(java.util.List.of(mockRR1, mockRR2));
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        assertEquals(2, scanIssue.getHttpMessages().length);
+    }
+
+    @Test
+    void testEqualsWithSameObject() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        assertEquals(scanIssue, scanIssue);
+    }
+
+    @Test
+    void testEqualsWithEqualObjects() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue.name()).thenReturn("XSS");
+        when(mockIssue.detail()).thenReturn("Detail");
+
+        ScanIssue scanIssue1 = new ScanIssue(mockIssue);
+        ScanIssue scanIssue2 = new ScanIssue(mockIssue);
+
+        assertEquals(scanIssue1, scanIssue2);
+    }
+
+    @Test
+    void testEqualsWithDifferentName() {
+        AuditIssue mockIssue1 = mock(AuditIssue.class);
+        AuditIssue mockIssue2 = mock(AuditIssue.class);
+
+        when(mockIssue1.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue1.name()).thenReturn("XSS");
+
+        when(mockIssue2.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue2.name()).thenReturn("SQLi");
+
+        ScanIssue scanIssue1 = new ScanIssue(mockIssue1);
+        ScanIssue scanIssue2 = new ScanIssue(mockIssue2);
+
+        assertNotEquals(scanIssue1, scanIssue2);
+    }
+
+    @Test
+    void testEqualsWithNull() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        assertNotEquals(scanIssue, null);
+    }
+
+    @Test
+    void testEqualsWithDifferentClass() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        assertNotEquals(scanIssue, "not a ScanIssue");
+    }
+
+    @Test
+    void testHashCodeConsistency() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue.name()).thenReturn("XSS");
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        int hash1 = scanIssue.hashCode();
+        int hash2 = scanIssue.hashCode();
+
+        assertEquals(hash1, hash2);
+    }
+
+    @Test
+    void testHashCodeEqualityContract() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue.name()).thenReturn("XSS");
+
+        ScanIssue scanIssue1 = new ScanIssue(mockIssue);
+        ScanIssue scanIssue2 = new ScanIssue(mockIssue);
+
+        assertEquals(scanIssue1.hashCode(), scanIssue2.hashCode());
+    }
+
+    @Test
+    void testToString() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+        when(mockIssue.name()).thenReturn("XSS");
+        when(mockIssue.detail()).thenReturn("Detail");
+        when(mockIssue.severity()).thenReturn(AuditIssueSeverity.HIGH);
+        when(mockIssue.confidence()).thenReturn(AuditIssueConfidence.CERTAIN);
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        String result = scanIssue.toString();
+
+        assertTrue(result.contains("ScanIssue"));
+        assertTrue(result.contains("XSS"));
+        assertTrue(result.contains("High"));
+        assertTrue(result.contains("Certain"));
+    }
+
+    @Test
+    void testAllSeverityLevels() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+
+        // HIGH
+        when(mockIssue.severity()).thenReturn(AuditIssueSeverity.HIGH);
+        assertEquals("High", new ScanIssue(mockIssue).getSeverity());
+
+        // MEDIUM
+        when(mockIssue.severity()).thenReturn(AuditIssueSeverity.MEDIUM);
+        assertEquals("Medium", new ScanIssue(mockIssue).getSeverity());
+
+        // LOW
+        when(mockIssue.severity()).thenReturn(AuditIssueSeverity.LOW);
+        assertEquals("Low", new ScanIssue(mockIssue).getSeverity());
+
+        // INFORMATION
+        when(mockIssue.severity()).thenReturn(AuditIssueSeverity.INFORMATION);
+        assertEquals("Information", new ScanIssue(mockIssue).getSeverity());
+    }
+
+    @Test
+    void testAllConfidenceLevels() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://example.com");
+
+        // CERTAIN
+        when(mockIssue.confidence()).thenReturn(AuditIssueConfidence.CERTAIN);
+        assertEquals("Certain", new ScanIssue(mockIssue).getConfidence());
+
+        // FIRM
+        when(mockIssue.confidence()).thenReturn(AuditIssueConfidence.FIRM);
+        assertEquals("Firm", new ScanIssue(mockIssue).getConfidence());
+
+        // TENTATIVE
+        when(mockIssue.confidence()).thenReturn(AuditIssueConfidence.TENTATIVE);
+        assertEquals("Tentative", new ScanIssue(mockIssue).getConfidence());
+    }
+
+    @Test
+    void testComplexUrlWithPath() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("https://example.com:8443/api/v1/users?id=123");
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        assertEquals("https://example.com:8443/api/v1/users?id=123", scanIssue.getUrl().toString());
+        assertEquals(8443, scanIssue.getHttpService().getPort());
+        assertTrue(scanIssue.getHttpService().isSecure());
+    }
+
+    @Test
+    void testIPv4Address() {
+        AuditIssue mockIssue = mock(AuditIssue.class);
+        when(mockIssue.baseUrl()).thenReturn("http://192.168.1.1:8080");
+
+        ScanIssue scanIssue = new ScanIssue(mockIssue);
+        assertEquals("192.168.1.1", scanIssue.getHttpService().getHost());
+        assertEquals(8080, scanIssue.getHttpService().getPort());
+    }
+
+    // Helper method
+    private HttpRequestResponse createMockRequestResponse() {
+        HttpRequestResponse mockRR = mock(HttpRequestResponse.class);
+        HttpRequest mockRequest = mock(HttpRequest.class);
+        HttpResponse mockResponse = mock(HttpResponse.class);
+        ByteArray mockByteArray = mock(ByteArray.class);
+        burp.api.montoya.http.HttpService mockHttpService = mock(burp.api.montoya.http.HttpService.class);
+
+        when(mockByteArray.getBytes()).thenReturn(new byte[] {});
+        when(mockRequest.toByteArray()).thenReturn(mockByteArray);
+        when(mockResponse.toByteArray()).thenReturn(mockByteArray);
+        when(mockHttpService.host()).thenReturn("example.com");
+        when(mockHttpService.secure()).thenReturn(true);
+        when(mockRequest.httpService()).thenReturn(mockHttpService);
+        when(mockRR.request()).thenReturn(mockRequest);
+        when(mockRR.response()).thenReturn(mockResponse);
+
+        return mockRR;
+    }
 }
