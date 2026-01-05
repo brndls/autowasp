@@ -114,13 +114,13 @@ class HTTPServiceTest {
     @Test
     void testEqualsWithNull() {
         HTTPService service = new HTTPService("example.com", 443, true);
-        assertNotEquals(service, null);
+        assertNotEquals(null, service);
     }
 
     @Test
     void testEqualsWithDifferentClass() {
         HTTPService service = new HTTPService("example.com", 443, true);
-        assertNotEquals(service, "not an HTTPService");
+        assertNotEquals("not an HTTPService", service);
     }
 
     @Test

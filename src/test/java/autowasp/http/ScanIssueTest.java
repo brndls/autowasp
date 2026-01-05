@@ -274,7 +274,7 @@ class ScanIssueTest {
         when(mockIssue.baseUrl()).thenReturn("http://example.com");
 
         ScanIssue scanIssue = new ScanIssue(mockIssue);
-        assertNotEquals(scanIssue, null);
+        assertNotEquals(null, scanIssue);
     }
 
     @Test
@@ -283,7 +283,7 @@ class ScanIssueTest {
         when(mockIssue.baseUrl()).thenReturn("http://example.com");
 
         ScanIssue scanIssue = new ScanIssue(mockIssue);
-        assertNotEquals(scanIssue, "not a ScanIssue");
+        assertNotEquals("not a ScanIssue", scanIssue);
     }
 
     @Test

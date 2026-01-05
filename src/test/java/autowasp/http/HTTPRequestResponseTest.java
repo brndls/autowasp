@@ -306,7 +306,7 @@ class HTTPRequestResponseTest {
         HTTPRequestResponse wrapper = new HTTPRequestResponse(request, null, service);
 
         // Assert
-        assertNotEquals(wrapper, null);
+        assertNotEquals(null, wrapper);
     }
 
     @Test
@@ -317,7 +317,7 @@ class HTTPRequestResponseTest {
         HTTPRequestResponse wrapper = new HTTPRequestResponse(request, null, service);
 
         // Assert
-        assertNotEquals(wrapper, "not an HTTPRequestResponse");
+        assertNotEquals("not an HTTPRequestResponse", wrapper);
     }
 
     @Test
