@@ -69,9 +69,7 @@ class ProjectSerializerTest {
         String invalidPath = tempDir.toString() + "/nonexistent";
 
         // Act & Assert
-        assertThrows(IOException.class, () -> {
-            serializer.saveToJson(entries, invalidPath);
-        });
+        assertThrows(IOException.class, () -> serializer.saveToJson(entries, invalidPath));
     }
 
     @Test
@@ -112,9 +110,7 @@ class ProjectSerializerTest {
         String nonExistentFile = tempDir.toString() + "/nonexistent.json";
 
         // Act & Assert
-        assertThrows(FileNotFoundException.class, () -> {
-            serializer.loadFromJson(nonExistentFile);
-        });
+        assertThrows(FileNotFoundException.class, () -> serializer.loadFromJson(nonExistentFile));
     }
 
     @Test
@@ -124,9 +120,8 @@ class ProjectSerializerTest {
         Files.writeString(invalidFile.toPath(), "{}");
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            serializer.loadFromJson(invalidFile.getAbsolutePath());
-        });
+        String path = invalidFile.getAbsolutePath();
+        assertThrows(IllegalArgumentException.class, () -> serializer.loadFromJson(path));
     }
 
     @Test
@@ -136,9 +131,8 @@ class ProjectSerializerTest {
         Files.writeString(malformedFile.toPath(), "{invalid json");
 
         // Act & Assert
-        assertThrows(Exception.class, () -> {
-            serializer.loadFromJson(malformedFile.getAbsolutePath());
-        });
+        String path = malformedFile.getAbsolutePath();
+        assertThrows(Exception.class, () -> serializer.loadFromJson(path));
     }
 
     @Test
@@ -148,9 +142,8 @@ class ProjectSerializerTest {
         Files.writeString(emptyFile.toPath(), "");
 
         // Act & Assert
-        assertThrows(Exception.class, () -> {
-            serializer.loadFromJson(emptyFile.getAbsolutePath());
-        });
+        String path = emptyFile.getAbsolutePath();
+        assertThrows(Exception.class, () -> serializer.loadFromJson(path));
     }
 
     @Test
@@ -186,25 +179,19 @@ class ProjectSerializerTest {
     @Test
     void testValidateDirectoryPathNull() {
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            serializer.validateDirectoryPath(null);
-        });
+        assertThrows(IllegalArgumentException.class, () -> serializer.validateDirectoryPath(null));
     }
 
     @Test
     void testValidateDirectoryPathEmpty() {
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            serializer.validateDirectoryPath("");
-        });
+        assertThrows(IllegalArgumentException.class, () -> serializer.validateDirectoryPath(""));
     }
 
     @Test
     void testValidateDirectoryPathWhitespace() {
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            serializer.validateDirectoryPath("   ");
-        });
+        assertThrows(IllegalArgumentException.class, () -> serializer.validateDirectoryPath("   "));
     }
 
     @Test
@@ -213,9 +200,7 @@ class ProjectSerializerTest {
         String nonExistentPath = tempDir.toString() + "/nonexistent";
 
         // Act & Assert
-        assertThrows(FileNotFoundException.class, () -> {
-            serializer.validateDirectoryPath(nonExistentPath);
-        });
+        assertThrows(FileNotFoundException.class, () -> serializer.validateDirectoryPath(nonExistentPath));
     }
 
     @Test
@@ -225,9 +210,8 @@ class ProjectSerializerTest {
         Files.writeString(file.toPath(), "test");
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            serializer.validateDirectoryPath(file.getAbsolutePath());
-        });
+        String path = file.getAbsolutePath();
+        assertThrows(IllegalArgumentException.class, () -> serializer.validateDirectoryPath(path));
     }
 
     @Test
@@ -247,17 +231,13 @@ class ProjectSerializerTest {
     @Test
     void testValidateFilePathNull() {
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            serializer.validateFilePath(null, "test.json");
-        });
+        assertThrows(IllegalArgumentException.class, () -> serializer.validateFilePath(null, "test.json"));
     }
 
     @Test
     void testValidateFilePathEmpty() {
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            serializer.validateFilePath("", "test.json");
-        });
+        assertThrows(IllegalArgumentException.class, () -> serializer.validateFilePath("", "test.json"));
     }
 
     @Test
@@ -267,9 +247,8 @@ class ProjectSerializerTest {
         Files.writeString(testFile.toPath(), "{}");
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            serializer.validateFilePath(testFile.getAbsolutePath(), "expected.json");
-        });
+        String path = testFile.getAbsolutePath();
+        assertThrows(IllegalArgumentException.class, () -> serializer.validateFilePath(path, "expected.json"));
     }
 
     @Test
@@ -326,8 +305,7 @@ class ProjectSerializerTest {
         Files.writeString(nullFile.toPath(), "null");
 
         // Act & Assert
-        assertThrows(IOException.class, () -> {
-            serializer.loadFromJson(nullFile.getAbsolutePath());
-        });
+        String path = nullFile.getAbsolutePath();
+        assertThrows(IOException.class, () -> serializer.loadFromJson(path));
     }
 }
