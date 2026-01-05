@@ -317,7 +317,7 @@ Rich context menu options for streamlined workflow using `api.userInterface().re
 
 **Status**: ✅ Complete  
 **Date**: 2026-01-06
-**Branch**: `main` (Release v2.2.8)
+**Branch**: `main` (Release v2.2.9)
 
 **Goal**: Increase code coverage from 50.8% to meet or exceed 80% SonarQube threshold.
 
