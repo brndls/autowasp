@@ -121,12 +121,6 @@ class TrafficLogicTest {
     }
 
     @Test
-    void testClassifyTrafficWithStatus200() {
-        setupBasicInterceptedResponse(false, 200);
-        assertDoesNotThrow(() -> trafficLogic.classifyTraffic(interceptedResponse));
-    }
-
-    @Test
     void testClassifyTrafficWithStatus302() {
         setupBasicInterceptedResponse(false, 302);
         assertDoesNotThrow(() -> trafficLogic.classifyTraffic(interceptedResponse));

@@ -80,7 +80,7 @@ class ScannerLogicTest {
     }
 
     @Test
-    void testLogNewInstanceFromAuditIssue() throws Exception {
+    void testLogNewInstanceFromAuditIssue() {
         // Arrange
         AuditIssue mockAuditIssue = mock(AuditIssue.class);
         burp.api.montoya.http.HttpService mockService = mock(burp.api.montoya.http.HttpService.class);

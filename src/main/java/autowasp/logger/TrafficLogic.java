@@ -114,6 +114,12 @@ public class TrafficLogic {
     public void classifyTraffic(InterceptedResponse response) {
         this.resetLogMsg();
         this.currentRequest = response.initiatingRequest();
+
+        // Early return if request is null
+        if (this.currentRequest == null) {
+            return;
+        }
+
         this.httpResponse = response;
 
         // Extract HTTPService
