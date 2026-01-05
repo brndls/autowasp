@@ -316,8 +316,8 @@ Rich context menu options for streamlined workflow using `api.userInterface().re
 ## Phase 5.3 - Code Coverage Improvement ✅
 
 **Status**: ✅ Complete  
-**Date**: 2026-01-05  
-**Branch**: `dev` (Merged from `test/code-coverage-improvement-phase-5.3`)
+**Date**: 2026-01-06
+**Branch**: `main` (Release v2.2.8)
 
 **Goal**: Increase code coverage from 50.8% to meet or exceed 80% SonarQube threshold.
 
