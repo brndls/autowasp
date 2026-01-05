@@ -24,7 +24,7 @@ import burp.api.montoya.collaborator.CollaboratorClient;
 import burp.api.montoya.collaborator.CollaboratorPayload;
 import burp.api.montoya.core.ByteArray;
 import burp.api.montoya.http.HttpService;
-import burp.api.montoya.http.message.HttpHeader;
+
 import burp.api.montoya.http.message.requests.HttpRequest;
 import burp.api.montoya.http.message.responses.HttpResponse;
 import burp.api.montoya.proxy.http.InterceptedResponse;
@@ -32,10 +32,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.*;
 

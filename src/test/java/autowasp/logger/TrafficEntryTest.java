@@ -29,6 +29,7 @@ import static org.mockito.Mockito.mock;
  * Tests constructor initialization and field access for the immutable data
  * model.
  */
+@SuppressWarnings("deprecation") // URL(String) deprecated in Java 20, acceptable for test code
 class TrafficEntryTest {
 
     @Test
@@ -98,10 +99,8 @@ class TrafficEntryTest {
         TrafficEntry entry = new TrafficEntry(flag, null, url, null, null, null);
 
         // Assert - fields should be directly accessible (public)
-        assertDoesNotThrow(() -> {
-            String accessedFlag = entry.flag;
-            URL accessedUrl = entry.url;
-        });
+        assertNotNull(entry.flag);
+        assertNotNull(entry.url);
     }
 
     @Test

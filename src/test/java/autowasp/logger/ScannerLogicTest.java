@@ -38,6 +38,7 @@ import static org.mockito.Mockito.*;
  * Unit tests for {@link ScannerLogic}.
  * Tests audit issue handling, instance logging, and scan entry creation.
  */
+@SuppressWarnings("deprecation") // URL(String) deprecated in Java 20, acceptable for test code
 class ScannerLogicTest {
 
     private ScannerLogic scannerLogic;
