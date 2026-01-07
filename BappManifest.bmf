@@ -9,7 +9,7 @@ MinPlatformVersion: 0
 ProOnly: False
 Author: GovTech (Thomas Lim)
 ShortDescription: Streamline web security testing with OWASP WSTG integration and automated logging.
-EntryPoint: build/libs/autowasp-2.2.6-jar-with-dependencies.jar
+EntryPoint: build/libs/autowasp-2.2.9-jar-with-dependencies.jar
 
 BuildCommand: ./gradlew shadowJar
 SupportedProducts: Pro, Community
