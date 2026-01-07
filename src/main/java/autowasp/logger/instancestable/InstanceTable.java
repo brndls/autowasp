@@ -21,40 +21,18 @@ import autowasp.Autowasp;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
-import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
-public class InstanceTable extends JTable {
+public class InstanceTable extends autowasp.ui.AbstractAutowaspTable {
 
     private static final long serialVersionUID = 1L;
-    private final transient Autowasp extender;
     private int currentRow;
 
     public InstanceTable(TableModel tableModel, Autowasp extender) {
-        super(tableModel);
-        this.extender = extender;
+        super(tableModel, extender);
         setColumnWidths(50, 80, 2500, 350, 150, 300, 150, Integer.MAX_VALUE);
-        extender.getUIManager().getThemeManager().applyThemeToTable(this);
-    }
-
-    @Override
-    public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
-        java.awt.Component c = super.prepareRenderer(renderer, row, column);
-        if (!isRowSelected(row)) {
-            c.setBackground(
-                    row % 2 == 0 ? getBackground() : extender.getUIManager().getThemeManager().getAlternateRowColor());
-        }
-        return c;
-    }
-
-    public void setColumnWidths(int... widths) {
-        for (int i = 0; i < widths.length; i += 2) {
-            if ((i / 2) < columnModel.getColumnCount()) {
-                columnModel.getColumn(i / 2).setPreferredWidth(widths[i]);
-                columnModel.getColumn(i / 2).setMaxWidth(widths[i + 1]);
-            }
-        }
+        // Theme application is now in superclass constructor
     }
 
     // Method for table view change selection
