@@ -67,7 +67,7 @@ public class NoteManager {
         return notes.stream()
                 .filter(note -> note.wstgId().equals(wstgId))
                 .sorted((n1, n2) -> n2.createdAt().compareTo(n1.createdAt())) // Newest first
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public int getNoteCountByWstgId(String wstgId) {
