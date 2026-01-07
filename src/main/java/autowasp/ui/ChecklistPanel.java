@@ -31,13 +31,11 @@ import javax.swing.table.TableRowSorter;
  * Combined panel for the WSTG checklist table and session notes.
  */
 public class ChecklistPanel extends JPanel {
-    private final Autowasp extender;
     private final ChecklistNotesPanel notesPanel;
     private final JTextField searchField;
     private final JScrollPane tableScrollPane;
 
     public ChecklistPanel(Autowasp extender, NoteManager noteManager) {
-        this.extender = extender;
         setLayout(new BorderLayout());
 
         // Notes Panel
