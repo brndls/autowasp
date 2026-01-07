@@ -110,9 +110,11 @@ public class Autowasp implements BurpExtension {
         this.reportManager = new autowasp.managers.ReportManager(this);
 
         // Initialize managers
+        // UIManager must initialize first - ThemeManager is required by table
+        // constructors
+        uiManager.initialize(checklistManager, loggerManager);
         checklistManager.initialize();
         loggerManager.initialize();
-        uiManager.initialize(checklistManager, loggerManager);
         persistenceManager.initialize();
 
         // Register context menu (replaces callbacks.registerContextMenuFactory())
