@@ -57,7 +57,9 @@ public class ChecklistNotesPanel extends JPanel implements NoteChangeListener {
 
         // Header
         headerLabel = new JLabel("📝 Notes: No selection");
-        headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD, 14f));
+        if (headerLabel.getFont() != null) {
+            headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD, 14f));
+        }
         headerLabel.setBorder(new EmptyBorder(5, 5, 10, 5));
         add(headerLabel, BorderLayout.NORTH);
 
@@ -150,7 +152,9 @@ public class ChecklistNotesPanel extends JPanel implements NoteChangeListener {
         contentArea.setLineWrap(true);
         contentArea.setWrapStyleWord(true);
         contentArea.setOpaque(false);
-        contentArea.setFont(card.getFont().deriveFont(12f));
+        if (card.getFont() != null) {
+            contentArea.setFont(card.getFont().deriveFont(12f));
+        }
 
         card.add(contentArea, BorderLayout.CENTER);
 
@@ -158,7 +162,9 @@ public class ChecklistNotesPanel extends JPanel implements NoteChangeListener {
         footer.setOpaque(false);
 
         JLabel timeLabel = new JLabel(DATE_FORMATTER.format(note.updatedAt()));
-        timeLabel.setFont(timeLabel.getFont().deriveFont(Font.ITALIC, 10f));
+        if (timeLabel.getFont() != null) {
+            timeLabel.setFont(timeLabel.getFont().deriveFont(Font.ITALIC, 10f));
+        }
         timeLabel.setForeground(Color.GRAY);
         footer.add(timeLabel, BorderLayout.WEST);
 
@@ -167,12 +173,16 @@ public class ChecklistNotesPanel extends JPanel implements NoteChangeListener {
 
         JButton editBtn = new JButton("Edit");
         editBtn.setMargin(new Insets(2, 5, 2, 5));
-        editBtn.setFont(editBtn.getFont().deriveFont(10f));
+        if (editBtn.getFont() != null) {
+            editBtn.setFont(editBtn.getFont().deriveFont(10f));
+        }
         editBtn.addActionListener(e -> showEditor(note));
 
         JButton deleteBtn = new JButton("Delete");
         deleteBtn.setMargin(new Insets(2, 5, 2, 5));
-        deleteBtn.setFont(deleteBtn.getFont().deriveFont(10f));
+        if (deleteBtn.getFont() != null) {
+            deleteBtn.setFont(deleteBtn.getFont().deriveFont(10f));
+        }
         deleteBtn.addActionListener(e -> deleteNote(note));
 
         actions.add(editBtn);

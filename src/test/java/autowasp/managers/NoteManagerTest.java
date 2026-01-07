@@ -101,4 +101,25 @@ class NoteManagerTest {
 
         assertEquals(1, noteManager.getGeneralNotes().size());
     }
+
+    @Test
+    void testRemoveChangeListener() {
+        noteManager.removeChangeListener(listener);
+        noteManager.addNote(Note.create("Content", "ID"));
+        verify(listener, never()).onNotesChanged();
+    }
+
+    @Test
+    void testUpdateNonExistentNote() {
+        Note note = Note.create("Content", "ID");
+        // Don't add it
+        noteManager.updateNote(note);
+        verify(store, never()).saveNotes(anyList());
+    }
+
+    @Test
+    void testDeleteNonExistentNote() {
+        noteManager.deleteNote("non-existent-id");
+        verify(store, never()).saveNotes(anyList());
+    }
 }
