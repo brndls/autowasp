@@ -4,6 +4,8 @@
 
 - Mengurangi duplikasi kode dengan membuat `AbstractAutowaspTable` sebagai base class untuk `InstanceTable` dan `LoggerTable`
 - Mengkonsolidasikan logika pembuatan menu di `ContextMenuFactory`
+- Menambahkan 11 unit test untuk `AbstractAutowaspTable` (mencapai target coverage 60%+ untuk UI components)
+
 
 
 All notable changes to this project will be documented in this file.
