@@ -862,53 +862,11 @@ public class ExtenderPanelUI implements Runnable {
         referencesTextPane = new JTextPane();
         setupHtmlTextPane(referencesTextPane);
 
-        // Search Panel for Checklist
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 5, 2));
-        searchPanel.add(new JLabel("Search WSTG: "));
-        checklistSearchField = new JTextField(20);
+        // Individual Checklist Panel (Table + Notes)
+        autowasp.ui.ChecklistPanel checklistPanelWithNotes = new autowasp.ui.ChecklistPanel(extender,
+                extender.getNoteManager());
 
-        // Theme application
-        autowasp.managers.ThemeManager themeManager = extender.getUIManager().getThemeManager();
-        checklistSearchField.setBackground(themeManager.getBackgroundColor());
-        checklistSearchField.setForeground(themeManager.getForegroundColor());
-        checklistSearchField.setCaretColor(themeManager.getForegroundColor());
-
-        searchPanel.add(checklistSearchField);
-
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(
-                extender.getChecklistManager().getChecklistTable().getModel());
-        extender.getChecklistManager().getChecklistTable().setRowSorter(sorter);
-
-        checklistSearchField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                updateFilter();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                updateFilter();
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                updateFilter();
-            }
-
-            private void updateFilter() {
-                String text = checklistSearchField.getText();
-                if (text.trim().isEmpty()) {
-                    sorter.setRowFilter(null);
-                } else {
-                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
-                }
-            }
-        });
-
-        JPanel tableWithSearchPanel = new JPanel(new BorderLayout());
-        tableWithSearchPanel.add(searchPanel, BorderLayout.NORTH);
-        JScrollPane checklistScrollPane = new JScrollPane(extender.getChecklistManager().getChecklistTable());
-        tableWithSearchPanel.add(checklistScrollPane, BorderLayout.CENTER);
-
-        checklistScrollPane.setPreferredSize(new Dimension(300, 200));
-        checklistScrollPane.setBorder(new EmptyBorder(0, 0, 10, 0));
+        // Detail Tabs
         JScrollPane summaryScrollPane = new JScrollPane(summaryTextPane);
         JScrollPane howToTestScrollPane = new JScrollPane(howToTestTextPane);
         JScrollPane referencesScrollPane = new JScrollPane(referencesTextPane);
@@ -916,8 +874,13 @@ public class ExtenderPanelUI implements Runnable {
         checklistBottomTabs.add("Summary", summaryScrollPane);
         checklistBottomTabs.add("How to test", howToTestScrollPane);
         checklistBottomTabs.add("References", referencesScrollPane);
-        internalChecklistSplitPane.setLeftComponent(tableWithSearchPanel);
-        internalChecklistSplitPane.setRightComponent(checklistBottomTabs);
+
+        internalChecklistSplitPane.setTopComponent(checklistPanelWithNotes);
+        internalChecklistSplitPane.setBottomComponent(checklistBottomTabs);
+
+        // Ensure split pane weight is set
+        internalChecklistSplitPane.setResizeWeight(0.5);
+
         bottomModulesTabs.addTab("OWASP Testing Checklist", internalChecklistSplitPane);
         gtScannerSplitPane.setRightComponent(bottomModulesTabs);
     }

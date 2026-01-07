@@ -4,38 +4,39 @@ This document tracks the ongoing development phases for Autowasp.
 
 ## Phase Overview
 
-| Phase | Name                                      | Status     | Effort    |
-| ----- | ----------------------------------------- | ---------- | --------- |
-| 1.0   | Build System Migration (Maven -> Gradle)  | ✅ Complete | -         |
-| 2.0   | Java Version Upgrade (Java 8 -> 21)       | ✅ Complete | -         |
-| 3.0   | Montoya API Migration (Core)              | ✅ Complete | High      |
-| 4.0   | Handler Migration (Listeners -> Handlers) | ✅ Complete | Medium    |
-| 4.1   | Modernization (Java 21)                   | ✅ Complete | -         |
-| 4.2   | Reliability (Fetch Logic)                 | ✅ Complete | Medium    |
-| 4.3   | Report Enhancements                       | ✅ Complete | Medium    |
-| 4.4   | UI Improvements                           | ✅ Complete | Medium    |
-| 5.1   | Unit Tests                                | ✅ Complete | Medium    |
-| 5.2   | Integration Tests                         | ✅ Complete | High      |
-| 5.3   | Code Coverage Improvement                 | ✅ Complete | Medium    |
-| 6.1   | Local Checklist Import                    | ✅ Complete | Medium    |
-| 6.2   | GitHub Release & CI/CD                    | ✅ Complete | Medium    |
-| 6.3   | BApp Store Submission                     | ✅ Complete | Low       |
-| 7.0   | Future Maintenance                        | ✅ Complete | Low       |
-| 7.1   | Handle Large Projects                     | ✅ Complete | Medium    |
-| 8.1   | Auto-Mapping WSTG                         | 🔮 Future   | Medium    |
-| 8.2   | Evidence Collector                        | 🔮 Future   | Medium    |
-| 9.1   | Smart Severity Calculator                 | 🔮 Future   | Medium    |
-| 9.2   | Retest Tracking                           | 🔮 Future   | High      |
-| 10.1  | Burp Collaborator Integration             | 🔮 Future   | High      |
-| 10.2  | External Tool Integration                 | 🔮 Future   | High      |
-| 11.1  | AI-Powered Analysis                       | 🔮 Future   | Very High |
-| 11.2  | Scope-Aware Testing Tracker               | 🔮 Future   | High      |
-| 12.1  | Session Notes                             | ⏳ Pending  | Low       |
-| 12.2  | Payload Manager                           | ⏳ Pending  | Medium    |
-| 12.3  | Target Scope Manager                      | ⏳ Pending  | High      |
-| 13.1  | Context Menu Enhancement                  | ⏳ Pending  | Low       |
-| 14.1  | ConfigManager (Future)                    | 🔮 Future   | Medium    |
-| 14.2  | EventManager (Future)                     | 🔮 Future   | Medium    |
+| Phase | Name                                      | Status      | Effort    |
+| ----- | ----------------------------------------- | ----------- | --------- |
+| 1.0   | Build System Migration (Maven -> Gradle)  | ✅ Complete  | -         |
+| 2.0   | Java Version Upgrade (Java 8 -> 21)       | ✅ Complete  | -         |
+| 3.0   | Montoya API Migration (Core)              | ✅ Complete  | High      |
+| 4.0   | Handler Migration (Listeners -> Handlers) | ✅ Complete  | Medium    |
+| 4.1   | Modernization (Java 21)                   | ✅ Complete  | -         |
+| 4.2   | Reliability (Fetch Logic)                 | ✅ Complete  | Medium    |
+| 4.3   | Report Enhancements                       | ✅ Complete  | Medium    |
+| 4.4   | UI Improvements                           | ✅ Complete  | Medium    |
+| 5.1   | Unit Tests                                | ✅ Complete  | Medium    |
+| 5.2   | Integration Tests                         | ✅ Complete  | High      |
+| 5.3   | Code Coverage Improvement                 | ✅ Complete  | Medium    |
+| 6.1   | Local Checklist Import                    | ✅ Complete  | Medium    |
+| 6.2   | GitHub Release & CI/CD                    | ✅ Complete  | Medium    |
+| 6.3   | BApp Store Submission                     | ✅ Complete  | Low       |
+| 7.0   | Future Maintenance                        | ✅ Complete  | Low       |
+| 7.1   | Handle Large Projects                     | ✅ Complete  | Medium    |
+| 8.1   | Auto-Mapping WSTG                         | 🔮 Future    | Medium    |
+| 8.2   | Evidence Collector                        | 🔮 Future    | Medium    |
+| 9.1   | Smart Severity Calculator                 | 🔮 Future    | Medium    |
+| 9.2   | Retest Tracking                           | 🔮 Future    | High      |
+| 10.1  | Burp Collaborator Integration             | 🔮 Future    | High      |
+| 10.2  | External Tool Integration                 | 🔮 Future    | High      |
+| 11.1  | AI-Powered Analysis                       | 🔮 Future    | Very High |
+| 11.2  | Scope-Aware Testing Tracker               | 🔮 Future    | High      |
+| 12.1  | Session Notes                             | ✅ Completed | Low       |
+| 12.2  | Payload Manager                           | ⏳ Pending   | Medium    |
+| 12.3  | Target Scope Manager                      | ⏳ Pending   | High      |
+| 12.4  | Checklist Status Consolidation            | ⏳ Pending   | Low       |
+| 13.1  | Context Menu Enhancement                  | ⏳ Pending   | Low       |
+| 14.1  | ConfigManager (Future)                    | 🔮 Future    | Medium    |
+| 14.2  | EventManager (Future)                     | 🔮 Future    | Medium    |
 
 ---
 
@@ -1001,7 +1002,7 @@ This phase implements advanced AI and tracking features.
 
 Additional features selected based on user needs.
 
-### 12.1 Session Notes / Finding Notebook
+### Phase 12.1: Session Notes / Finding Notebook (integrated with Checklist) - ✅ Completed
 
 **Objective:** Integrated notebook for capturing findings and observations.
 
@@ -1103,6 +1104,57 @@ Additional features selected based on user needs.
 - [ ] Export coverage to reports
 
 ---
+
+### 12.4 Checklist Status Consolidation
+
+**Objective:** Consolidate 'Test Case Completed' and 'To Exclude' checkboxes into a single 'Status' dropdown for cleaner UI.
+
+**Effort:** Low  
+**Priority:** Low (Deferred from Phase 12.1)
+
+**Background:**
+
+The current Checklist table has two separate boolean columns:
+- `Test Case Completed` (checkbox)
+- `To Exclude` (checkbox)
+
+This can be consolidated into a single `Status` dropdown with clear semantic values.
+
+**Proposed Status Values:**
+
+| Status | Description         | Color  |
+| ------ | ------------------- | ------ |
+| `Todo` | Not yet tested      | Gray   |
+| `Done` | Test completed      | Green  |
+| `Fail` | Vulnerability found | Red    |
+| `N/A`  | Excluded from scope | Yellow |
+
+**Implementation:**
+
+| File                       | Changes                                           |
+| -------------------------- | ------------------------------------------------- |
+| `ChecklistEntry.java`      | Add `status` enum field, migrate from booleans    |
+| `ChecklistTableModel.java` | Replace 2 checkbox columns with 1 dropdown column |
+| `ChecklistTable.java`      | Add dropdown renderer/editor                      |
+| `AutowaspPersistence.java` | Update persistence format                         |
+
+**Migration:**
+- `isCompleted=true` → `Status.DONE`
+- `isExcluded=true` → `Status.NA`
+- Both false → `Status.TODO`
+
+**Tasks:**
+
+- [ ] Create `ChecklistStatus` enum
+- [ ] Modify `ChecklistEntry` to use enum instead of booleans
+- [ ] Update `ChecklistTableModel` column structure
+- [ ] Create dropdown cell renderer/editor
+- [ ] Migrate existing persistence data
+- [ ] Update report export format
+
+---
+
+
 
 ## Phase 13: Workflow Enhancement Features
 

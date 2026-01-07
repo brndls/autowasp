@@ -62,6 +62,7 @@ public abstract class IntegrationTestBase {
     protected UIManager uiManager;
     protected PersistenceManager persistenceManager;
     protected ReportManager reportManager;
+    protected autowasp.managers.NoteManager noteManager;
 
     // In-memory store to simulate Burp's extensionData persistence
     protected final Map<String, String> persistenceStore = new HashMap<>();
@@ -114,12 +115,16 @@ public abstract class IntegrationTestBase {
         persistenceManager = new PersistenceManager(extender);
         reportManager = new ReportManager(extender);
 
+        autowasp.notes.NoteStore noteStore = new autowasp.notes.NoteStore(api);
+        noteManager = new autowasp.managers.NoteManager(noteStore);
+
         // Setup manager accessors in mocked extender
         when(extender.getChecklistManager()).thenReturn(checklistManager);
         when(extender.getLoggerManager()).thenReturn(loggerManager);
         when(extender.getUIManager()).thenReturn(uiManager);
         when(extender.getPersistenceManager()).thenReturn(persistenceManager);
         when(extender.getReportManager()).thenReturn(reportManager);
+        when(extender.getNoteManager()).thenReturn(noteManager);
 
         // Standard Init Sequence
         uiManager.initialize(checklistManager, loggerManager);
