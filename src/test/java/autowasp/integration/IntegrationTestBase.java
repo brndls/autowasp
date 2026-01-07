@@ -23,6 +23,8 @@ import autowasp.managers.LoggerManager;
 import autowasp.managers.PersistenceManager;
 import autowasp.managers.ReportManager;
 import autowasp.managers.UIManager;
+import autowasp.managers.NoteManager;
+import autowasp.notes.NoteStore;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.extension.Extension;
 import burp.api.montoya.logging.Logging;
@@ -62,7 +64,7 @@ public abstract class IntegrationTestBase {
     protected UIManager uiManager;
     protected PersistenceManager persistenceManager;
     protected ReportManager reportManager;
-    protected autowasp.managers.NoteManager noteManager;
+    protected NoteManager noteManager;
 
     // In-memory store to simulate Burp's extensionData persistence
     protected final Map<String, String> persistenceStore = new HashMap<>();
@@ -115,8 +117,8 @@ public abstract class IntegrationTestBase {
         persistenceManager = new PersistenceManager(extender);
         reportManager = new ReportManager(extender);
 
-        autowasp.notes.NoteStore noteStore = new autowasp.notes.NoteStore(api);
-        noteManager = new autowasp.managers.NoteManager(noteStore);
+        NoteStore noteStore = new NoteStore(api);
+        noteManager = new NoteManager(noteStore);
 
         // Setup manager accessors in mocked extender
         when(extender.getChecklistManager()).thenReturn(checklistManager);
