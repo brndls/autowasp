@@ -5,6 +5,12 @@
 - Mengurangi duplikasi kode dengan membuat `AbstractAutowaspTable` sebagai base class untuk `InstanceTable` dan `LoggerTable`
 - Mengkonsolidasikan logika pembuatan menu di `ContextMenuFactory`
 - Menambahkan 11 unit test untuk `AbstractAutowaspTable` (mencapai target coverage 60%+ untuk UI components)
+- **Phase 12.1: Session Notes**
+  - Menambahkan panel catatan (Notes Panel) yang terintegrasi langsung dengan item checklist WSTG
+  - Implementasi badge penghitung catatan pada tabel checklist
+  - Otomatisasi persistensi catatan ke dalam file project Burp Suite
+  - Integrasi catatan sesi ke dalam laporan Excel (termasuk catatan umum/GENERAL)
+  - Penataan ulang UI checklist dengan menghapus kolom kategori untuk efisiensi ruang
 
 
 

@@ -76,7 +76,8 @@ public class ExcelReportWriter {
 
     private void createChecklistSheet(List<ChecklistEntry> checklist) {
         Sheet sheet = workbook.createSheet("WSTG Checklist");
-        String[] headers = { "ID", "Category", "Test Name", "Status", "Excluded", "Reference", "Comments" };
+        String[] headers = { "ID", "Category", "Test Name", "Status", "Excluded", "Reference", "Comments",
+                "Session Notes" };
 
         // Header
         Row headerRow = sheet.createRow(0);
@@ -88,6 +89,8 @@ public class ExcelReportWriter {
 
         // Data
         int rowNum = 1;
+        autowasp.managers.NoteManager noteManager = extender.getNoteManager();
+
         for (ChecklistEntry entry : checklist) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(entry.getRefNumber());
@@ -97,11 +100,62 @@ public class ExcelReportWriter {
             row.createCell(4).setCellValue(entry.isExcluded() ? "Yes" : "No");
             row.createCell(5).setCellValue(entry.getUrl());
             row.createCell(6).setCellValue(entry.getPenTesterComments());
+
+            // Session Notes
+            if (noteManager != null) {
+                List<autowasp.notes.Note> notes = noteManager.getNotesByWstgId(entry.getRefNumber());
+                if (!notes.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (autowasp.notes.Note note : notes) {
+                        if (sb.length() > 0) {
+                            sb.append("\n---\n");
+                        }
+                        sb.append(note.content());
+                    }
+                    Cell noteCell = row.createCell(7);
+                    noteCell.setCellValue(sb.toString());
+
+                    // Set wrap text for notes
+                    CellStyle wrapStyle = workbook.createCellStyle();
+                    wrapStyle.setWrapText(true);
+                    wrapStyle.setVerticalAlignment(VerticalAlignment.TOP);
+                    noteCell.setCellStyle(wrapStyle);
+                }
+            }
+        }
+
+        // General Notes
+        if (noteManager != null) {
+            List<autowasp.notes.Note> generalNotes = noteManager.getGeneralNotes();
+            if (!generalNotes.isEmpty()) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue("GENERAL");
+                row.createCell(2).setCellValue("General Assessment Notes");
+
+                StringBuilder sb = new StringBuilder();
+                for (autowasp.notes.Note note : generalNotes) {
+                    if (sb.length() > 0) {
+                        sb.append("\n---\n");
+                    }
+                    sb.append(note.content());
+                }
+                Cell noteCell = row.createCell(7);
+                noteCell.setCellValue(sb.toString());
+
+                CellStyle wrapStyle = workbook.createCellStyle();
+                wrapStyle.setWrapText(true);
+                wrapStyle.setVerticalAlignment(VerticalAlignment.TOP);
+                noteCell.setCellStyle(wrapStyle);
+            }
         }
 
         // Auto-size columns
         for (int i = 0; i < headers.length; i++) {
-            sheet.autoSizeColumn(i);
+            if (i != 7) { // Don't auto-size notes column, it can be very wide
+                sheet.autoSizeColumn(i);
+            } else {
+                sheet.setColumnWidth(i, 15000); // Set fixed width for notes
+            }
         }
     }
 
