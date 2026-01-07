@@ -72,13 +72,16 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
         List<Component> menuItems = new ArrayList<>();
 
         if (event.invocationType() == InvocationType.PROXY_HISTORY) {
-            menuItems.addAll(createProxyHistoryMenuItems(event));
+            menuItems.addAll(createMenuItems(event.selectedRequestResponses(), "Send to Autowasp (Proxy)",
+                    "Sent from Proxy History"));
         } else if (event.invocationType() == InvocationType.INTRUDER_PAYLOAD_POSITIONS ||
                 event.invocationType() == InvocationType.INTRUDER_ATTACK_RESULTS) {
-            menuItems.addAll(createIntruderMenuItems(event));
+            menuItems.addAll(createMenuItems(event.selectedRequestResponses(), "Send to Autowasp (Intruder)",
+                    "Sent from Intruder"));
         } else if (event.invocationType() == InvocationType.SITE_MAP_TABLE ||
                 event.invocationType() == InvocationType.SITE_MAP_TREE) {
-            menuItems.addAll(createTargetMenuItems(event));
+            menuItems.addAll(
+                    createMenuItems(event.selectedRequestResponses(), "Send to Autowasp (Target)", "Sent from Target"));
         } else if (event.messageEditorRequestResponse().isPresent()) {
             menuItems.addAll(createMessageEditorMenuItems(event));
         }
@@ -86,42 +89,14 @@ public class ContextMenuFactory implements ContextMenuItemsProvider {
         return menuItems;
     }
 
-    private List<Component> createProxyHistoryMenuItems(ContextMenuEvent event) {
+    private List<Component> createMenuItems(List<HttpRequestResponse> selectedItems, String menuLabel,
+            String actionName) {
         List<Component> items = new ArrayList<>();
-        List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
         if (!selectedItems.isEmpty()) {
-            JMenuItem item = new JMenuItem("Send to Autowasp (Proxy)");
+            JMenuItem item = new JMenuItem(menuLabel);
             item.addActionListener(e -> {
                 String comments = getAnnotationsComment(selectedItems.get(0));
-                logToAutowasp("Sent from Proxy History", comments, selectedItems);
-            });
-            items.add(item);
-        }
-        return items;
-    }
-
-    private List<Component> createIntruderMenuItems(ContextMenuEvent event) {
-        List<Component> items = new ArrayList<>();
-        List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
-        if (!selectedItems.isEmpty()) {
-            JMenuItem item = new JMenuItem("Send to Autowasp (Intruder)");
-            item.addActionListener(e -> {
-                String comments = getAnnotationsComment(selectedItems.get(0));
-                logToAutowasp("Sent from Intruder", comments, selectedItems);
-            });
-            items.add(item);
-        }
-        return items;
-    }
-
-    private List<Component> createTargetMenuItems(ContextMenuEvent event) {
-        List<Component> items = new ArrayList<>();
-        List<HttpRequestResponse> selectedItems = event.selectedRequestResponses();
-        if (!selectedItems.isEmpty()) {
-            JMenuItem item = new JMenuItem("Send to Autowasp (Target)");
-            item.addActionListener(e -> {
-                String comments = getAnnotationsComment(selectedItems.get(0));
-                logToAutowasp("Sent from Target", comments, selectedItems);
+                logToAutowasp(actionName, comments, selectedItems);
             });
             items.add(item);
         }
