@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-01-08 Rabu
+
+- Mengurangi duplikasi kode dengan membuat `AbstractAutowaspTable` sebagai base class untuk `InstanceTable` dan `LoggerTable`
+- Mengkonsolidasikan logika pembuatan menu di `ContextMenuFactory`
+
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
