@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-01-08
+
+### Added
+
+- **Session Notes (Phase 12.1)**: Notes Panel directly integrated with WSTG checklist items, with note-counting badges on the checklist table.
+- **Note Persistence**: Automated note saving into Burp Suite project files.
+- **Report Integration**: Session notes included in Excel reports (including GENERAL category notes).
+- **Documentation**: Created `docs/USER-GUIDE.md` for detailed usage instructions and `docs/CONTRIBUTING.md` for contribution guidelines.
+
+### Changed
+
+- **Code Quality**: Reduced duplication by creating `AbstractAutowaspTable` as base class for `InstanceTable` and `LoggerTable`.
+- **Context Menu**: Consolidated menu creation logic in `ContextMenuFactory`.
+- **Checklist UI**: Removed category column for improved space efficiency.
+- **Documentation**: Updated `README.md` with Table of Contents and Quick Start section. Standardized internal URLs using relative paths.
+- **WSTG Reference**: Updated to official OWASP v4.2 repository (tag `v42`).
+
+### Tests
+
+- Added 11 unit tests for `AbstractAutowaspTable` (achieving 60%+ coverage target for UI components).
+
 ## [2.2.9] - 2026-01-06
 
 ### Security & CI

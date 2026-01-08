@@ -76,6 +76,7 @@ public class Autowasp implements BurpExtension {
     private autowasp.managers.UIManager uiManager;
     private autowasp.managers.PersistenceManager persistenceManager;
     private autowasp.managers.ReportManager reportManager;
+    private autowasp.managers.NoteManager noteManager;
 
     // =====================================================================================
     // MONTOYA API ENTRY POINT
@@ -109,10 +110,15 @@ public class Autowasp implements BurpExtension {
         this.persistenceManager = new autowasp.managers.PersistenceManager(this);
         this.reportManager = new autowasp.managers.ReportManager(this);
 
+        autowasp.notes.NoteStore noteStore = new autowasp.notes.NoteStore(api);
+        this.noteManager = new autowasp.managers.NoteManager(noteStore);
+
         // Initialize managers
+        // UIManager must initialize first - ThemeManager is required by table
+        // constructors
+        uiManager.initialize(checklistManager, loggerManager);
         checklistManager.initialize();
         loggerManager.initialize();
-        uiManager.initialize(checklistManager, loggerManager);
         persistenceManager.initialize();
 
         // Register context menu (replaces callbacks.registerContextMenuFactory())
@@ -190,6 +196,10 @@ public class Autowasp implements BurpExtension {
 
     public autowasp.managers.ReportManager getReportManager() {
         return reportManager;
+    }
+
+    public autowasp.managers.NoteManager getNoteManager() {
+        return noteManager;
     }
 
     // =====================================================================================

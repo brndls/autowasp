@@ -27,13 +27,18 @@ public class ChecklistTableModel extends AbstractTableModel {
     private static final long serialVersionUID = 1L;
 
     private final transient Autowasp extender;
-    private final String[] columnNames = { "Reference Number", "Category", "Test Name", "Test Case Completed",
-            "To Exclude" };
+    private final String[] columnNames = { "Reference Number", "Test Name", "Test Case Completed",
+            "To Exclude", "Notes" };
     private Timer autoSaveTimer;
 
     public ChecklistTableModel(Autowasp extender) {
         this.extender = extender;
         setupAutoSaveTimer();
+
+        // Refresh table when notes change
+        if (extender.getNoteManager() != null) {
+            extender.getNoteManager().addChangeListener(() -> fireTableDataChanged());
+        }
     }
 
     private void setupAutoSaveTimer() {
@@ -76,33 +81,38 @@ public class ChecklistTableModel extends AbstractTableModel {
             return checklistEntry.getRefNumber();
         }
         if (columnIndex == 1) {
-            return checklistEntry.getCategory();
-        }
-        if (columnIndex == 2) {
             return checklistEntry.getTestName();
         }
-        if (columnIndex == 3) {
+        if (columnIndex == 2) {
             return checklistEntry.isTestcaseCompleted();
         }
-        if (columnIndex == 4) {
+        if (columnIndex == 3) {
             return checklistEntry.isExcluded();
+        }
+        if (columnIndex == 4) {
+            if (extender.getNoteManager() == null) {
+                return "";
+            }
+            int count = extender.getNoteManager().getNoteCountByWstgId(checklistEntry.getRefNumber());
+            return count > 0 ? String.valueOf(count) : "";
         }
         return "";
     }
 
     @Override
     public Class<?> getColumnClass(int column) {
-        return (getValueAt(0, column).getClass());
+        Object val = getValueAt(0, column);
+        return val == null ? Object.class : val.getClass();
     }
 
     // Method to set value at selected row and column
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         ChecklistEntry checklistEntry = extender.getChecklistManager().getChecklistLog().get(rowIndex);
-        if (columnIndex == 3) {
+        if (columnIndex == 2) {
             checklistEntry.setTestCaseCompleted((Boolean) aValue);
             triggerAutoSave();
-        } else if (columnIndex == 4) {
+        } else if (columnIndex == 3) {
             checklistEntry.setExclusion((Boolean) aValue);
             // Refresh Mapping list for logger tab
             extender.getLoggerManager().getLoggerTable().resetList();
@@ -118,6 +128,6 @@ public class ChecklistTableModel extends AbstractTableModel {
     // Method to restrict editable cell to those with dropdown combo.
     @Override
     public boolean isCellEditable(int row, int col) {
-        return col == 3 || col == 4;
+        return col == 2 || col == 3;
     }
 }
