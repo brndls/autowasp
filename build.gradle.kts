@@ -60,7 +60,7 @@ spotless {
  * - version: Software version (SNAPSHOT = still in development)
  */
 group = "autowasp"
-version = "2.3.1"
+version = "2.4.0"
 
 
 // ════════════════════════════════════════════════════════════════════════════

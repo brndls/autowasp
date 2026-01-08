@@ -630,7 +630,7 @@ Reference: [GUIDELINES.md](./GUIDELINES.md)
 
 ## Phase 6.5 - Update Bundled WSTG Data
 
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete  
 **Priority:** Low  
 **Effort:** Low
 
@@ -666,7 +666,7 @@ The bundled `checklist.json` in `src/main/resources/wstg/` contains all 91 test 
 
 ## Phase 6.6 - WSTG Checklist Simplification
 
-**Status:** ⏳ Pending  
+**Status:** ✅ Complete  
 **Priority:** Medium  
 **Effort:** Medium
 
