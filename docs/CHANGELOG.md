@@ -1,22 +1,22 @@
 # Changelog
 
-## 2026-01-08 Rabu
+## 2026-01-08 Wednesday
 
-- Mengurangi duplikasi kode dengan membuat `AbstractAutowaspTable` sebagai base class untuk `InstanceTable` dan `LoggerTable`
-- Mengkonsolidasikan logika pembuatan menu di `ContextMenuFactory`
-- Menambahkan 11 unit test untuk `AbstractAutowaspTable` (mencapai target coverage 60%+ untuk UI components)
+- Reduced code duplication by creating `AbstractAutowaspTable` as a base class for `InstanceTable` and `LoggerTable`
+- Consolidated menu creation logic in `ContextMenuFactory`
+- Added 11 unit tests for `AbstractAutowaspTable` (achieving 60%+ coverage target for UI components)
 - **Phase 12.1: Session Notes**
-  - Menambahkan panel catatan (Notes Panel) yang terintegrasi langsung dengan item checklist WSTG
-  - Implementasi badge penghitung catatan pada tabel checklist
-  - Otomatisasi persistensi catatan ke dalam file project Burp Suite
-  - Integrasi catatan sesi ke dalam laporan Excel (termasuk catatan umum/GENERAL)
-  - Penataan ulang UI checklist dengan menghapus kolom kategori untuk efisiensi ruang
-- **Dokumentasi & Restrukturisasi**
-  - `README.md` diperbarui dengan Table of Contents, Quick Start, dan struktur yang lebih ringkas
-  - Membuat `docs/USER-GUIDE.md` untuk panduan penggunaan detail dengan screenshot
-  - Membuat `docs/CONTRIBUTING.md` untuk panduan kontribusi dan standar koding
-  - Standarisasi URL internal menggunakan jalur relatif untuk portabilitas
-  - Pembaruan rujukan WSTG ke repositori resmi OWASP v4.2 (tag `v42`)
+  - Added a Notes Panel directly integrated with WSTG checklist items
+  - Implemented note-counting badges on the checklist table
+  - Automated note persistence into Burp Suite project files
+  - Integrated session notes into Excel reports (including GENERAL notes)
+  - Rearranged checklist UI by removing the category column for space efficiency
+- **Documentation & Restructuring**
+  - Updated `README.md` with Table of Contents, Quick Start, and a more concise structure
+  - Created `docs/USER-GUIDE.md` for detailed usage instructions with screenshots
+  - Created `docs/CONTRIBUTING.md` for contribution guidelines and coding standards
+  - Standardized internal URLs using relative paths for portability
+  - Updated WSTG reference to official OWASP v4.2 repository (tag `v42`)
 
 
 All notable changes to this project will be documented in this file.
