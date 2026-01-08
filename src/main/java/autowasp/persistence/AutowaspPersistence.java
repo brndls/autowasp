@@ -17,6 +17,7 @@
 package autowasp.persistence;
 
 import autowasp.checklist.ChecklistEntry;
+import autowasp.checklist.ChecklistStatus;
 import autowasp.logger.entrytable.LoggerEntry;
 
 import burp.api.montoya.MontoyaApi;
@@ -58,8 +59,9 @@ public class AutowaspPersistence {
             List<ChecklistState> stateList = entries.stream()
                     .map(entry -> new ChecklistState(
                             entry.getRefNumber(),
-                            entry.isExcluded(),
-                            entry.isTestcaseCompleted(),
+                            entry.getStatus() != null ? entry.getStatus().name() : null,
+                            entry.getStatus() == ChecklistStatus.NA,
+                            entry.getStatus() == ChecklistStatus.DONE,
                             entry.getPenTesterComments(),
                             entry.getEvidence()))
                     .toList();

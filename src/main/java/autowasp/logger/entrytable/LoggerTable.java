@@ -18,6 +18,7 @@ package autowasp.logger.entrytable;
 
 import autowasp.Autowasp;
 import autowasp.checklist.ChecklistEntry;
+import autowasp.checklist.ChecklistStatus;
 // Explicit import might be needed if moved
 
 import javax.swing.DefaultCellEditor;
@@ -112,7 +113,7 @@ public class LoggerTable extends autowasp.ui.AbstractAutowaspTable {
         // Add an N.A. to mark finding as false positive
         comboBox.addItem("N.A.");
         for (ChecklistEntry entry : extender.getChecklistManager().getChecklistLog()) {
-            if (Boolean.FALSE.equals(entry.isExcluded())) {
+            if (entry.getStatus() != ChecklistStatus.NA) {
                 String comboEntry = entry.getRefNumber() + " - " + entry.getTestName();
                 comboBox.addItem(comboEntry);
             }

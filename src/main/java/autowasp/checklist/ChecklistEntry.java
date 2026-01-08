@@ -27,12 +27,11 @@ public class ChecklistEntry implements Serializable {
     private String refNumber;
     private String category;
     private String testName;
-    private boolean exclusion;
-    private boolean testcaseCompleted;
     private String summaryHTML;
     private String howToTestHTML;
     private String referencesHTML;
     private final String url;
+    private ChecklistStatus status;
     public static final String REF_NUMBER_KEY = "Reference Number";
     public static final String CATEGORY_KEY = "Category";
     public static final String TEST_NAME_KEY = "Test Name";
@@ -54,8 +53,7 @@ public class ChecklistEntry implements Serializable {
         this.summaryHTML = contentElements.get(SUMMARY_KEY);
         this.howToTestHTML = contentElements.get(HOW_TO_TEST_KEY);
         this.referencesHTML = contentElements.get(REFERENCES_KEY);
-        this.exclusion = false;
-        this.testcaseCompleted = false;
+        this.status = ChecklistStatus.TODO;
         this.url = url; // URL is included for ease of creating the hyperlinks when writing to excel
                         // file
         this.pentesterComments = "";
@@ -73,8 +71,7 @@ public class ChecklistEntry implements Serializable {
         this.summaryHTML = summaryHTML;
         this.howToTestHTML = howToTestHTML;
         this.referencesHTML = referencesHTML;
-        this.exclusion = false;
-        this.testcaseCompleted = false;
+        this.status = ChecklistStatus.TODO;
         this.url = url; // URL is included for ease of creating the hyperlinks when writing to excel
                         // file
         this.pentesterComments = "";
@@ -104,6 +101,9 @@ public class ChecklistEntry implements Serializable {
             // link to the OWASP article
             this.referencesHTML = "";
         }
+        if (status == null) {
+            this.status = ChecklistStatus.TODO;
+        }
     }
 
     public String getRefNumber() {
@@ -114,20 +114,52 @@ public class ChecklistEntry implements Serializable {
         return this.testName;
     }
 
+    /**
+     * @deprecated Use {@link #getStatus()}
+     */
+    @Deprecated(since = "2.3.0")
     public boolean isExcluded() {
-        return this.exclusion;
+        return this.status == ChecklistStatus.NA;
     }
 
+    /**
+     * @deprecated Use {@link #getStatus()}
+     */
+    @Deprecated(since = "2.3.0")
     public boolean isTestcaseCompleted() {
-        return this.testcaseCompleted;
+        return this.status == ChecklistStatus.DONE;
     }
 
-    public void setExclusion(Boolean value) {
-        this.exclusion = value;
+    /**
+     * @deprecated Use {@link #setStatus(ChecklistStatus)}
+     */
+    @Deprecated(since = "2.3.0")
+    public void setExclusion(Boolean exclusion) {
+        if (Boolean.TRUE.equals(exclusion)) {
+            this.status = ChecklistStatus.NA;
+        } else if (this.status == ChecklistStatus.NA) {
+            this.status = ChecklistStatus.TODO;
+        }
     }
 
-    public void setTestCaseCompleted(Boolean value) {
-        this.testcaseCompleted = value;
+    /**
+     * @deprecated Use {@link #setStatus(ChecklistStatus)}
+     */
+    @Deprecated(since = "2.3.0")
+    public void setTestCaseCompleted(Boolean testCaseCompleted) {
+        if (Boolean.TRUE.equals(testCaseCompleted)) {
+            this.status = ChecklistStatus.DONE;
+        } else if (this.status == ChecklistStatus.DONE) {
+            this.status = ChecklistStatus.TODO;
+        }
+    }
+
+    public ChecklistStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ChecklistStatus status) {
+        this.status = status;
     }
 
     public void setPenTesterComments(String comments) {

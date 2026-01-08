@@ -5,11 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2026-01-08
+
+### Fixed
+
+- **Checklist Logic**: Resolved logic complexity in `applySavedPersistenceState` (Cognitive Complexity reduction).
+- **Linting**: Fixed various linting issues in `ChecklistLogic`, `ExcelReportWriter`, and `ChecklistTable`.
+- **Test Coverage**: Improved test coverage for persistence migration logic.
+
 ## [2.3.0] - 2026-01-08
 
 ### Added
 
 - **Session Notes (Phase 12.1)**: Notes Panel directly integrated with WSTG checklist items, with note-counting badges on the checklist table.
+- **Checklist Status Consolidation (Phase 12.4)**: Replaced separate "Completed" and "Exclude" checkboxes with a unified "Status" dropdown (Todo, Done, Fail, N/A).
+- **Status Color Coding**: Implemented color-coded status indicators in the checklist table for better visibility.
 - **Note Persistence**: Automated note saving into Burp Suite project files.
 - **Report Integration**: Session notes included in Excel reports (including GENERAL category notes).
 - **Documentation**: Created `docs/USER-GUIDE.md` for detailed usage instructions and `docs/CONTRIBUTING.md` for contribution guidelines.
@@ -18,12 +28,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Code Quality**: Reduced duplication by creating `AbstractAutowaspTable` as base class for `InstanceTable` and `LoggerTable`.
 - **Context Menu**: Consolidated menu creation logic in `ContextMenuFactory`.
-- **Checklist UI**: Removed category column for improved space efficiency.
+- **Checklist UI**: Consolidated 2 checkbox columns into 1 dropdown status column. Removed category column for improved space efficiency.
+- **Persistence Logic**: Enhanced checklist persistence to support status enums with automatic migration from legacy boolean states.
+- **Excel Reporting**: Consolidated Status/Excluded columns in Excel reports.
 - **Documentation**: Updated `README.md` with Table of Contents and Quick Start section. Standardized internal URLs using relative paths.
 - **WSTG Reference**: Updated to official OWASP v4.2 repository (tag `v42`).
 
 ### Tests
 
+- Updated `ChecklistEntryTest` to verify status logic and backward compatibility.
 - Added 11 unit tests for `AbstractAutowaspTable` (achieving 60%+ coverage target for UI components).
 
 ## [2.2.9] - 2026-01-06

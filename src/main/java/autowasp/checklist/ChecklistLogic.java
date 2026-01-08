@@ -492,9 +492,12 @@ public class ChecklistLogic implements Serializable {
                 ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream)) {
 
             for (ChecklistEntry entry : extender.getChecklistManager().getChecklistLog()) {
-                if (entry.isExcluded()) {
+                // To ensure entries appear in the local copy archive, we reset NA to a baseline
+                // status.
+                // This ensures they aren't permanently excluded when shared as a template.
+                if (entry.getStatus() == ChecklistStatus.NA) {
                     ChecklistEntry tempChecklistEntry = entry;
-                    tempChecklistEntry.setExclusion(false);
+                    tempChecklistEntry.setStatus(ChecklistStatus.TODO);
                     outputStream.writeObject(tempChecklistEntry);
                 } else {
                     outputStream.writeObject(entry);
@@ -551,16 +554,7 @@ public class ChecklistLogic implements Serializable {
         for (autowasp.persistence.ChecklistState state : savedStates) {
             ChecklistEntry entry = extender.getChecklistManager().getCheckListHashMap().get(state.refNumber());
             if (entry != null) {
-                entry.setExclusion(state.excluded());
-                entry.setTestCaseCompleted(state.completed());
-                if (state.comments() != null && !state.comments().isEmpty()) {
-                    entry.clearComments(); // Clear default "Please insert comments" if any
-                    entry.setPenTesterComments(state.comments());
-                }
-                if (state.evidence() != null && !state.evidence().isEmpty()) {
-                    entry.clearEvidences(); // Clear default "nil" if any
-                    entry.setEvidence(state.evidence());
-                }
+                restoreEntryState(entry, state);
                 restoredCount++;
             }
         }
@@ -570,6 +564,38 @@ public class ChecklistLogic implements Serializable {
             // Refresh table UI
             extender.getChecklistManager().getChecklistTableModel().fireTableDataChanged();
         }
+    }
+
+    private void restoreEntryState(ChecklistEntry entry, autowasp.persistence.ChecklistState state) {
+        entry.setStatus(determineStatus(state));
+
+        if (state.comments() != null && !state.comments().isEmpty()) {
+            entry.clearComments(); // Clear default "Please insert comments" if any
+            entry.setPenTesterComments(state.comments());
+        }
+        if (state.evidence() != null && !state.evidence().isEmpty()) {
+            entry.clearEvidences(); // Clear default "nil" if any
+            entry.setEvidence(state.evidence());
+        }
+    }
+
+    private ChecklistStatus determineStatus(autowasp.persistence.ChecklistState state) {
+        // 1. Check for modern status string
+        if (state.status() != null) {
+            try {
+                return ChecklistStatus.valueOf(state.status());
+            } catch (IllegalArgumentException e) {
+                return ChecklistStatus.TODO;
+            }
+        }
+
+        // 2. Migration from legacy booleans
+        if (state.excluded()) {
+            return ChecklistStatus.NA;
+        } else if (state.completed()) {
+            return ChecklistStatus.DONE;
+        }
+        return ChecklistStatus.TODO;
     }
 
     /**
