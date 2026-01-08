@@ -31,7 +31,7 @@ import javax.swing.border.MatteBorder;
  * Side panel for displaying and managing session notes.
  */
 public class ChecklistNotesPanel extends JPanel implements NoteChangeListener {
-    private final NoteManager noteManager;
+    private final transient NoteManager noteManager;
     private String currentWstgId;
 
     private final JLabel headerLabel;
@@ -43,7 +43,7 @@ public class ChecklistNotesPanel extends JPanel implements NoteChangeListener {
     private final JButton saveButton;
     private final JButton addButton;
 
-    private Note editingNote;
+    private transient Note editingNote;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
             .withZone(ZoneId.systemDefault());
@@ -234,13 +234,16 @@ public class ChecklistNotesPanel extends JPanel implements NoteChangeListener {
     }
 
     private void deleteNote(Note note) {
+        if (confirmDelete()) {
+            noteManager.deleteNote(note.id());
+        }
+    }
+
+    protected boolean confirmDelete() {
         int result = JOptionPane.showConfirmDialog(this,
                 "Are you sure you want to delete this note?",
                 "Confirm Delete",
                 JOptionPane.YES_NO_OPTION);
-
-        if (result == JOptionPane.YES_OPTION) {
-            noteManager.deleteNote(note.id());
-        }
+        return result == JOptionPane.YES_OPTION;
     }
 }
