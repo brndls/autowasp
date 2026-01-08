@@ -492,9 +492,11 @@ public class ChecklistLogic implements Serializable {
                 ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream)) {
 
             for (ChecklistEntry entry : extender.getChecklistManager().getChecklistLog()) {
-                if (entry.isExcluded()) {
+                // If an entry is NA, save it as TODO for local copy (it's not truly excluded
+                // from the checklist)
+                if (entry.getStatus() == ChecklistStatus.NA) {
                     ChecklistEntry tempChecklistEntry = entry;
-                    tempChecklistEntry.setExclusion(false);
+                    tempChecklistEntry.setStatus(ChecklistStatus.TODO);
                     outputStream.writeObject(tempChecklistEntry);
                 } else {
                     outputStream.writeObject(entry);
@@ -551,8 +553,24 @@ public class ChecklistLogic implements Serializable {
         for (autowasp.persistence.ChecklistState state : savedStates) {
             ChecklistEntry entry = extender.getChecklistManager().getCheckListHashMap().get(state.refNumber());
             if (entry != null) {
-                entry.setExclusion(state.excluded());
-                entry.setTestCaseCompleted(state.completed());
+                // Determine status with migration logic
+                if (state.status() != null) {
+                    try {
+                        entry.setStatus(ChecklistStatus.valueOf(state.status()));
+                    } catch (IllegalArgumentException e) {
+                        entry.setStatus(ChecklistStatus.TODO);
+                    }
+                } else {
+                    // Migration from old booleans
+                    if (state.excluded()) {
+                        entry.setStatus(ChecklistStatus.NA);
+                    } else if (state.completed()) {
+                        entry.setStatus(ChecklistStatus.DONE);
+                    } else {
+                        entry.setStatus(ChecklistStatus.TODO);
+                    }
+                }
+
                 if (state.comments() != null && !state.comments().isEmpty()) {
                     entry.clearComments(); // Clear default "Please insert comments" if any
                     entry.setPenTesterComments(state.comments());

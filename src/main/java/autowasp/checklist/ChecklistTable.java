@@ -33,10 +33,28 @@ public class ChecklistTable extends JTable {
         this.extender = extender;
         // Even parameters are default values for each column, odd parameters are max
         // value for that column
-        // Just need to make sure that the max value >= Default values or things are
-        // gonna be a bit messy.
-        setColumnWidths(200, 300, 200, 300, 1350, 1800, 500, 600, 200, 300);
+        setColumnWidths(200, 300, 1350, 1800, 150, 200, 200, 300);
+        setupStatusColumn();
         extender.getUIManager().getThemeManager().applyThemeToTable(this);
+    }
+
+    private void setupStatusColumn() {
+        JComboBox<ChecklistStatus> statusCombo = new JComboBox<>(ChecklistStatus.values());
+        getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(statusCombo));
+
+        getColumnModel().getColumn(2).setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public java.awt.Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
+                java.awt.Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
+                        column);
+                if (value instanceof ChecklistStatus status && !isSelected) {
+                    c.setForeground(status.getColor());
+                    c.setFont(c.getFont().deriveFont(java.awt.Font.BOLD));
+                }
+                return c;
+            }
+        });
     }
 
     public void setColumnWidths(int... widths) {

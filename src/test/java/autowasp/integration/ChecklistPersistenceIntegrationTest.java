@@ -36,7 +36,7 @@ class ChecklistPersistenceIntegrationTest extends IntegrationTestBase {
         // 2. Modify some entries
         ChecklistEntry firstEntry = entries.get(0);
         String refNumber = firstEntry.getRefNumber();
-        firstEntry.setExclusion(true);
+        firstEntry.setStatus(autowasp.checklist.ChecklistStatus.NA);
         firstEntry.setPenTesterComments("Integration test comment");
         firstEntry.setEvidence("Integration test evidence");
 
@@ -64,7 +64,7 @@ class ChecklistPersistenceIntegrationTest extends IntegrationTestBase {
 
         ChecklistEntry restoredEntry = checklistManager.getCheckListHashMap().get(refNumber);
         assertNotNull(restoredEntry, "Restored entry should exist in hash map");
-        assertTrue(restoredEntry.isExcluded(), "Restored entry should be excluded");
+        assertEquals(autowasp.checklist.ChecklistStatus.NA, restoredEntry.getStatus(), "Restored entry should be NA");
         assertEquals("Integration test comment", restoredEntry.getPenTesterComments());
         assertEquals("Integration test evidence", restoredEntry.getEvidence());
     }

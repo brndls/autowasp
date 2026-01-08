@@ -75,7 +75,7 @@ class AutowaspPersistenceTest {
         table.put("Test Name", "Info Gathering");
 
         ChecklistEntry entry = new ChecklistEntry(table, new HashMap<>(), "http://url");
-        entry.setTestCaseCompleted(true);
+        entry.setStatus(autowasp.checklist.ChecklistStatus.DONE);
         entry.setPenTesterComments("Test Comment");
         entries.add(entry);
 
@@ -86,14 +86,14 @@ class AutowaspPersistenceTest {
 
     @Test
     void testLoadChecklistState() {
-        String json = "[{\"refNumber\":\"WSTG-INFO-01\",\"excluded\":false,\"completed\":true,\"comments\":\"Test Comment\",\"evidence\":\"Test Evidence\"}]";
+        String json = "[{\"refNumber\":\"WSTG-INFO-01\",\"status\":\"DONE\",\"excluded\":false,\"completed\":true,\"comments\":\"Test Comment\",\"evidence\":\"Test Evidence\"}]";
         when(mockPersistedObject.getString("autowasp_checklist_state_json")).thenReturn(json);
 
         List<ChecklistState> results = autowaspPersistence.loadChecklistState();
 
         assertEquals(1, results.size());
         assertEquals("WSTG-INFO-01", results.get(0).refNumber());
-        assertTrue(results.get(0).completed());
+        assertEquals("DONE", results.get(0).status());
         assertEquals("Test Comment", results.get(0).comments());
     }
 
