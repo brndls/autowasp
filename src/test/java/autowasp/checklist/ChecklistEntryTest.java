@@ -41,8 +41,7 @@ class ChecklistEntryTest {
         assertEquals("Test 1", entry.getTestName());
         assertEquals("<p>Summary</p>", entry.getSummaryHTML());
         assertEquals("http://example.com", entry.getUrl());
-        assertFalse(entry.isExcluded());
-        assertFalse(entry.isTestcaseCompleted());
+        assertEquals(ChecklistStatus.TODO, entry.getStatus());
     }
 
     @Test
@@ -54,6 +53,7 @@ class ChecklistEntryTest {
         assertEquals("Cat", entry.getCategory());
         assertEquals("Test 2", entry.getTestName());
         assertEquals("Sum", entry.getSummaryHTML());
+        assertEquals(ChecklistStatus.TODO, entry.getStatus());
     }
 
     @Test
@@ -79,6 +79,34 @@ class ChecklistEntryTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
+    void testDeprecatedBridge() {
+        ChecklistEntry entry = new ChecklistEntry(new HashMap<>(), new HashMap<>(), "url");
+
+        // Initial mapping: NA -> isExcluded
+        entry.setStatus(ChecklistStatus.NA);
+        assertTrue(entry.isExcluded());
+        assertFalse(entry.isTestcaseCompleted());
+
+        // Initial mapping: DONE -> isTestcaseCompleted
+        entry.setStatus(ChecklistStatus.DONE);
+        assertTrue(entry.isTestcaseCompleted());
+        assertFalse(entry.isExcluded());
+
+        // Legacy Setters
+        entry.setStatus(ChecklistStatus.TODO);
+        entry.setExclusion(true);
+        assertEquals(ChecklistStatus.NA, entry.getStatus());
+        entry.setExclusion(false);
+        assertEquals(ChecklistStatus.TODO, entry.getStatus());
+
+        entry.setTestCaseCompleted(true);
+        assertEquals(ChecklistStatus.DONE, entry.getStatus());
+        entry.setTestCaseCompleted(false);
+        assertEquals(ChecklistStatus.TODO, entry.getStatus());
+    }
+
+    @Test
     void testSettersAndAppenders() {
         ChecklistEntry entry = new ChecklistEntry(new HashMap<>(), new HashMap<>(), "url");
 
@@ -94,12 +122,27 @@ class ChecklistEntryTest {
         entry.setEvidence("Ev2.");
         assertEquals("Ev1.Ev2.", entry.getEvidence());
 
-        // Booleans
-        entry.setExclusion(true);
-        assertTrue(entry.isExcluded());
+        // Status
+        assertEquals(ChecklistStatus.TODO, entry.getStatus());
 
-        entry.setTestCaseCompleted(true);
-        assertTrue(entry.isTestcaseCompleted());
+        entry.setStatus(ChecklistStatus.DONE);
+        assertEquals(ChecklistStatus.DONE, entry.getStatus());
+
+        entry.setStatus(ChecklistStatus.NA);
+        assertEquals(ChecklistStatus.NA, entry.getStatus());
+
+        entry.setStatus(ChecklistStatus.FAIL);
+        assertEquals(ChecklistStatus.FAIL, entry.getStatus());
+
+        // Test status transitions with setStatus
+        entry.setStatus(ChecklistStatus.TODO);
+        assertEquals(ChecklistStatus.TODO, entry.getStatus());
+
+        entry.setStatus(ChecklistStatus.NA);
+        assertEquals(ChecklistStatus.NA, entry.getStatus());
+
+        entry.setStatus(ChecklistStatus.DONE); // Should override NA
+        assertEquals(ChecklistStatus.DONE, entry.getStatus());
 
         entry.setTestBoolean(true);
         assertTrue(entry.getTestBool());

@@ -21,9 +21,10 @@ package autowasp.persistence;
  * Using record for conciseness (Java 21).
  */
 public record ChecklistState(
-        String refNumber,
-        boolean excluded,
-        boolean completed,
-        String comments,
-        String evidence) {
+                String refNumber,
+                String status,
+                boolean excluded,
+                boolean completed,
+                String comments,
+                String evidence) {
 }

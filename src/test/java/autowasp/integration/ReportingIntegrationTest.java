@@ -42,7 +42,7 @@ class ReportingIntegrationTest extends IntegrationTestBase {
         assertFalse(checklistManager.getChecklistLog().isEmpty(), "Checklist should have items");
 
         // Mark first item as completed with comment
-        checklistManager.getChecklistLog().get(0).setTestCaseCompleted(true);
+        checklistManager.getChecklistLog().get(0).setStatus(autowasp.checklist.ChecklistStatus.DONE);
         checklistManager.getChecklistLog().get(0).setPenTesterComments("WSTG Integration Completed");
 
         // 2. Prepare Logger Data

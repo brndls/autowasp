@@ -27,8 +27,7 @@ public class ChecklistTableModel extends AbstractTableModel {
     private static final long serialVersionUID = 1L;
 
     private final transient Autowasp extender;
-    private final String[] columnNames = { "Reference Number", "Test Name", "Test Case Completed",
-            "To Exclude", "Notes" };
+    private final String[] columnNames = { "Reference Number", "Test Name", "Status", "Notes" };
     private Timer autoSaveTimer;
 
     public ChecklistTableModel(Autowasp extender) {
@@ -84,12 +83,9 @@ public class ChecklistTableModel extends AbstractTableModel {
             return checklistEntry.getTestName();
         }
         if (columnIndex == 2) {
-            return checklistEntry.isTestcaseCompleted();
+            return checklistEntry.getStatus();
         }
         if (columnIndex == 3) {
-            return checklistEntry.isExcluded();
-        }
-        if (columnIndex == 4) {
             if (extender.getNoteManager() == null) {
                 return "";
             }
@@ -101,6 +97,9 @@ public class ChecklistTableModel extends AbstractTableModel {
 
     @Override
     public Class<?> getColumnClass(int column) {
+        if (column == 2) {
+            return ChecklistStatus.class;
+        }
         Object val = getValueAt(0, column);
         return val == null ? Object.class : val.getClass();
     }
@@ -110,11 +109,8 @@ public class ChecklistTableModel extends AbstractTableModel {
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         ChecklistEntry checklistEntry = extender.getChecklistManager().getChecklistLog().get(rowIndex);
         if (columnIndex == 2) {
-            checklistEntry.setTestCaseCompleted((Boolean) aValue);
-            triggerAutoSave();
-        } else if (columnIndex == 3) {
-            checklistEntry.setExclusion((Boolean) aValue);
-            // Refresh Mapping list for logger tab
+            checklistEntry.setStatus((ChecklistStatus) aValue);
+            // Refresh Mapping list for logger tab if NA or from NA
             extender.getLoggerManager().getLoggerTable().resetList();
             triggerAutoSave();
         }
@@ -128,6 +124,6 @@ public class ChecklistTableModel extends AbstractTableModel {
     // Method to restrict editable cell to those with dropdown combo.
     @Override
     public boolean isCellEditable(int row, int col) {
-        return col == 2 || col == 3;
+        return col == 2;
     }
 }
