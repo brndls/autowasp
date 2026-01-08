@@ -11,7 +11,12 @@
   - Otomatisasi persistensi catatan ke dalam file project Burp Suite
   - Integrasi catatan sesi ke dalam laporan Excel (termasuk catatan umum/GENERAL)
   - Penataan ulang UI checklist dengan menghapus kolom kategori untuk efisiensi ruang
-
+- **Dokumentasi & Restrukturisasi**
+  - `README.md` diperbarui dengan Table of Contents, Quick Start, dan struktur yang lebih ringkas
+  - Membuat `docs/USER-GUIDE.md` untuk panduan penggunaan detail dengan screenshot
+  - Membuat `docs/CONTRIBUTING.md` untuk panduan kontribusi dan standar koding
+  - Standarisasi URL internal menggunakan jalur relatif untuk portabilitas
+  - Pembaruan rujukan WSTG ke repositori resmi OWASP v4.2 (tag `v42`)
 
 
 All notable changes to this project will be documented in this file.
