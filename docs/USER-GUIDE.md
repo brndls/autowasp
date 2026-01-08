@@ -16,21 +16,12 @@ A general testing workflow using Autowasp includes the following steps:
 
 ## Detailed Workflow
 
-### 1. Displaying the Testing checklist
+### 1. Displaying the Testing Checklist
 
-#### First time
+1. Click the **Load WSTG v4.2 Checklist** button to load the bundled checklist data.
+2. The checklist will load almost instantly and is available offline.
 
-1. Click the **Fetch WSTG Checklist** button to fetch the checklist from the [WSTG documentation](https://github.com/OWASP/wstg/blob/v42/4-Web_Application_Security_Testing/README.md). (Note: this may take a few minutes due to the number of pages)
-2. If you are working in an offline environment, click **Load local checklist** to start your penetration testing work. Do note that local checklist may not be updated frequently.
-
-![Fetch Checklist](../images/fetchChecklist.gif)
-
-#### Subsequent times
-
-1. Choose **Load local checklist** to start your penetration testing work.
-2. This should load the checklist almost instantly.
-
-![Upload Checklist](../images/uploadChecklist.gif)
+![Load Checklist](../images/uploadChecklist.gif)
 
 #### Excluding Checklist item(s)
 

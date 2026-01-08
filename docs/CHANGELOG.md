@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-01-09
+
+### Added
+- Comprehensive WSTG v4.2 checklist content including Summary, How to Test, and References.
+- Support for WSTG sub-tests (e.g., specific SQL Injection variants).
+- New Python script `scripts/generate_wstg_checklist.py` for generating checklist JSON from official OWASP sources.
+- Support for HTML rendering in Checklist Summary and References tabs.
+- Full markdown support in checklist content (headings, code blocks, lists, blockquotes).
+
+### Changed
+- Updated `checklist.json` from 98 items to 108 items (including 10 sub-tests).
+- Changed UI components to `JEditorPane` to support rich HTML content.
+
+### Fixed
+- Fixed improper ordering of sub-tests in checklist JSON.
+- Fixed broken links in checklist content by adding URL encoding.
+- Resolved rendering issues where HTML tags were displayed as plain text.
+## [2.3.2] - 2026-01-08
+
+### Changed
+
+- **WSTG Checklist Simplification (Phase 6.6)**: Removed online fetch functionality to improve reliability and performance. Autowasp now relies exclusively on bundled WSTG v4.2 data.
+- **UI Simplification**: Replaced the multi-button fetch/load layout with a single "Load WSTG v4.2 Checklist" button. Removed fetch-related progress indicators and cancel buttons.
+- **Improved Accuracy**: Bundled data now correctly includes the "WSTG-APIT-01" (API Testing) test case, which was previously missing in online fetch results due to upstream documentation inconsistencies.
+
+### Removed
+
+- **Obsolete Fetch Logic**: Deleted approximately 500 lines of scraping and parsing code, including the `ChecklistFetchWorker` background task.
+- **Network Dependency**: Removed online network requests for checklist initialization, enabling 100% offline workflow.
+
+### Tests
+
+- Removed obsolete `ChecklistFetchWorkerTest`.
+- Cleaned up `ChecklistLogicTest` by removing network-dependent test cases.
+
 ## [2.3.1] - 2026-01-08
 
 ### Fixed
