@@ -20,7 +20,8 @@ This document tracks the ongoing development phases for Autowasp.
 | 6.1   | Local Checklist Import                    | ✅ Complete    | Medium    |
 | 6.2   | GitHub Release & CI/CD                    | ✅ Complete    | Medium    |
 | 6.3   | BApp Store Submission                     | ✅ Complete    | Low       |
-| 6.5   | Update Bundled WSTG Data                  | ⏳ Pending     | Low       |
+| 6.5   | Update Bundled WSTG Data                  | 🔄 In Progress | Low       |
+| 6.6   | WSTG Checklist Simplification             | 🔄 In Progress | Medium    |
 | 7.0   | Future Maintenance                        | ✅ Complete    | Low       |
 | 7.1   | Handle Large Projects                     | ✅ Complete    | Medium    |
 | 8.1   | Auto-Mapping WSTG                         | 🔮 Future      | Medium    |
@@ -128,7 +129,7 @@ This document tracks the ongoing development phases for Autowasp.
 > **TODO:** Web fetch currently fails due to OWASP URL connectivity issues.
 > Consider deprecating web fetch in favor of bundled offline mode (Phase 6.1).
 
-### 4.2.4 Burp Networking Compliance ✅ *(BApp #7)*
+### 4.2.4 Burp Networking Compliance ✅ *(BApp #7)* - OBSOLETE (Fetch Removed)
 
 **Goal:** Replace direct HTTP connections with Burp's networking API.
 
@@ -635,27 +636,122 @@ Reference: [GUIDELINES.md](./GUIDELINES.md)
 
 **Objective:** Synchronize bundled offline WSTG checklist with latest OWASP data.
 
+> [!IMPORTANT]
+> **Autowasp currently supports WSTG v4.2 only.**
+>
+> The bundled `checklist.json` is based on [OWASP WSTG v4.2](https://github.com/OWASP/www-project-web-security-testing-guide/tree/master/v42/4-Web_Application_Security_Testing) which was released in 2020 and has been stable for 6 years.
+
 **Background:**
 
-The bundled `checklist.json` in `src/main/resources/wstg/` may become outdated. This phase provides a mechanism to update it.
-
-**Options:**
-
-1. **Manual Update** (Recommended for now)
-   - Fetch latest from OWASP website using "Fetch WSTG Checklist"
-   - Export to JSON format
-   - Replace bundled `checklist.json`
-   - Bump version in extension
-
-2. **Automated Sync** (Future Enhancement)
-   - GitHub Action to periodically check OWASP repo
-   - Auto-PR with updated JSON
+The bundled `checklist.json` in `src/main/resources/wstg/` contains all 91 test cases from WSTG v4.2, including:
+- 12 categories (INFO, CONF, IDNT, ATHN, ATHZ, SESS, INPV, ERRH, CRYP, BUSL, CLNT, APIT)
+- `WSTG-APIT-01` (GraphQL Testing) - present in folder structure but missing from v4.2 README.md
 
 **Tasks:**
 
-- [ ] Create export mechanism from fetched data
-- [ ] Document update procedure
-- [ ] Update bundled `checklist.json` with latest data
+- [ ] Document update procedure for maintainers
+- [ ] Verify all 91 test cases are present in bundled JSON
+
+> [!NOTE]
+> **Future: WSTG v5.0 Adoption**
+>
+> When OWASP officially releases WSTG v5.0, Autowasp will migrate to the new version.
+> This will involve:
+> - Updating bundled `checklist.json` with v5.0 data
+> - Adding any new test cases/categories introduced in v5.0
+> - Maintaining backward compatibility for existing projects
+> - Updating UI labels to reflect the new version
+
+---
+
+## Phase 6.6 - WSTG Checklist Simplification
+
+**Status:** ⏳ Pending  
+**Priority:** Medium  
+**Effort:** Medium
+
+**Objective:** Simplify checklist loading by removing online fetch and using bundled-only approach for consistency.
+
+> [!IMPORTANT]
+> This phase removes the "Fetch WSTG Checklist" online feature in favor of a single "Load WSTG v4.2 Checklist" button.
+
+**Background:**
+
+The current implementation has 3 buttons for checklist loading:
+- "Fetch WSTG Checklist" (online scraping)
+- "Cancel Fetch"
+- "Load Bundled WSTG (Offline)"
+
+**Problems with Online Fetch:**
+
+| Issue             | Description                                                           |
+| ----------------- | --------------------------------------------------------------------- |
+| **Inconsistency** | WSTG v4.2 README.md does not list 4.12 API Testing, but folder exists |
+| **Reliability**   | Dependent on OWASP website structure and availability                 |
+| **Complexity**    | ~500 lines of scraping, parsing, and retry logic                      |
+| **Speed**         | ~3 minutes to fetch all 91 pages                                      |
+| **Maintenance**   | Breaking changes when OWASP restructures website                      |
+
+**Solution: Bundled-Only Approach**
+
+```
+Before: [Fetch WSTG Checklist] [Cancel Fetch] [Load Bundled WSTG (Offline)]
+After:  [Load WSTG v4.2 Checklist]
+```
+
+**Benefits:**
+
+| Aspect          | Before          | After           |
+| --------------- | --------------- | --------------- |
+| Consistency     | Varies by fetch | 100% consistent |
+| Speed           | ~3 minutes      | < 100ms         |
+| Network         | Required        | Offline         |
+| Code complexity | High            | Low             |
+| Maintenance     | High            | Low             |
+
+### Implementation Tasks
+
+#### 6.6.1 UI Simplification
+
+- [ ] Remove `generateWebChecklistButton` ("Fetch WSTG Checklist")
+- [ ] Remove `cancelFetchButton` ("Cancel Fetch")
+- [ ] Rename `loadLocalCopyButton` → "Load WSTG v4.2 Checklist"
+- [ ] Update status label to show "Loaded WSTG v4.2 (91 items)"
+
+**File:** `ExtenderPanelUI.java`
+
+#### 6.6.2 Remove Fetch Logic
+
+- [ ] Delete `ChecklistFetchWorker.java` (entire file)
+- [ ] Remove from `ChecklistLogic.java`:
+  - `scrapeArticleURLs()`
+  - `scrapeRawMarkdownURLs()`
+  - `scrapePageURLs()`
+  - `fetchWithRetry()`, `attemptFetch()`, `handleFetchError()`, `performBackoff()`
+  - `getTableElements()` (online version)
+  - `getContentElements()` (online version)
+  - `logNewChecklistEntry(String url)` (online version)
+  - Markdown-to-HTML conversion methods (if only used for online)
+
+**Estimated code removal:** ~500 lines
+
+#### 6.6.3 Update Tests
+
+- [ ] Remove `ChecklistFetchWorkerTest.java`
+- [ ] Update `ChecklistLogicTest.java` to remove fetch-related tests
+- [ ] Update integration tests if needed
+
+#### 6.6.4 Update Documentation
+
+- [ ] Update `USER-GUIDE.md` - remove fetch instructions
+- [ ] Update this ROADMAP - mark Phase 4.2.4 (Burp Networking) as obsolete for fetch
+- [ ] Update Manual Test Procedures table
+
+#### 6.6.5 Cleanup
+
+- [ ] Remove unused imports in affected files
+- [ ] Run `./gradlew check` to verify no regressions
+- [ ] Update CHANGELOG.md
 
 ---
 
@@ -1401,10 +1497,10 @@ public class EventManager {
 
 ## Notes
 
-- Current approach scrapes GitHub HTML pages via JSoup
-- Phase 6.1 replaces this with local JSON import
+- Current approach relies on bundled local JSON for WSTG v4.2 checklist data
+- Online fetch functionality (Phases 4.2.x) has been removed for reliability and simplicity (Phase 6.6)
 - All changes follow KISS, YAGNI, DRY principles
-- Data from WSTG v4.2 (stable)
+- Supports WSTG v4.2 (stable)
 
 ---
 
