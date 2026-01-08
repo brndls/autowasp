@@ -1,28 +1,30 @@
 # Changelog
 
-## 2026-01-08 Wednesday
-
-- Reduced code duplication by creating `AbstractAutowaspTable` as a base class for `InstanceTable` and `LoggerTable`
-- Consolidated menu creation logic in `ContextMenuFactory`
-- Added 11 unit tests for `AbstractAutowaspTable` (achieving 60%+ coverage target for UI components)
-- **Phase 12.1: Session Notes**
-  - Added a Notes Panel directly integrated with WSTG checklist items
-  - Implemented note-counting badges on the checklist table
-  - Automated note persistence into Burp Suite project files
-  - Integrated session notes into Excel reports (including GENERAL notes)
-  - Rearranged checklist UI by removing the category column for space efficiency
-- **Documentation & Restructuring**
-  - Updated `README.md` with Table of Contents, Quick Start, and a more concise structure
-  - Created `docs/USER-GUIDE.md` for detailed usage instructions with screenshots
-  - Created `docs/CONTRIBUTING.md` for contribution guidelines and coding standards
-  - Standardized internal URLs using relative paths for portability
-  - Updated WSTG reference to official OWASP v4.2 repository (tag `v42`)
-
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [2.3.0] - 2026-01-08
+
+### Added
+
+- **Session Notes (Phase 12.1)**: Notes Panel directly integrated with WSTG checklist items, with note-counting badges on the checklist table.
+- **Note Persistence**: Automated note saving into Burp Suite project files.
+- **Report Integration**: Session notes included in Excel reports (including GENERAL category notes).
+- **Documentation**: Created `docs/USER-GUIDE.md` for detailed usage instructions and `docs/CONTRIBUTING.md` for contribution guidelines.
+
+### Changed
+
+- **Code Quality**: Reduced duplication by creating `AbstractAutowaspTable` as base class for `InstanceTable` and `LoggerTable`.
+- **Context Menu**: Consolidated menu creation logic in `ContextMenuFactory`.
+- **Checklist UI**: Removed category column for improved space efficiency.
+- **Documentation**: Updated `README.md` with Table of Contents and Quick Start section. Standardized internal URLs using relative paths.
+- **WSTG Reference**: Updated to official OWASP v4.2 repository (tag `v42`).
+
+### Tests
+
+- Added 11 unit tests for `AbstractAutowaspTable` (achieving 60%+ coverage target for UI components).
 
 ## [2.2.9] - 2026-01-06
 
