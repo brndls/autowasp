@@ -35,9 +35,7 @@ import java.io.IOException;
 
 import java.io.File;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import autowasp.checklist.ChecklistFetchWorker;
+// Redundant import: autowasp.checklist.ChecklistFetchWorker is deleted
 
 /**
  * Extender Panel UI - Montoya API
@@ -80,17 +78,13 @@ public class ExtenderPanelUI implements Runnable {
     private JProgressBar memoryProgressBar;
 
     // Checklist UI
-    private JTextPane summaryTextPane;
+    private JEditorPane summaryTextPane;
     private JEditorPane howToTestTextPane;
-    private JTextPane referencesTextPane;
+    private JEditorPane referencesTextPane;
     private JButton enableScanningButton;
-    private ChecklistFetchWorker fetchWorker;
-    public final AtomicBoolean running = new AtomicBoolean(false);
-    private JButton cancelFetchButton;
     private JButton saveLocalCopyButton;
     private JButton generateLocalChecklistButton;
     private JButton generateExcelReportButton;
-    private JButton generateWebChecklistButton;
     private File checklistDestDir;
     private JLabel loggerPageLabel;
 
@@ -240,47 +234,10 @@ public class ExtenderPanelUI implements Runnable {
         JPanel testingPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 10));
         testingPanel.add(new JLabel("OWASP CheckList:", SwingConstants.LEFT), BorderLayout.LINE_START);
 
-        // Progress bar for fetch operations (BApp Store Criteria #5)
-        JProgressBar fetchProgressBar = new JProgressBar();
-        fetchProgressBar.setIndeterminate(true);
-        fetchProgressBar.setVisible(false);
-        fetchProgressBar.setStringPainted(true);
-        fetchProgressBar.setString("Fetching...");
-
-        // On clicking, fetches checklist data from the web and displays it
-        generateWebChecklistButton = new JButton("Fetch WSTG Checklist");
-        generateWebChecklistButton.addActionListener(e -> {
-            extender.issueAlert("Fetching checklist now");
-            scanStatusLabel.setText("Fetching checklist now");
-            generateLocalChecklistButton.setEnabled(false);
-            cancelFetchButton.setEnabled(true);
-            generateWebChecklistButton.setEnabled(false);
-            fetchProgressBar.setVisible(true);
-            extender.getChecklistManager().getChecklistLog().clear();
-            running.set(true);
-
-            fetchWorker = new ChecklistFetchWorker(new ChecklistFetchWorker.ChecklistFetchConfig(
-                    extender,
-                    scanStatusLabel,
-                    fetchProgressBar,
-                    generateWebChecklistButton,
-                    generateLocalChecklistButton,
-                    cancelFetchButton,
-                    generateExcelReportButton,
-                    saveLocalCopyButton,
-                    running,
-                    null));
-            fetchWorker.execute();
-        });
-
-        setupCancelFetchButton();
         setupLocalChecklistButtons();
         setupExcelReportButton();
 
-        testingPanel.add(generateWebChecklistButton);
-        testingPanel.add(cancelFetchButton);
         testingPanel.add(generateLocalChecklistButton);
-        testingPanel.add(fetchProgressBar);
         if (SELF_UPDATE_LOCAL) {
             testingPanel.add(saveLocalCopyButton);
         }
@@ -288,23 +245,10 @@ public class ExtenderPanelUI implements Runnable {
         return testingPanel;
     }
 
-    private void setupCancelFetchButton() {
-        cancelFetchButton = new JButton("Cancel Fetch");
-        cancelFetchButton.addActionListener(e -> {
-            running.set(false);
-            if (fetchWorker != null && !fetchWorker.isDone()) {
-                fetchWorker.cancel(true);
-            }
-        });
-    }
-
     private void setupLocalChecklistButtons() {
-        generateLocalChecklistButton = new JButton("Load Bundled WSTG (Offline)");
+        generateLocalChecklistButton = new JButton("Load WSTG v4.2 Checklist");
         generateLocalChecklistButton.addActionListener(e -> {
             generateLocalChecklistButton.setEnabled(false);
-            if (generateWebChecklistButton != null) {
-                generateWebChecklistButton.setEnabled(false);
-            }
             extender.getChecklistManager().getChecklistLogic().loadLocalCopy();
         });
 
@@ -853,13 +797,13 @@ public class ExtenderPanelUI implements Runnable {
     private void setupCheckListPanel() {
         JSplitPane internalChecklistSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
-        summaryTextPane = new JTextPane();
+        summaryTextPane = new JEditorPane();
         setupHtmlTextPane(summaryTextPane);
 
         howToTestTextPane = new JEditorPane();
         setupHtmlTextPane(howToTestTextPane);
 
-        referencesTextPane = new JTextPane();
+        referencesTextPane = new JEditorPane();
         setupHtmlTextPane(referencesTextPane);
 
         // Individual Checklist Panel (Table + Notes)
@@ -923,7 +867,6 @@ public class ExtenderPanelUI implements Runnable {
         this.deleteInstanceButton.setEnabled(false);
         generateExcelReportButton.setEnabled(false);
         saveLocalCopyButton.setEnabled(false);
-        cancelFetchButton.setEnabled(false);
     }
 
     // To allow instance deletion button only
@@ -951,7 +894,7 @@ public class ExtenderPanelUI implements Runnable {
         return scanStatusLabel;
     }
 
-    public JTextPane getSummaryTextPane() {
+    public JEditorPane getSummaryTextPane() {
         return summaryTextPane;
     }
 
@@ -959,7 +902,7 @@ public class ExtenderPanelUI implements Runnable {
         return howToTestTextPane;
     }
 
-    public JTextPane getReferencesTextPane() {
+    public JEditorPane getReferencesTextPane() {
         return referencesTextPane;
     }
 
@@ -977,10 +920,6 @@ public class ExtenderPanelUI implements Runnable {
 
     public JButton getDeleteInstanceButton() {
         return deleteInstanceButton;
-    }
-
-    public JButton getCancelFetchButton() {
-        return cancelFetchButton;
     }
 
     public JTextField getLoggerSearchField() {

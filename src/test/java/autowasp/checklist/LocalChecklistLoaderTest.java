@@ -95,8 +95,8 @@ class LocalChecklistLoaderTest {
         }
 
         @Test
-        @DisplayName("should generate HTML summary from objectives")
-        void testLoadFromResources_HtmlSummaryGenerated() {
+        @DisplayName("should read summary from enriched JSON")
+        void testLoadFromResources_EnrichedSummaryLoaded() {
             // Arrange
             LocalChecklistLoader loader = new LocalChecklistLoader();
 
@@ -104,10 +104,12 @@ class LocalChecklistLoaderTest {
             List<ChecklistEntry> entries = loader.loadFromResources();
             ChecklistEntry entry = entries.get(0);
 
-            // Assert
-            assertTrue(entry.getSummaryHTML().startsWith("<ul>"), "Summary should start with <ul>");
-            assertTrue(entry.getSummaryHTML().endsWith("</ul>"), "Summary should end with </ul>");
-            assertTrue(entry.getSummaryHTML().contains("<li>"), "Summary should contain <li> elements");
+            // Assert - enriched JSON has actual content, not just objectives
+            assertNotNull(entry.getSummaryHTML(), "Summary should not be null");
+            assertFalse(entry.getSummaryHTML().isEmpty(), "Summary should not be empty");
+            // Content should contain actual WSTG text, not just placeholder
+            assertTrue(entry.getSummaryHTML().contains("<p>"),
+                    "Enriched summary should contain paragraph tags");
         }
 
         @Test

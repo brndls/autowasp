@@ -64,24 +64,21 @@ public class LocalChecklistLoader {
                     String testName = test.get("name").getAsString();
                     String reference = test.get("reference").getAsString();
 
-                    // Objectives -> Summary HTML (sebagai bullet list)
-                    StringBuilder summaryHtml = new StringBuilder("<ul>");
-                    for (JsonElement objective : test.getAsJsonArray("objectives")) {
-                        String objText = objective.getAsString();
-                        if (!objText.isEmpty()) {
-                            summaryHtml.append("<li>").append(objText).append("</li>");
-                        }
-                    }
-                    summaryHtml.append("</ul>");
+                    // Read fields from enriched JSON (with fallback for backward compatibility)
+                    String summaryHtml = getJsonStringOrDefault(test, "summary", buildObjectivesSummary(test));
+                    String howToTestHtml = getJsonStringOrDefault(test, "howToTest",
+                            "<p>See OWASP reference for detailed testing methodology.</p>");
+                    String referencesHtml = getJsonStringOrDefault(test, "references",
+                            "<p><a href=\"" + reference + "\">" + refNumber + "</a></p>");
 
                     // Buat ChecklistEntry menggunakan constructor kedua
                     ChecklistEntry entry = new ChecklistEntry(
                             refNumber,
                             categoryName,
                             testName,
-                            summaryHtml.toString(),
-                            "<p>See OWASP reference for detailed testing methodology.</p>",
-                            "<p><a href=\"" + reference + "\">" + refNumber + "</a></p>",
+                            summaryHtml,
+                            howToTestHtml,
+                            referencesHtml,
                             reference);
 
                     entries.add(entry);
@@ -112,5 +109,43 @@ public class LocalChecklistLoader {
      */
     public String getVersion() {
         return "4.2";
+    }
+
+    /**
+     * Get a string field from JSON object, or return default if missing/empty.
+     *
+     * @param obj          JSON object to read from
+     * @param fieldName    Field name to read
+     * @param defaultValue Default value if field is missing or empty
+     * @return Field value or default
+     */
+    private String getJsonStringOrDefault(JsonObject obj, String fieldName, String defaultValue) {
+        if (obj.has(fieldName) && !obj.get(fieldName).isJsonNull()) {
+            String value = obj.get(fieldName).getAsString();
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
+     * Build summary HTML from objectives array (fallback for old JSON format).
+     *
+     * @param test JSON object containing the test data
+     * @return HTML string with bullet list of objectives
+     */
+    private String buildObjectivesSummary(JsonObject test) {
+        StringBuilder summaryHtml = new StringBuilder("<ul>");
+        if (test.has("objectives") && test.get("objectives").isJsonArray()) {
+            for (JsonElement objective : test.getAsJsonArray("objectives")) {
+                String objText = objective.getAsString();
+                if (!objText.isEmpty()) {
+                    summaryHtml.append("<li>").append(objText).append("</li>");
+                }
+            }
+        }
+        summaryHtml.append("</ul>");
+        return summaryHtml.toString();
     }
 }
